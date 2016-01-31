@@ -508,7 +508,7 @@ public class Parser {
 			}
 		}
 		else {
-			error("Expect failed. Saw " + scanner.sym + ", expected " + token + ".");
+			error("Expect failed. Saw " + scanner.symString() + ", expected " + scanner.symString(token) + ".");
 		}
 		return result; 
 	}

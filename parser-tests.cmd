@@ -6,6 +6,12 @@ javac Parser.java
 echo Testing...
 echo.
 echo ---------------------------------
+echo Running syntax-error...
+java Parser my-tests/syntax-error.txt
+echo ---------------------------------
+
+echo.
+echo ---------------------------------
 echo Running big...
 java Parser my-tests/big.txt
 echo ---------------------------------
