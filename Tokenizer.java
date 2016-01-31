@@ -75,125 +75,47 @@ public class Tokenizer {
 			return sym; 
 		} else if (isPunctuation(c)) { // If token is a punctuation mark.
 			token = toString(c);
-			if (c == '*') {        // *
-				sym = timesToken;
-			} else if (c == '/') { // /
-				sym = divToken;
-			} else if (c == '+') { // +
-				sym = plusToken;
-			} else if (c == '-') { // -
-				sym = minusToken;	
-			} else if (c == '=') { // ==
+			if (c == '<' || c == '>') { // Ambiguous tokens: <, >
+				reader.next();	   
+				c = reader.sym;
+				if (c == '=' || c == '-') {
+					token += toString(c);
+				    reader.next();
+				}
+			} else if (c == '=' || c == '!') { // Two character punctuation tokens.
 				reader.next();
 				c = reader.sym;
-				if (c == '=') { 
-					token += toString(c);
-					sym = eqlToken;	
-				} else {        
-					error("Expecting ==");
-				}
-			} else if (c == '!') { // !
+				token += toString(c);
 				reader.next();
-				c = reader.sym;
-				if (c == '=') { 
-					token += toString(c);
-					sym = neqToken;
-				} else {        
-					error("Expecting !=");
-				}
-			} else if (c == '<') { // <, <= or <-
-				reader.next();
-				c = reader.sym;
-				if (c == '=') { 
-					token += toString(c);
-					sym = leqToken;
-				} else if (c == '-') {        
-					token += toString(c);
-					sym = becomesToken;
-				} else {
-					sym = lssToken;
-				}
-			} else if (c == '>') { // > or >=
-				reader.next();
-				c = reader.sym;
-				if (c == '=') { 
-					token += toString(c);
-					sym = geqToken;
-				} else {
-					sym = gtrToken;
-				}
-			} else if (c == '.') { // .
-				sym = periodToken;
-			} else if (c == ',') { // ,
-				sym = commaToken;
-			} else if (c == '[') { // [
-				sym = openbracketToken;
-			} else if (c == ']') { // ]
-				sym = closebracketToken;
-			} else if (c == '(') { // (
-				sym = openparenToken;
-			} else if (c == ')') { // )
-				sym = closeparenToken;
-			} else if (c == ';') { // ;
-				sym = semiToken;
-			} else if (c == '}') { // }
-				sym = endToken;
-			}  else if (c == '{') { // {
-				sym = beginToken;
-			} else {
-			 error("Invalid token."); 
+			} else { reader.next(); } 		   // All other tokens.
+
+			if (!table.member(token)) {
+				error("Invalid punctuation token."); 
 			}
 
-			// Advance reader and store token ID.
-			reader.next();
-			id  = stringToId(token);
+			// Store token information.
+			sym = table.getSym(token);
+			id  = table.getID(token);
 		}
 		else if (isAlpha(c)) {    // If token is an identifier.
 			token = toString(c);
 			reader.next();
 		    c = reader.sym;
+
 		    // Capture token.
 			while (isAlphaNumeric(c)) {
 				  token += c;
 		          reader.next();
 		          c = reader.sym;
 			}
-			// Check if token is a reserved word.
-			if (token.equals("then")) { // then
-				sym = thenToken;
-			} else if (token.equals("do")) { // do
-				sym = doToken;
-			} else if (token.equals("od")) { // od
-				sym = odToken;
-			} else if (token.equals("fi")) { // fi
- 				sym = fiToken;
-			} else if (token.equals("else")) { // else
-				sym = elseToken;
-			} else if (token.equals("let")) { // let
-				sym = letToken;
-			} else if (token.equals("call")) { // call
-				sym = callToken;
-			} else if (token.equals("if")) { // if
-				sym = ifToken;
-			} else if (token.equals("while")) { // while
-				sym = whileToken;
-			} else if (token.equals("return")) { // return
-				sym = returnToken;
-			} else if (token.equals("var")) { // var
-				sym = varToken;
-			} else if (token.equals("array")) { // array
-				sym = arrToken;
-			} else if (token.equals("function")) { // function
-				sym = funcToken;
-			} else if (token.equals("procedure")) { // procedure
-				sym = procToken;
-			} else if (token.equals("main")) { // main
-				sym = mainToken;
-			} else {                  // Normal identifier.
-				sym = ident;
+
+			// Add token to string table and update params.
+			if (!table.member(token)) { 
+				table.add(token); 
 			}
-			// Store token ID.
-			id  = table.addOrLookup(token);
+			sym = table.getSym(token);
+			id  = table.getID(token);
+
 		} else if (isDigit(c)) { // If token is a number.
 			// Capture token as integer.
 			int value = toInt(c);
@@ -204,6 +126,7 @@ public class Tokenizer {
 				reader.next();
 				c = reader.sym;
 			}
+
 			// Store token information.
 			sym = number;
 			val = value;
@@ -216,18 +139,18 @@ public class Tokenizer {
 	// Signal an error with current file position.
 	public void error(String errorMsg) {
 		String token = idToString(id);
-		System.out.println("\nERROR: " + errorMsg + "\nlast token: " + token + ", last val = " + val);
-		System.out.println("Current symbol: " + sym);
+		System.out.println("\nERROR: " + errorMsg);
+		System.out.println("\nLast ident: " + token + ", last val = " + val + ", current symbol = " + sym);
 		System.exit(0);
 	}
 
 	// Identifier table methods.
 	public String idToString(int id) {
-		return table.idToString(id);
+		return table.getName(id);
 	}
 
 	public int stringToId(String name) {
-		return table.stringToId(name);
+		return table.getID(name);
 	}
 
 	// Helper functions to check the type of characters
