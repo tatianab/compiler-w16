@@ -6,6 +6,7 @@
 
 import java.util.Hashtable;
 import java.util.LinkedList;
+import java.util.ArrayList;
 
 public class SymbolTable {
 	// Class representing one-way lookup symbol table for
@@ -18,32 +19,51 @@ public class SymbolTable {
 	public class Data {
 		public SymbolType type;					 // Array, var, constant. Procedure or function too?
 		public ValueInstance current;  // For SSA form.
-		public Bool readonly () { return type == Constant; }
+		public ArrayList<Integer> size;
+		public Data() {
+
+		}
+		public boolean readonly () { return type == SymbolType.Constant; }
 		// Need more stuff for arrays.
-		public newRevision(VariableInstance newInstance) {
-			newInstance.previous = current;
-			current.next = newInstance;
-			newInstance.next = NULL;
-			current = newInstance;
+		public void newRevision(VariableInstance newInstance) {
+			VariableInstance _current = (VariableInstance)current;
+			newInstance.previous = _current;
+			_current.next = newInstance;
+			newInstance.next = null;
+			_current = newInstance;
 		}
 	}
 
 	public class ValueInstance {
-		public int value;
+		public ArrayList<Instruction> previousUsed;
 	}
 
 	public class VariableInstance extends ValueInstance {
 		public int id;
 		public ValueInstance previous;
 		public ValueInstance next;
+		public Instruction assigmentInstruction;
+		public int basedMemoryAddress;
 	}
 
 	public class ConstantInstance extends ValueInstance {
+		public int value;
+	}
+
+	public class ArrayIndex {
+	}
+
+	public class ConstantArrayIndex: ArrayIndex {
+		public int value;
+	}
+
+	public class ComputationArrayIndex: ArrayIndex {
+		public Instruction instruction;
 	}
 
 	public class Array extends VariableInstance {
 		//The Array is stored in jounal fashion
-		public int size;
+		public ArrayList<ArrayIndex> indice;
 	}
 
 	private Hashtable<String, Data> hashtable;
@@ -53,17 +73,21 @@ public class SymbolTable {
 	}
 
 	public void add(String name, SymbolType type) {
-		Data newRecord = new Data;
+		Data newRecord = new Data();
 		newRecord.type = type;
-		if (type == Constant) {
+		//This part is only being called from the lookup
+		if (type == SymbolType.Constant) {
 			if (isInteger(name)) {
 				//This is a constant, so initial the value during the add phrase
 				int value = Integer.parseInt(name);
-				ConstantInstance instance = new ConstantInstance;
+				ConstantInstance instance = new ConstantInstance();
 				instance.value = value;
 				newRecord.current = instance;
 			} else {
 				//Remind the constant is not a constant
+			//The variable has not been initialized yet, complaint
+			System.out.printf("\"name\" is neither a constant nor a existed variable. \n", name);
+			System.exit(1);
 			}
 		}
 		hashtable.put(name, newRecord);
@@ -85,10 +109,10 @@ public class SymbolTable {
 	public ValueInstance lookup(String name) {
 		// TODO
 		Data d = hashtable.get(name);
-		if (d == NULL) {
+		if (d == null) {
 			if (isInteger(name)) {
 				//This is a constant that has not been encounter before
-				add(name, Constant);
+				add(name, SymbolType.Constant);
 				d = hashtable.get(name);
 			} else {
 				//Remind the variable has not been declare, or it's a constant with typo
@@ -96,10 +120,13 @@ public class SymbolTable {
 		}
 
 		ValueInstance instance = d.current;
-		if (instance != NULL)
+		if (instance != null)
 			return instance;
 		else {
-			//The variable has not been initialized yet
+			//The variable has not been initialized yet, complaint
+			System.out.printf("Variable %s has not been initialized yet. \n", name);
+			System.exit(1);
+			return null;
 		}
 	}
 
