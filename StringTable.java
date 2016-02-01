@@ -118,5 +118,21 @@ public class StringTable {
 		nextOpenID++;
 	}
 
+	// Only used for error messages.
+	public String symToString(int sym) {
+		if (sym == number) {
+			return "Number";
+		} else if (sym == ident) {
+			return "Ident";
+		} else {
+			for (int i = 0; i < reserved.length; i++) {
+				if (reservedID[i] == sym) {
+					return reserved[i];
+				}
+			}
+		}
+		return "Symbol not found.";
+	}
+
 
 }

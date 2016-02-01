@@ -78,11 +78,11 @@ public class Tokenizer {
 			if (c == '<' || c == '>') { // Ambiguous tokens: <, >
 				reader.next();	   
 				c = reader.sym;
-				if (c == '=' || c == '-') {
+				if (c == '=' || c == '-') {    // Check for <=, <- and >=.
 					token += toString(c);
 				    reader.next();
 				}
-			} else if (c == '=' || c == '!') { // Two character punctuation tokens.
+			} else if (c == '=' || c == '!') { // Check for != and ==.
 				reader.next();
 				c = reader.sym;
 				token += toString(c);
@@ -97,7 +97,7 @@ public class Tokenizer {
 			sym = table.getSym(token);
 			id  = table.getID(token);
 		}
-		else if (isAlpha(c)) {    // If token is an identifier.
+		else if (isAlpha(c)) {         // If token is an identifier.
 			token = toString(c);
 			reader.next();
 		    c = reader.sym;
@@ -140,7 +140,7 @@ public class Tokenizer {
 	public void error(String errorMsg) {
 		String token = idToString(id);
 		System.out.println("\nERROR: " + errorMsg);
-		System.out.println("\nLast ident: " + token + ", last val = " + val + ", current symbol = " + sym);
+		System.out.println("Last ident: " + token + ", last val = " + val + ", current symbol = " + sym + ".");
 		System.exit(0);
 	}
 
@@ -151,6 +151,14 @@ public class Tokenizer {
 
 	public int stringToId(String name) {
 		return table.getID(name);
+	}
+
+	public String symString() {
+		return table.symToString(sym);
+	}
+
+	public String symString(int token) {
+		return table.symToString(token);
 	}
 
 	// Helper functions to check the type of characters
