@@ -75,7 +75,7 @@ public class Tokenizer {
 			return sym; 
 		} else if (isPunctuation(c)) { // If token is a punctuation mark.
 			token = toString(c);
-			if (c == '<' || c == '>') { // Ambiguous tokens: <, >
+			if (c == '<' || c == '>') { 	   // < and > are ambiguous.
 				reader.next();	   
 				c = reader.sym;
 				if (c == '=' || c == '-') {    // Check for <=, <- and >=.
@@ -116,7 +116,7 @@ public class Tokenizer {
 			sym = table.getSym(token);
 			id  = table.getID(token);
 
-		} else if (isDigit(c)) { // If token is a number.
+		} else if (isDigit(c)) { 	  // If token is a number.
 			// Capture token as integer.
 			int value = toInt(c);
 			reader.next();
@@ -131,38 +131,55 @@ public class Tokenizer {
 			sym = number;
 			val = value;
 		} else {
-			error("Error: invalid token beginning with : " + c + ".");
+			error("Invalid token beginning with : " + c + ".");
 		}
 		return sym;
 	}
 
+	// Skip over any space characters. These will be ignored.
+	private void skipSpaces() {
+		char c = reader.sym;
+   		while (Character.isSpaceChar(c) || c == '\n' || c == '\r' || c == '\t') {
+   			reader.next();
+   			c = reader.sym;
+   		}
+	}
+
 	// Signal an error with current file position.
 	public void error(String errorMsg) {
-		String token = idToString(id);
 		System.out.println("\nERROR: " + errorMsg);
-		System.out.println("Last ident: " + token + ", last val = " + val + ", current symbol = " + sym + ".");
+		System.out.println("Last ident: " + idToString(id) + 
+						   ", last val = " + val + ", current symbol = " + sym + ".");
 		System.exit(0);
 	}
 
-	// Identifier table methods.
+	/* String table methods.*/
+	// Convert an id number to its String representation.
 	public String idToString(int id) {
 		return table.getName(id);
 	}
 
+	// Convert an identifier name to its integer id.
 	public int stringToId(String name) {
 		return table.getID(name);
 	}
 
-	public String symString() {
-		return table.symToString(sym);
+	// Returns the String representation of the current token.
+	public String currentToken() {
+		if (sym != number) {
+			return idToString(id);
+		} else { return Integer.toString(val); }
 	}
 
-	public String symString(int token) {
+	// Return the String representation of the given token.
+	// Input token is a token code, not an id.
+	public String tokenToString(int token) {
 		return table.symToString(token);
 	}
+	/* End identifier table methods. */
 
-	// Helper functions to check the type of characters
-	// and do type conversions.
+	/* Helper functions to check the type of characters
+	   and do type conversions. */
 	private boolean isAlphaNumeric(char c) {
 		return isAlpha(c) || isDigit(c);
 	}
@@ -187,20 +204,6 @@ public class Tokenizer {
 	private String toString(char c) {
 		return Character.toString(c);
 	}
-
-	private void skipSpaces() {
-		char c = reader.sym;
-   		while (Character.isSpaceChar(c) || c == '\n' || c == '\r' || c == '\t') {
-   			reader.next();
-   			c = reader.sym;
-   		}
-	}
-
-	// Returns the string representation of the current token.
-	public String currentToken() {
-		if (sym != number) {
-			return idToString(id);
-		} else { return Integer.toString(val); }
-	}
+	/* End helper functions. */
 
 }

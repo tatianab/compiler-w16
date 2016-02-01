@@ -13,7 +13,7 @@ public class Parser {
 	public Tokenizer scanner;    // Reads file and breaks it into tokens.
 	public IntermedRepr program; // Intermediate representation of the program, after parsing.
 
-	boolean debug = false;        // Debugging flag.
+	boolean debug;		         // Debugging flag.
 
 	/* Token values. */
 	private static final int errorToken 	   = 0;
@@ -57,7 +57,7 @@ public class Parser {
 	private static final int eofToken		   = 255;   
 	/* End token values. */  
 
-	/* Operation codes. */
+	/* Operation codes for intermediate representation. */
 	public static int neg     = 1;
 	public static int add     = 2;
 	public static int sub     = 3;
@@ -87,20 +87,33 @@ public class Parser {
 
 	/* Main function for testing. */
 	public static void main(String[] args) {
+		// Capture command line arguments and parse the given file.
 		String filename = "";
+		boolean debug = false;
     	try {
      		filename = args[0];
+     		if (args.length > 1) {  // Check for debugging flag.
+     			if (args[1] == "-d") {
+     				debug = true;
+     			}
+     		} 
      	} catch (Exception e) {
-      		System.out.println("Usage: java Parser <filename>");
+      		System.out.println("Usage: java Parser <filename> [-d]");
     	}
-    	Parser parser = new Parser(filename);
-    	parser.computation();
+    	Parser parser = new Parser(filename, debug);
+
+    	// Print out the VCG representation of the parsed file.
+    	parser.printVCG();
+    	
     }
 	/* End main function. */
 
 	/* Constructor. */
-	Parser(String filename) {
+	Parser(String filename, boolean debug) {
+		this.debug = debug;
 		scanner = new Tokenizer(filename);
+		program = new IntermedRepr();
+		computation(); // Begin recursive descent parsing.
 	}
 
 	/* Recursive descent methods. */
@@ -124,6 +137,7 @@ public class Parser {
 		}
 		// Main body.
 		expect(beginToken);
+		program.addBlock("Program begins.");
 		statSequence();
 
 		// Ending keywords.
@@ -240,16 +254,18 @@ public class Parser {
 	}
 
 	/* statSequence - sequence of statements.
+	 * Starts a new basic block.
 	 * statSequence = statement { ";" statement }.
 	 */
-	private void statSequence() {
+	private Block statSequence() {
 		if (debug) { System.out.print("(StatSequence "); };
-		// Start new basic block.
+		//program.addBlock("Begin statSequence");
 		statement();		// First statement.
 		while (accept(semiToken)) {
 			statement();    // More statements.
 		}
 		if (debug) { System.out.print(")"); };
+		return program.currentBlock; // Return the last block seen.
 	}
 
 	/* statement.
@@ -275,6 +291,7 @@ public class Parser {
 
 	/* returnStatement.
 	 * returnStatement= "return" [expression].
+	 * Function call related. Handle this later.
 	 */
 	private void returnStatement() {
 		if (debug) { System.out.print("(ReturnStatement "); };
@@ -289,13 +306,26 @@ public class Parser {
 	 * whileStatement = "while" relation "do" statSequence "od".
 	 */
 	private void whileStatement() {
+		Block previous, join, whileBlock, endWhileBlock, afterWhile;
 		if (debug) { System.out.print("(WhileStatement "); };
 		expect(whileToken);
+		previous = program.currentBlock;
+		// Create basic block with compare and branch -- join block.
+		join = program.addBlock("While join block.");
 		relation();         // Test.
 		expect(doToken);
-		// New basic block.
-		statSequence();     // Instructions in while loop.
+		// New basic block (fall-through block).
+		whileBlock = program.addBlock("While inner block.");
+		endWhileBlock = statSequence();     // Instructions in while loop.
 		expect(odToken);
+		// New basic block (after while) -- branch.
+		afterWhile = program.addBlock("After while.");
+
+		// Connect blocks as appropriate.
+		previous.addNext(join, false);  // Fall-through.
+		join.addNext(whileBlock, afterWhile);
+		whileBlock.addNext(join, true); // Jump
+
 		if (debug) { System.out.print(")"); };
 	}
 
@@ -303,19 +333,41 @@ public class Parser {
 	 * ifStatement = "if" relation "then" statSequence ["else" statSequence] "od".
 	 */
 	private void ifStatement() {
+		Block previous, compare, trueBlock, falseBlock, 
+			  endTrueBlock, endFalseBlock, join;
+		boolean falseBranch = false;
+		falseBlock          = null; // So the compiler doesn't complain.
+		endFalseBlock       = null; // 
 		if (debug) { System.out.print("(IfStatement "); };
 		expect(ifToken);
+		previous = program.currentBlock;
+		// New basic block with compare and branch.
+		compare = program.addBlock("If compare.");
 		relation();        // Test.
 		expect(thenToken);
-		// Branch if not true.
-		// New basic block.
-		statSequence();      // Instructions in true block.
+		// New basic block -- fallthrough (true).
+		trueBlock    = program.addBlock("If true block.");
+		endTrueBlock = statSequence();       // Instructions in true block.
 		if (accept(elseToken)) {
-			// New basic block.
-			statSequence();  // Instructions in false block.
+			// New basic block -- branch (false).
+			falseBlock    = program.addBlock("If false block.");
+			endFalseBlock = statSequence();  // Instructions in false block.
+			falseBranch = true;
 		}
 		expect(fiToken);
-		// Join block begins. (signal to fix)
+		// New basic block -- join.
+		join = program.addBlock("If join block.");
+
+		// Connect blocks as appropriate.
+		previous.addNext(compare, false);        // Fallthrough
+		compare.addNext(trueBlock, falseBlock);  // Ok if false block is null.
+		endTrueBlock.addNext(join, true);        // Jump
+
+		// Block connections for false branch.
+		if (falseBranch) { 
+			endFalseBlock.addNext(join, false); // Fall through
+		}
+
 		if (debug) { System.out.print(")"); };
 	}
 
@@ -477,7 +529,7 @@ public class Parser {
 	 * Returns the relation operator in question.
 	 */
 	private int relOp() {
-		int result = -1;
+		int result = errorToken;
 		if (debug) { System.out.print("(Relop "); };
 		if (scanner.sym >= eqlToken && scanner.sym <= gtrToken) {
 			result = scanner.sym;
@@ -494,7 +546,7 @@ public class Parser {
 	// Checks that the current token is the expected one 
 	// and advances the stream. Throws error if not.
 	private int expect(int token) {
-		int result = -1;
+		int result = errorToken;
 		if (scanner.sym == token) {
 			if (scanner.sym == number) {
 				result = scanner.val;
@@ -508,7 +560,8 @@ public class Parser {
 			}
 		}
 		else {
-			error("Expect failed. Saw " + scanner.symString() + ", expected " + scanner.symString(token) + ".");
+			error("Expect failed. Saw " + scanner.currentToken() + ", expected "
+			 	  + scanner.tokenToString(token) + ".");
 		}
 		return result; 
 	}
@@ -528,9 +581,15 @@ public class Parser {
 		return (scanner.sym == token);
 	}
 
+	// Print an error message and exit the program.
 	private void error(String message) {
 		scanner.error(message);
 		System.exit(0);
+	}
+
+	// Print out the vcg representation.
+	public void printVCG() {
+		System.out.println(program);
 	}
 	
 

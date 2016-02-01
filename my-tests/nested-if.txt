@@ -1,0 +1,23 @@
+main
+{
+	call OutputNum(4);
+
+	if 2 == 3 then
+		return 1;
+		if 3 == 4 then
+			return 0
+		else
+			return 5
+		fi
+	else
+		return 1;
+		if 3 == 4 then
+			return 0
+		else
+			return 5
+		fi
+	fi;
+
+	call OutputNum(2)
+}
+.

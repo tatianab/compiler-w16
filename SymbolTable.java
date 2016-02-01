@@ -53,11 +53,11 @@ public class SymbolTable {
 	public class ArrayIndex {
 	}
 
-	public class ConstantArrayIndex: ArrayIndex {
+	public class ConstantArrayIndex extends ArrayIndex {
 		public int value;
 	}
 
-	public class ComputationArrayIndex: ArrayIndex {
+	public class ComputationArrayIndex extends ArrayIndex {
 		public Instruction instruction;
 	}
 

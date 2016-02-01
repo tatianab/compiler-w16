@@ -4,7 +4,7 @@
  * CS 241 - Advanced Compiler Design
  */
 
-public class Instruction {
+public class Instruction extends Argument {
 	// Class representing an instruction in intermediate form.
 
 	public int op;            // Operation code.
@@ -12,29 +12,6 @@ public class Instruction {
 	public Argument arg2;  	  // Second argument.
 	public Instruction next;  // Next instruction.
 	public int id;            // This instruction's ID number.
-
-	private static int nextID = 0; // The next free ID number.
-
-	public class Argument {
-		// Argument can either be an instruction or a variable.
-		// This hasn't been fully thought out.
-		public int instrCode = 0;
-		public int valueCode = 1;
-
-		public int type;
-		public Instruction instr;
-		public int value;
-
-		public Argument(int value) {
-			this.value = value;
-			this.type = valueCode;
-		}
-
-		public Argument(Instruction instr) {
-			this.instr = instr;
-			this.type = instrCode;
-		}
-	}
 
 	/* Operation codes. */
 	public static int neg     = 1;
@@ -62,41 +39,35 @@ public class Instruction {
 	public static int read    = 20;
 	public static int write   = 21;
 	public static int writeNL = 22;
+
+	private static String[] ops = new String[]{"neg","add","sub","mul","div","cmp","adda","load","store",
+	"move","phi","end","bra","bne","beq","ble","blt","bge","bgt","read","write","writeNL"};
 	/* End operation codes. */
 
-	/* Different constructors for convenience. Maybe don't use these? */
-	// public Instruction(int op, Instruction arg1, 
-	// 	Instruction arg2, Instruction previous) {
-	// 	initialize(op, new Argument(arg))
-	// }
-
-	// public Instruction(int op, Instruction arg1, Instruction arg2, Instruction previous) {
-	// 	this(op, new Argument(arg1), new Argument(arg2), previous);
-	// }
-
-	// public Instruction(int op, int arg1, Instruction arg2, Instruction previous) {
-	// 	this(op, new Argument(arg1), new Argument(arg2), previous);
-	// }
-
-	// public Instruction(int op, Instruction arg1, int arg2, Instruction previous) {
-	// 	this(op, new Argument(arg1), new Argument(arg2), previous);
-	// }
-
-	// public Instruction(int op, int arg1, int arg2, Instruction previous) {
-	// 	this(op, new Argument(arg1), new Argument(arg2), previous);
-	// }
+	/* Begin constructors. */
+	public Instruction(int id) {
+		this.id = id;
+	}
 
 	public Instruction(int op, Argument arg1, Argument arg2, Instruction previous) {
 		// Set op code and argument pointers.
 		this.op = op;
 		this.arg1 = arg1;
 		this.arg2 = arg2;
-		// Set id number.
-		this.id = nextID;
-		nextID++;
+	
 		// Set pointer to this instruction from previous instruction.
 		previous.next = this;
 	}
 	/* End constructors. */
+
+	@Override
+	public String toString() {
+		return id + " : " + ops[op] + " " + arg1 + " " + arg2 + ", \n";
+	}
+
+	@Override
+	public String shortRepr() {
+		return "(" + id + ")";
+	}
 
 }
