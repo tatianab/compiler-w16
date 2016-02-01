@@ -440,9 +440,9 @@ public class Parser {
 	private void designator() {
 		int id;
 		if (debug) { System.out.print("(Designator "); };
-		/* id = */ ident();          // Identifier name.
+		/* id = */ ident();          // Identifier name. Stop here if a variable.
 		while (accept(openbracketToken)) {
-			expression(); 	   // (If array) array indices.
+			expression(); 	         // (If array) array indices.
 			expect(closebracketToken);
 		}
 		if (debug) { System.out.print(")"); };

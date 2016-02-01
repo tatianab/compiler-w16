@@ -8,8 +8,8 @@ public class Instruction {
 	// Class representing an instruction in intermediate form.
 
 	public int op;            // Operation code.
-	public Argument arg1;  	  // First argument, if an instruction.
-	public Argument arg2;  	  // Second argument, if an instruction.
+	public Argument arg1;  	  // First argument.
+	public Argument arg2;  	  // Second argument.
 	public Instruction next;  // Next instruction.
 	public int id;            // This instruction's ID number.
 

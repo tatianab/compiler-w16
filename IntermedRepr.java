@@ -16,12 +16,18 @@ public class IntermedRepr {
 
 	// Control Flow Graph (CFG)
 	public Block firstBlock;
+	public Block currentBlock;
 
 	// Symbol table
 	public SymbolTable table;
 
 	public IntermedRepr() {
 		// Nothing for now.
+	}
+
+	public Block addBlock() {
+
+
 	}
 
 
