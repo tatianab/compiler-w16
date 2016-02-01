@@ -85,24 +85,24 @@ public class SymbolTable {
 				newRecord.current = instance;
 			} else {
 				//Remind the constant is not a constant
-			//The variable has not been initialized yet, complaint
-			System.out.printf("\"name\" is neither a constant nor a existed variable. \n", name);
-			System.exit(1);
+				//The variable has not been initialized yet, complaint
+				System.out.printf("\"name\" is neither a constant nor a existed variable. \n", name);
+				System.exit(1);
 			}
 		}
 		hashtable.put(name, newRecord);
 	}
 
 	public boolean isInteger(String s) {
-    	try { 
-	        Integer.parseInt(s); 
-    	} catch(NumberFormatException e) { 
-        	return false; 
-    	} catch(NullPointerException e) {
-	        return false;
-    	}
+		try { 
+			Integer.parseInt(s); 
+		} catch(NumberFormatException e) { 
+			return false; 
+		} catch(NullPointerException e) {
+			return false;
+		}
     	// only got here if we didn't return false
-    	return true;
+		return true;
 	}
 
 
@@ -116,6 +116,8 @@ public class SymbolTable {
 				d = hashtable.get(name);
 			} else {
 				//Remind the variable has not been declare, or it's a constant with typo
+				System.out.printf("\"name\" is neither a constant nor a existed variable. \n", name);
+				System.exit(1);
 			}
 		}
 
