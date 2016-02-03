@@ -10,14 +10,15 @@ import java.util.ArrayList;
 
 public class SymbolTable {
 	// Class representing one-way lookup symbol table for
-	// variables and constants
+	// variables and constants.
+	// Do we even need this?
 
 	public enum SymbolType {
 		Constant, Variable, Array
 	}
 
 	public class Data {
-		public SymbolType type;					 // Array, var, constant. Procedure or function too?
+		public SymbolType type;		   // Array, var, constant. Procedure or function too?
 		public ValueInstance current;  // For SSA form.
 		public ArrayList<Integer> size;
 		public Data() {

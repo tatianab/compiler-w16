@@ -4,7 +4,7 @@
  * CS 241 - Advanced Compiler Design
  */
 
-public class Block extends Argument {
+public class Block extends Value {
 	// Class representing a basic block in the control flow graph.
 
 	public Instruction begin;   // First instruction in block.
@@ -19,7 +19,7 @@ public class Block extends Argument {
 	public Block fallThrough;   // Fall through block, (i.e., true branch).
 	public Block branch;        // Explicit branch block, (i.e, false branch or unconditional branch).
 
-	public String description;  // Optional description for block.
+	public String description;  // Optional description for block for debugging purposes.
 
 	// Constructors for a block.
 	public Block(int id) {
@@ -44,6 +44,7 @@ public class Block extends Argument {
 		} else {
 			current.next = instr;
 		}
+		instr.setBlock(this);
 		current = instr;
 	}
 

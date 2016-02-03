@@ -3,12 +3,12 @@
  * Winter 2016
  * CS 241 - Advanced Compiler Design
  */
-public class Constant extends Argument {
+public class Constant extends Value {
+	// For now, just a wrapper for an int.
 	int value;
-	String label;
 
 	@Override
 	public String shortRepr() {
-		return label;
+		return "#" + value;
 	}
 }

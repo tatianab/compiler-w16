@@ -60,10 +60,19 @@ public class StringTable {
 	private class StringData {
 		int id;
 		int token;
+		int current; // Increments every time a variable is reassigned.
+		// Do we need type here too?
 
 		public StringData(int id, int token) {
 			this.id = id;
 			this.token = token;
+			this.current = 0;
+		}
+
+		public int updateCurrent() {
+			int old = current;
+			current++;
+			return old;
 		}
 	}
 
@@ -116,6 +125,14 @@ public class StringTable {
 		strings.put(name, new StringData(nextOpenID, ident));
 		ids.add(nextOpenID, name);
 		nextOpenID++;
+	}
+
+	// Use this when a variable is assigned or reassigned.
+	// Updates the # of assignments of the variable and returns
+	// the (pre-update) value.
+	public int update(String name) {
+		return strings.get(name).updateCurrent();
+
 	}
 
 	// Only used for error messages.

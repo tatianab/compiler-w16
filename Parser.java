@@ -85,7 +85,10 @@ public class Parser {
 	public static int writeNL = 22;
 	/* End operation codes. */
 
-	/* Main function for testing. */
+	/* Main function for accepting PL241 files.
+	 * Usage: java Parser <filename> [-d]
+	 * The -d flag creates debugging output.
+	 */
 	public static void main(String[] args) {
 		// Capture command line arguments and parse the given file.
 		String filename = "";
@@ -114,17 +117,18 @@ public class Parser {
 		scanner = new Tokenizer(filename);
 		program = new IntermedRepr();
 		computation(); // Begin recursive descent parsing.
+		// Next, create the interference graph...
 	}
 
 	/* Recursive descent methods. */
 
 	/* Computation, i.e., program.
 	 * computation = "main" { varDecl } { funcDecl } "{" statSequence "}" "." .
+	 * Parses a PL241 program and converts it into SSA form.
 	 */
 	private void computation() {
 		if (debug) { System.out.print("(Computation "); };
 
-		// Main keyword.
 		expect(mainToken);
 
 		// Variable declarations.
@@ -135,16 +139,17 @@ public class Parser {
 		while (check(procToken) || check(funcToken)) {
 			funcDecl();
 		}
-		// Main body.
+		
 		expect(beginToken);
+		// Signal beginning of program.
 		program.addBlock("Program begins.");
-		statSequence();
+		statSequence(); // The program.
 
-		// Ending keywords.
 		expect(endToken);    
 		expect(periodToken);
 		expect(eofToken);
-		// program.add(end); // Add end instruction to program.
+		// Signal end of program.
+		// program.add(end); 
 
 		if (debug) { 
 			System.out.print(")"); 
@@ -175,6 +180,7 @@ public class Parser {
 
 	/* formalParam - formal parameter.
 	 * formalParam = "(" [ident { "," ident }] ")".
+	 * Parameters in function/procedure definitions.
 	 */
 	private void formalParam() {
 		if (debug) { System.out.print("(FormalParam "); };
@@ -183,7 +189,7 @@ public class Parser {
 		// Find 0 or more identifiers separated by commas.
 		if (!check(closeparenToken)) {
 			ident();
-			while (accept(commaToken)) { // ,
+			while (accept(commaToken)) { 
 				ident();
 			}
 		}
@@ -210,11 +216,12 @@ public class Parser {
 			error("Invalid function declaration.");
 	 	}
 	 	if (debug) { System.out.print(")"); };
-	 	// Add function/procedure to symbol table.
+	 	// Add function/procedure block pointer to string table.
 	}
 
 	/* varDecl - variable declaration.
 	 * varDecl = typeDecl ident { "," ident } ";".
+	 * Not quite sure how to handle this yet.
 	 */
 	private void varDecl() {
 		if (debug) { System.out.print("(VarDecl "); };
@@ -254,12 +261,11 @@ public class Parser {
 	}
 
 	/* statSequence - sequence of statements.
-	 * Starts a new basic block.
 	 * statSequence = statement { ";" statement }.
+	 * Mostly pass on work to other functions.
 	 */
 	private Block statSequence() {
 		if (debug) { System.out.print("(StatSequence "); };
-		//program.addBlock("Begin statSequence");
 		statement();		// First statement.
 		while (accept(semiToken)) {
 			statement();    // More statements.
@@ -270,6 +276,7 @@ public class Parser {
 
 	/* statement.
 	 * statement = assignment | funcCall | ifStatement | whileStatement | returnStatement.
+	 * For now, we pass on the work to other functions.
 	 */
 	private void statement() {
 		if (debug) { System.out.print("(Statement "); };
@@ -304,6 +311,8 @@ public class Parser {
 
 	/* whileStatement.
 	 * whileStatement = "while" relation "do" statSequence "od".
+	 * Handle all things while-loop: create new basic blocks, create compare/branch
+	 * instructions.
 	 */
 	private void whileStatement() {
 		Block previous, join, whileBlock, endWhileBlock, afterWhile;
@@ -331,6 +340,8 @@ public class Parser {
 
 	/* ifStatement.
 	 * ifStatement = "if" relation "then" statSequence ["else" statSequence] "od".
+	 * Handle all things if-statement: create new basic blocks, create compare/branch
+	 * instructions.
 	 */
 	private void ifStatement() {
 		Block previous, compare, trueBlock, falseBlock, 
@@ -373,6 +384,7 @@ public class Parser {
 
 	/* funcCall. 
 	 * funcCall = "call" ident [ "(" [expression { "," expression } ] ")"].
+	 * We will deal with function calls later...
 	 */
 	private void funcCall() {
 		if (debug) { System.out.print("(FuncCall "); };
@@ -391,34 +403,41 @@ public class Parser {
 	}
 
 	/* assignment.
-	 * assignment = "let" designator "<-" expression.
+	 * assignment = "let" "<-" expression.
 	 */
 	private void assignment() {
 		if (debug) { System.out.print("(Assignment "); };
 		// Emit move instruction.
 		expect(letToken);
+		// Return an identifier id.
 		designator();			// Name of variable.
 		expect(becomesToken);
+		// Return an instruction.
 		expression();			// Value of variable.
 		if (debug) { System.out.print(")"); };
+		// Create new Variable.
+		// Create new move instruction for this Variable.
+		// Make sure as many pointers/parameters as possible are set.
 	}
 
 	/* relation.
 	 * relation = expression relOp expression.
+	 * Creates compare instruction and branch instruction.
+	 * Branch instruction must be fixed by caller.
 	 */
 	private void relation() {
 		//Instruction compare, left, right;
 		if (debug) { System.out.print("(Relation "); };
-		// Emit branch/compare instruction?
 		/*left   = */ expression(); 		// 1st expression. 
-		/* branch = */ opposite(relOp());	// Comparison operator.
+		int branchCode = opposite(relOp());	// Comparison operator.
 		/* right  = */ expression();		// 2nd expression.
-		// compare = new Instruction(cmp, left, right);
 		if (debug) { System.out.print(")"); };
-		// return compare;
+		// Emit cmp left right
+		// Emit conditional jump based on operator.
 	}
 
-	// Helper for relation. Find opposite of a relation operator.
+	// Helper for relation. Return op code that represents
+	// the opposite of a relation operator.
 	private int opposite(int relOp) {
 		// TODO
 		return 0;
@@ -426,18 +445,19 @@ public class Parser {
 
 	/* expression.
 	 * expression = term { ("+" | "-") term }.
+	 * Create instructions to evaluate the expression.
 	 */
 	private void expression() {
 		// Instruction acc, next;
 		if (debug) { System.out.print("(Expression "); };
-		/* acc = */ term();        // Term w/o + or -.
+		/* acc = */ term();        
 		while (check(plusToken) || check(minusToken) ) {
 			if (accept(plusToken)) {
-				/* next = */ term();   // Term(s) w/o + or -.
-				// acc = new Instruction(add, acc, next, acc);
+				/* next = */ term();   
+				// Emit add acc next
 			} else if (accept(minusToken)) {
-				/* next = */ term();   // Term(s) w/o + or -.
-				// acc = new Instruction(sub, acc, next, acc);
+				/* next = */ term();   
+				// Emit sub acc next
 			}
 		}
 		if (debug) { System.out.print(")"); };
@@ -446,6 +466,7 @@ public class Parser {
 
 	/* term.
 	 * term = factor { ("*" | "/") factor }.
+	 * Create instructions to evaluate the term.
 	 */
 	private void term() {
 		// Instruction acc, next;
@@ -454,10 +475,10 @@ public class Parser {
 		while (check(timesToken) || check(divToken)) {
 			if (accept(timesToken)) {
 				/* next = */ factor();
-				// /* acc = */ new Instruction(mul, acc, next, acc);
+				// Emit mul acc next
 			} else if (accept(divToken)) {
 				/* next = */ factor();
-				// /* acc = */ new Instruction(div, acc, next, acc);
+				// Emit div acc next
 			}
 		}
 		if (debug) { System.out.print(")"); };
@@ -466,6 +487,8 @@ public class Parser {
 
 	/* factor.
 	 * factor = designator | number | "(" expression ")" | funcCall.
+	 * Create instructions to evaluate the factor.
+	 * We may need to return a Value here.
 	 */
 	private void factor() {
 		if (debug) { System.out.print("(Factor "); };
@@ -482,28 +505,29 @@ public class Parser {
 			error("Invalid factor.");
 		}
 		if (debug) { System.out.print(")"); };
-		// What to return here?
 	}
 
 	/* designator.
 	 * designator = ident { "[" expression "]" }.
-	 * This is for arrays.
+	 * Return the integer id corresponding to the identifier found.
+	 * Also need to handle arrays. (Not sure how right now).
 	 */
 	private void designator() {
 		int id;
 		if (debug) { System.out.print("(Designator "); };
-		/* id = */ ident();          // Identifier name. Stop here if a variable.
+		id = ident();          			 // Identifier name. Stop here if a variable.
 		while (accept(openbracketToken)) {
-			expression(); 	         // (If array) array indices.
+			expression(); 	             // (If array) array indices.
 			expect(closebracketToken);
 		}
 		if (debug) { System.out.print(")"); };
-		// Add to symbol table here?
+		// For now, pretend we don't have arrays.
+		// return id
 	}
 
 	/* number.
 	 * number = digit { digit }
-	 * Returns the value of the number.
+	 * Returns the integer value of the number.
 	 */
 	private int number() {
 		int result;
@@ -511,11 +535,12 @@ public class Parser {
 		result = expect(number);  // The number.
 		if (debug) { System.out.print(")"); };
 		return result;
+		// Should this be wrapped in a constant?
 	}
 
 	/* ident.
 	 * ident = letter { letter | digit }
-	 * Returns the id of the identifier.
+	 * Returns the integer id of the identifier.
 	 */
 	private int ident() {
 		int result;
@@ -526,7 +551,7 @@ public class Parser {
 	}
 
 	/* relOp - relation operator.
-	 * Returns the relation operator in question.
+	 * Returns the token value of the relation operator found.
 	 */
 	private int relOp() {
 		int result = errorToken;
@@ -541,7 +566,7 @@ public class Parser {
 	    return result;
 	}
 
-	// Helper functions for checking tokens.
+	/* Helper functions for checking validity of tokens. */
 
 	// Checks that the current token is the expected one 
 	// and advances the stream. Throws error if not.
@@ -581,13 +606,16 @@ public class Parser {
 		return (scanner.sym == token);
 	}
 
+	/* End token validity checks. */
+
 	// Print an error message and exit the program.
 	private void error(String message) {
 		scanner.error(message);
 		System.exit(0);
 	}
 
-	// Print out the vcg representation.
+	// Print out the CFG in vcg format.
+	// Should usually only be called after parsing is complete.
 	public void printVCG() {
 		System.out.println(program);
 	}

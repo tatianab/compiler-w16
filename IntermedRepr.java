@@ -15,20 +15,27 @@ public class IntermedRepr {
 	public int nextOpenInstr;  // Next available instruction ID.
 
 	// Control Flow Graph (CFG)
+	// Maybe this should be its own class?
 	public Block firstBlock;
 	public Block currentBlock;
 	public int nextOpenBlock;  // Next available block ID.
 
+	// Interference graph.
+	// TODO.
+	// This may work best as an adjacency list.
+
 	// Symbol table
 	public SymbolTable table;  // Table of constants, variables, and arrays.
+							   // We may not actually need this.
 
 	// Block array (for easy printing).
 	public ArrayList<Block> blocks;
 
+	// Constructor.
 	public IntermedRepr() {
 		nextOpenInstr = 0;
 		nextOpenBlock = 0;
-		table = new SymbolTable();
+		table  = new SymbolTable();
 		blocks = new ArrayList();
 	}
 
@@ -58,7 +65,7 @@ public class IntermedRepr {
 		currentBlock = block;
 	}
 
-	// Do not add an instruction before there are any blocks.
+	// Add a new instruction to the current block.
 	public Instruction addInstr() {
 		Instruction instr = new Instruction(nextOpenInstr);
 		nextOpenInstr++;
@@ -66,26 +73,39 @@ public class IntermedRepr {
 		return instr;
 	}
 
-	public void setCurrentBlock(Block block) {
-		currentBlock = block;
+	// Symbol table methods.
+
+	// Add a new symbol to the symbol table.
+	public void addSymbol(Symbol symbol) {
+		table.add(symbol.name, symbol);
 	}
 
-	public Block getCurrentBlock(Block block) {
-		return currentBlock;
+	// Look up an existing symbol from the symbol table.
+	public Symbol lookupSymbol(String name) {
+		return table.lookup(String name);
 	}
 
+	// Signal that the current block is finished.
+	// This may not be necessary.
 	public void endBlock() {
 		currentBlock.endBlock();
 	}
 
-	// Print out VCG code for this compiler graph.
+	// Create interference graph.
+	// Must be called only AFTER program is in SSA form.
+	public void interferenceGraph() {
+		// TODO.
+	}
+
+	// Print out VCG code for the Control Flow Graph.
+	// We will need more of these...
 	@Override
 	public String toString() {
 		String result = "graph: { title: \"Control Flow Graph\" \n" 
 						// + "layoutalgorithm: dfs \n" 
 						+ "manhattan_edges: yes \n" 
 						+ "smanhattan_edges: yes \n";
-		// Add blocks.
+		// Print blocks.
 		Block block;
 		for (int i = 0; i < nextOpenBlock; i++) {
 			block = blocks.get(i);
@@ -94,20 +114,5 @@ public class IntermedRepr {
 		result += "}";
 		return result;
 	}
-
-	// public static void main(String[] args) {
-	// 	IntermedRepr program = new IntermedRepr();
-	// 	program.addBlock();
-	// 	program.addInstr();
-	// 	program.endBlock();
-	// 	Block oldBlock = program.currentBlock;
-	// 	program.addBlock();
-	// 	oldBlock.addNext(program.currentBlock, true);
-	// 	program.addInstr();
-	// 	program.endBlock();
-	// 	System.out.println(program);
-
-	// }
-
 
 }

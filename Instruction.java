@@ -4,14 +4,22 @@
  * CS 241 - Advanced Compiler Design
  */
 
-public class Instruction extends Argument {
+public class Instruction extends Value {
 	// Class representing an instruction in intermediate form.
 
 	public int op;            // Operation code.
-	public Argument arg1;  	  // First argument.
-	public Argument arg2;  	  // Second argument.
-	public Instruction next;  // Next instruction.
-	public int id;            // This instruction's ID number.
+	public Value arg1;  	  // First argument, or only argument.
+	public Value arg2;  	  // Second argument.
+
+	public Instruction prev;  // Previous instruction, or null if first in block.
+	public Instruction next;  // Next instruction, or null if end of block.
+
+	public Block block;       // The block where this instruction lives.
+	public int id;            // This instruction's ID number. Represents time of
+							  // creation rather than position in program.
+
+	public Variable[] varsUsed; // Variables used in this instruction, up to two.
+	public Variable   varDefd;  // Variables defined in this instrcution, up to 1.
 
 	/* Operation codes. */
 	public static int neg     = 1;
@@ -44,21 +52,40 @@ public class Instruction extends Argument {
 	"move","phi","end","bra","bne","beq","ble","blt","bge","bgt","read","write","writeNL"};
 	/* End operation codes. */
 
-	/* Begin constructors. */
+	/* Constructor. */
 	public Instruction(int id) {
 		this.id = id;
 	}
 
-	public Instruction(int op, Argument arg1, Argument arg2, Instruction previous) {
-		// Set op code and argument pointers.
+	/* Setters. */
+
+	public void setOp(int op) {
 		this.op = op;
+	}
+
+	public void setArgs(Value arg1, Value arg2) {
 		this.arg1 = arg1;
 		this.arg2 = arg2;
-	
-		// Set pointer to this instruction from previous instruction.
-		previous.next = this;
 	}
-	/* End constructors. */
+
+	public void setArgs(Value arg) {
+		this.arg1 = arg;
+		this.arg2 = null;
+	}
+
+	public void setPrev(Instruction instr) {
+		this.prev = instr;
+	}
+
+	public void setNext(Instruction instr) {
+		this.next = instr;
+	}
+
+	public void setBlock(Block block) {
+		this.block = block;
+	}
+
+	/* End setters. */
 
 	@Override
 	public String toString() {
