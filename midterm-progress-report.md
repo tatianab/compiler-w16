@@ -1,7 +1,7 @@
-### Midterm Progress Report
-# Date:    2/4/2015
-# Authors: Tatiana Bradley and Wai Man Chan
-# Course:  CS 241 - Advanced Compiler Construction
+# Midterm Progress Report
+Date:    2/4/2015
+Authors: Tatiana Bradley and Wai Man Chan
+Course:  CS 241 - Advanced Compiler Construction
 
 We are roughly half-way done with Step 1 of the project. Here's what we 
 have implemented so far:
