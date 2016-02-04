@@ -76,14 +76,14 @@ public class IntermedRepr {
 	// Symbol table methods.
 
 	// Add a new symbol to the symbol table.
-	public void addSymbol(Symbol symbol) {
+	/*public void addSymbol(Symbol symbol) {
 		table.add(symbol.name, symbol);
-	}
+	}*/
 
 	// Look up an existing symbol from the symbol table.
-	public Symbol lookupSymbol(String name) {
-		return table.lookup(String name);
-	}
+	/*public Symbol lookupSymbol(String name) {
+		return table.lookup(name);
+	}*/
 
 	// Signal that the current block is finished.
 	// This may not be necessary.

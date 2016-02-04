@@ -3,6 +3,9 @@
  * Winter 2016
  * CS 241 - Advanced Compiler Design
  */
+
+import java.util.LinkedList;
+
 public class Variable extends Value {
 	String ident;                 // Variable identifier - original name in program.
 	int instance;                 // The instance of this variable. e.g, a_1, a_2 etc.
