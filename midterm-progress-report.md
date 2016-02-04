@@ -19,3 +19,5 @@ We have also created a data structure to represent SSA values, and another to st
 the intermediate representation of the program (including the CFG).
 
 The parser does not yet create SSA values/instructions, but that is our immediate next step.
+
+Our project is available on Github at https://github.com/tatianab/compiler-w16/.
