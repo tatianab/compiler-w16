@@ -96,7 +96,7 @@ public class Parser {
     	try {
      		filename = args[0];
      		if (args.length > 1) {  // Check for debugging flag.
-     			if (args[1] == "-d") {
+     			if (args[1].equals("-d")) {
      				debug = true;
      			}
      		} 
@@ -106,7 +106,9 @@ public class Parser {
     	Parser parser = new Parser(filename, debug);
 
     	// Print out the VCG representation of the parsed file.
-    	parser.printVCG();
+    	if (debug) {
+    		parser.printVCG();
+    	}
     	
     }
 	/* End main function. */
