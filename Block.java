@@ -74,20 +74,11 @@ public class Block extends Value {
 	}
 	/* End next block methods. */
 
-	// Methods for creating VCG representation.
-	@Override
-	public String toString() {
-		String result = "node: { \n" +
-						"title: \"" + id + "\" \n" +
-						"label: \"" + id + " " + description + " [\n";
-		// Instructions
-		Instruction instr = begin;
-		while (instr != end) {
-			result += instr.toString();
-			instr = instr.next;
-		}
-		result += "]\" \n} \n";
-		// Outgoing edges
+	// Create VCG representation of block with CFG edges.
+	public String cfg() {
+		String result = nodes(); // Get the basic blocks.
+
+		// Add outgoing edges.
 		if (fallThrough != null) {
 			result += "edge: { sourcename: \"" + id + "\" \n" +
 					  "targetname: \"" + fallThrough.id + "\" \n" +
@@ -98,6 +89,22 @@ public class Block extends Value {
 					  "targetname: \"" + branch.id + "\" \n" +
 					  "color: red \n } \n";
 		}
+		return result;
+	}
+
+	// Create string representation of basic block
+	// and instructions, without edges.
+	public String nodes() {
+		String result = "node: { \n" +
+						"title: \"" + id + "\" \n" +
+						"label: \"" + id + " " + description + " [\n";
+		// Instructions.
+		Instruction instr = begin;
+		while (instr != end) {
+			result += instr.toString();
+			instr = instr.next;
+		}
+		result += "]\" \n} \n";
 		return result;
 	}
 

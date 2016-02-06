@@ -21,7 +21,7 @@ public class IntermedRepr {
 	public Stack<Block> currentBlocks;
 	public Block currentBlock;
 
-	//Block ID: Always increment
+	// Block ID: Always increment
 	public int nextOpenBlock;  // Next available block ID.
 
 	// Interference graph.
@@ -69,13 +69,13 @@ public class IntermedRepr {
 
 	// Insert an existing block.
 	public void insertBlock(Block block) {
-		blocks.add(block);
+		blocks.add(block);  		// Add block to block array.
 		if (firstBlock == null) {
 			firstBlock = block;
 		} else {
 			endBlock();
 		}
-		currentBlocks.push(block);
+		currentBlocks.push(block); // Add block to block stack.
 	}
 
 	// Add a new instruction to the current block.
@@ -99,13 +99,17 @@ public class IntermedRepr {
 	}*/
 
 	// Signal that the current block is finished.
-	// This may not be necessary.
 	public void endBlock() {
 		Block current = currentBlock();
 		if (current != null) {
 			current.endBlock();
 			currentBlocks.pop();
 		}
+	}
+
+	// Signals the end of a program.
+	public void end() {
+		// TODO.
 	}
 
 	// Create interference graph.
@@ -116,18 +120,17 @@ public class IntermedRepr {
 
 	// Print out VCG code for the Control Flow Graph.
 	// We will need more of these...
-	@Override
-	public String toString() {
+	public String cfg() {
 		String result = "graph: { title: \"Control Flow Graph\" \n" 
 						// + "layoutalgorithm: dfs \n" 
 						+ "manhattan_edges: yes \n" 
 						+ "smanhattan_edges: yes \n"
-						+ "orientation: \"top_to_bottom\" \n";
+						+ "orientation: top_to_bottom \n";
 		// Print blocks.
 		Block block;
 		for (int i = 0; i < nextOpenBlock; i++) {
 			block = blocks.get(i);
-			result += block.toString();
+			result += block.cfg();
 		}
 		result += "}";
 		return result;

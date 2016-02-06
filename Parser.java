@@ -11,7 +11,7 @@ public class Parser {
 
 	// Data members.
 	public Tokenizer scanner;    // Reads file and breaks it into tokens.
-	public IntermedRepr program; // Intermediate representation of the program, after parsing.
+	public IntermedRepr program; // Intermediate representation of the program in SSA form, after parsing.
 
 	boolean debug;		         // Debugging flag.
 
@@ -105,8 +105,8 @@ public class Parser {
     	}
     	Parser parser = new Parser(filename, debug);
 
-    	// Print out the VCG representation of the parsed file.
-    	parser.printVCG();
+    	// Print out the VCG representation of the CFG of the parsed file.
+    	parser.printCFG();
     	
     }
 	/* End main function. */
@@ -149,7 +149,7 @@ public class Parser {
 		expect(periodToken);
 		expect(eofToken);
 		// Signal end of program.
-		// program.add(end); 
+		program.end();
 
 		if (debug) { 
 			System.out.print(")"); 
@@ -315,27 +315,31 @@ public class Parser {
 	 * instructions.
 	 */
 	private void whileStatement() {
-		Block previous, join, whileBlock, endWhileBlock, afterWhile;
+		Block previous, join, whileBlock, endWhileBlock, follow;
 		if (debug) { System.out.print("(WhileStatement "); };
 		expect(whileToken);
-		previous = program.currentBlock();
+		previous = program.currentBlock(); // Grab previous block.
+		program.endBlock();				   // End previous block.
+
 		// Create basic block with compare and branch -- join block.
-		join = program.addBlock("While join block.");
-		relation();         // Test.
-		program.endBlock();
+		join = program.addBlock("While join/compare block.");
+		relation();                        // Grab the while condition.
+		program.endBlock();                // End compare block.
 		expect(doToken);
-		// New basic block (fall-through block).
+
+		// New basic block -- fall-through block (true).
 		whileBlock = program.addBlock("While inner block.");
-		endWhileBlock = statSequence();     // Instructions in while loop.
-		program.endBlock();
+		endWhileBlock = statSequence();    // Fill in instructions in while loop.
+		program.endBlock();				   // End inner block.
 		expect(odToken);
-		// New basic block (after while) -- branch.
-		afterWhile = program.addBlock("After while.");
+
+		// New basic block (follow block) -- branch.
+		follow = program.addBlock("Follow (while).");
 
 		// Connect blocks as appropriate.
-		previous.addNext(join, false);  // Fall-through.
-		join.addNext(whileBlock, afterWhile);
-		endWhileBlock.addNext(join, true); // Jump
+		previous.addNext(join, false);     // Fall-through to join/compare from previous.
+		join.addNext(whileBlock, follow);  // Join/compare falls through to inner block, or jumps to follow.
+		endWhileBlock.addNext(join, true); // Jump from inner block to join/compare.
 
 		if (debug) { System.out.print(")"); };
 	}
@@ -348,46 +352,46 @@ public class Parser {
 	private void ifStatement() {
 		Block previous, compare, trueBlock, falseBlock, 
 			  endTrueBlock, endFalseBlock, join;
-		boolean falseBranch = false;
-		falseBlock          = null; // So the compiler doesn't complain.
-		endFalseBlock       = null; // 
+		
 		if (debug) { System.out.print("(IfStatement "); };
 		expect(ifToken);
-		previous = program.currentBlock();
+		previous = program.currentBlock();   // Grab the previous block.
+		program.endBlock();					 // End the previous block.
+
 		// New basic block with compare and branch.
 		compare = program.addBlock("If compare.");
-		relation();        // Test.
-		program.endBlock();
+		relation();                          // Grab the if condition.
+		program.endBlock();                  // End the compare block.
+		previous.addNext(compare, false);    // Fall through to compare from previous.
 		expect(thenToken);
-		// New basic block -- fallthrough (true).
+
+		// New basic block -- fall through (true).
 		trueBlock    = program.addBlock("If true block.");
 		endTrueBlock = statSequence();       // Instructions in true block.
-		program.endBlock();
+		program.endBlock();                  // End true block.
 
 		if (accept(elseToken)) {
 			// New basic block -- branch (false).
 			falseBlock    = program.addBlock("If false block.");
 			endFalseBlock = statSequence();  // Instructions in false block.
-			falseBranch = true;
-			program.endBlock();
+			program.endBlock();              // End false block.
+		} else {
+			falseBlock          = null;      // Set false blocks to null
+			endFalseBlock       = null;      // so the compiler doesn't complain.
 		}
 		expect(fiToken);
+
 		// New basic block -- join.
 		join = program.addBlock("If join block.");
-
-		// Connect blocks as appropriate.
-		previous.addNext(compare, false);        // Fallthrough
-		if (falseBlock != null) {
-			compare.addNext(trueBlock, falseBlock);  // Ok if false block is null.
-			//By E.T.: No, it's not okay. It goes no where. 
-		} else {
-			compare.addNext(trueBlock, join);  // Ok if false block is null.
-		}
-		endTrueBlock.addNext(join, true);        // Jump
-
-		// Block connections for false branch.
-		if (falseBranch) { 
-			endFalseBlock.addNext(join, false); // Fall through
+		
+		// Block connections for false branch, or no false branch.
+		if (falseBlock != null) {               // If there is a false branch:
+			compare.addNext(trueBlock, falseBlock);   
+			endFalseBlock.addNext(join, false); // Fall through to join from false.
+			endTrueBlock.addNext(join, true);   // Jump to join from true.
+		} else {								// If there's just a true branch:
+			compare.addNext(trueBlock, join);  
+			endTrueBlock.addNext(join, false);  // Fall through to join from true.
 		}
 
 		if (debug) { System.out.print(")"); };
@@ -447,7 +451,7 @@ public class Parser {
 		// Emit conditional jump based on operator.
 	}
 
-	// Helper for relation. Return op code that represents
+	// Helper for relation. Return branch op code that represents
 	// the opposite of a relation operator.
 	private int opposite(int relOp) {
 		// TODO
@@ -626,9 +630,9 @@ public class Parser {
 	}
 
 	// Print out the CFG in vcg format.
-	// Should usually only be called after parsing is complete.
-	public void printVCG() {
-		System.out.println(program);
+	// Should only be called after parsing is complete.
+	public void printCFG() {
+		System.out.println(program.cfg());
 	}
 	
 
