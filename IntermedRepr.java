@@ -6,6 +6,7 @@
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Stack;
 
 public class IntermedRepr {
 	// Encapsulates intermediate representation of a PL241
@@ -17,7 +18,10 @@ public class IntermedRepr {
 	// Control Flow Graph (CFG)
 	// Maybe this should be its own class?
 	public Block firstBlock;
+	public Stack<Block> currentBlocks;
 	public Block currentBlock;
+
+	//Block ID: Always increment
 	public int nextOpenBlock;  // Next available block ID.
 
 	// Interference graph.
@@ -31,12 +35,21 @@ public class IntermedRepr {
 	// Block array (for easy printing).
 	public ArrayList<Block> blocks;
 
+
+	public Block currentBlock() {
+		if (currentBlocks.empty()) {
+			return null;
+		}
+		return currentBlocks.peek();
+	}
+
 	// Constructor.
 	public IntermedRepr() {
 		nextOpenInstr = 0;
 		nextOpenBlock = 0;
 		table  = new SymbolTable();
 		blocks = new ArrayList();
+		currentBlocks = new Stack();
 	}
 
 	// Create a new block and insert it.
@@ -62,14 +75,14 @@ public class IntermedRepr {
 		} else {
 			endBlock();
 		}
-		currentBlock = block;
+		currentBlocks.push(block);
 	}
 
 	// Add a new instruction to the current block.
 	public Instruction addInstr() {
 		Instruction instr = new Instruction(nextOpenInstr);
 		nextOpenInstr++;
-		currentBlock.addInstr(instr);
+		currentBlock().addInstr(instr);
 		return instr;
 	}
 
@@ -88,7 +101,11 @@ public class IntermedRepr {
 	// Signal that the current block is finished.
 	// This may not be necessary.
 	public void endBlock() {
-		currentBlock.endBlock();
+		Block current = currentBlock();
+		if (current != null) {
+			current.endBlock();
+			currentBlocks.pop();
+		}
 	}
 
 	// Create interference graph.
@@ -104,7 +121,8 @@ public class IntermedRepr {
 		String result = "graph: { title: \"Control Flow Graph\" \n" 
 						// + "layoutalgorithm: dfs \n" 
 						+ "manhattan_edges: yes \n" 
-						+ "smanhattan_edges: yes \n";
+						+ "smanhattan_edges: yes \n"
+						+ "orientation: \"top_to_bottom\" \n";
 		// Print blocks.
 		Block block;
 		for (int i = 0; i < nextOpenBlock; i++) {

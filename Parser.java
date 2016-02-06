@@ -106,9 +106,7 @@ public class Parser {
     	Parser parser = new Parser(filename, debug);
 
     	// Print out the VCG representation of the parsed file.
-    	if (debug) {
-    		parser.printVCG();
-    	}
+    	parser.printVCG();
     	
     }
 	/* End main function. */
@@ -273,7 +271,7 @@ public class Parser {
 			statement();    // More statements.
 		}
 		if (debug) { System.out.print(")"); };
-		return program.currentBlock; // Return the last block seen.
+		return program.currentBlock(); // Return the last block seen.
 	}
 
 	/* statement.
@@ -320,14 +318,16 @@ public class Parser {
 		Block previous, join, whileBlock, endWhileBlock, afterWhile;
 		if (debug) { System.out.print("(WhileStatement "); };
 		expect(whileToken);
-		previous = program.currentBlock;
+		previous = program.currentBlock();
 		// Create basic block with compare and branch -- join block.
 		join = program.addBlock("While join block.");
 		relation();         // Test.
+		program.endBlock();
 		expect(doToken);
 		// New basic block (fall-through block).
 		whileBlock = program.addBlock("While inner block.");
 		endWhileBlock = statSequence();     // Instructions in while loop.
+		program.endBlock();
 		expect(odToken);
 		// New basic block (after while) -- branch.
 		afterWhile = program.addBlock("After while.");
@@ -335,7 +335,7 @@ public class Parser {
 		// Connect blocks as appropriate.
 		previous.addNext(join, false);  // Fall-through.
 		join.addNext(whileBlock, afterWhile);
-		whileBlock.addNext(join, true); // Jump
+		endWhileBlock.addNext(join, true); // Jump
 
 		if (debug) { System.out.print(")"); };
 	}
@@ -353,19 +353,23 @@ public class Parser {
 		endFalseBlock       = null; // 
 		if (debug) { System.out.print("(IfStatement "); };
 		expect(ifToken);
-		previous = program.currentBlock;
+		previous = program.currentBlock();
 		// New basic block with compare and branch.
 		compare = program.addBlock("If compare.");
 		relation();        // Test.
+		program.endBlock();
 		expect(thenToken);
 		// New basic block -- fallthrough (true).
 		trueBlock    = program.addBlock("If true block.");
 		endTrueBlock = statSequence();       // Instructions in true block.
+		program.endBlock();
+
 		if (accept(elseToken)) {
 			// New basic block -- branch (false).
 			falseBlock    = program.addBlock("If false block.");
 			endFalseBlock = statSequence();  // Instructions in false block.
 			falseBranch = true;
+			program.endBlock();
 		}
 		expect(fiToken);
 		// New basic block -- join.
@@ -373,7 +377,12 @@ public class Parser {
 
 		// Connect blocks as appropriate.
 		previous.addNext(compare, false);        // Fallthrough
-		compare.addNext(trueBlock, falseBlock);  // Ok if false block is null.
+		if (falseBlock != null) {
+			compare.addNext(trueBlock, falseBlock);  // Ok if false block is null.
+			//By E.T.: No, it's not okay. It goes no where. 
+		} else {
+			compare.addNext(trueBlock, join);  // Ok if false block is null.
+		}
 		endTrueBlock.addNext(join, true);        // Jump
 
 		// Block connections for false branch.
