@@ -16,8 +16,8 @@
 
 #### Step 3
 * Global register allocation
-	-- Track live ranges
-	-- Create interference graph
+* Track live ranges
+* Create interference graph
 * Test Step 3
 
 #### Step 4
