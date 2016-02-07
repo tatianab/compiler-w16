@@ -12,7 +12,7 @@ public class Tokenizer {
 	public int sym; 		   // The current token. 0 = error, 255 = EOF.
 	public int val; 		   // The value of the last number encountered.
 	public int id;             // The id of the last identifier encountered.
-	private StringTable table;  // Table of identifiers.
+	private StringTable table; // Table of identifiers.
 	private Reader reader;     // File reader.
 
 	/* Token values. */
