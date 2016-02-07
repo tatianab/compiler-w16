@@ -75,7 +75,6 @@ public class IntermedRepr {
 	public IntermedRepr() {
 		nextOpenInstr = 0;
 		nextOpenBlock = 0;
-		table  = new SymbolTable();
 		blocks = new ArrayList<Block>();
 		currentBlocks = new Stack<Block>();
 	}
