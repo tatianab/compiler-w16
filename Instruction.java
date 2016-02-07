@@ -7,6 +7,8 @@
 public class Instruction extends Value {
 	// Class representing an instruction in intermediate form.
 
+	private boolean deleted;  // True if this instruction has been deleted.
+
 	public int op;            // Operation code.
 	public Value arg1;  	  // First argument, or only argument.
 	public Value arg2;  	  // Second argument.
@@ -37,24 +39,45 @@ public class Instruction extends Value {
    
 	public static int end     = 12;
 	public static int bra     = 13;
-	public static int bne     = 14;
-	public static int beq     = 15;
-	public static int ble     = 16;
-	public static int blt     = 17;
-	public static int bge     = 18;
-	public static int bgt     = 19;
-   
-	public static int read    = 20;
-	public static int write   = 21;
-	public static int writeNL = 22;
+	
+	public static int read    = 14;
+	public static int write   = 15;
+	public static int writeNL = 16;
 
-	private static String[] ops = new String[]{"neg","add","sub","mul","div","cmp","adda","load","store",
-	"move","phi","end","bra","bne","beq","ble","blt","bge","bgt","read","write","writeNL"};
+	public static int bne     = 20;
+	public static int beq     = 21;
+	public static int bge     = 22;
+	public static int blt     = 23;
+	public static int bgt     = 24;
+	public static int ble     = 25;
+	/* End operation codes. */
+
+	private static String[] ops = new String[]{null, "neg","add","sub","mul","div",
+												"cmp","adda","load","store","move","phi","end","bra",
+												"read","write","writeNL", null, null, null,
+												"bne","beq","bge","blt","bgt","ble"};
 	/* End operation codes. */
 
 	/* Constructor. */
 	public Instruction(int id) {
 		this.id = id;
+	}
+
+	public void delete() {
+		this.deleted = true;
+	}
+
+	public boolean deleted() {
+		return deleted;
+	}
+
+	public void uses(Variable var) {
+		if (this.varsUsed == null) {
+			this.varsUsed = new Variable[]{var, null};
+		} else {
+			this.varsUsed[1] = var;
+		}
+		
 	}
 
 	/* Setters. */
@@ -66,11 +89,41 @@ public class Instruction extends Value {
 	public void setArgs(Value arg1, Value arg2) {
 		this.arg1 = arg1;
 		this.arg2 = arg2;
+
+		if (arg1 instanceof Variable) {
+			((Variable) arg1).usedIn(this);
+			this.uses( (Variable) arg1);
+		}
+		if (arg2 instanceof Variable) {
+			((Variable) arg2).usedIn(this);
+			this.uses( (Variable) arg2);
+		}
 	}
 
 	public void setArgs(Value arg) {
-		this.arg1 = arg;
-		this.arg2 = null;
+		if (arg1 != null) {
+			this.arg2 = arg;
+		}
+		else {
+			this.arg1 = arg;
+			this.arg2 = null;
+		}
+		
+		if (arg instanceof Variable) {
+			((Variable) arg).usedIn(this);
+			this.uses( (Variable) arg);
+		}
+	}
+
+	public void setDefn(Variable var, Value expr) {
+		this.op = move;
+		this.arg1 = expr;
+		this.arg2 = var;
+		this.varDefd = var;
+		var.def = this;
+		if (expr instanceof Variable) {
+			this.uses((Variable) expr);
+		}
 	}
 
 	public void setPrev(Instruction instr) {
@@ -89,12 +142,25 @@ public class Instruction extends Value {
 
 	@Override
 	public String toString() {
-		return id + " : " + ops[op] + " " + arg1 + " " + arg2 + ", \n";
+		if (deleted) {
+			return id + " deleted.";
+		} else if (arg1 != null && arg2 != null) {
+			return id + " : " + ops[op] + " " + arg1.shortRepr() 
+				   + " " + arg2.shortRepr() + "\n";
+		} else if (arg1 != null) {
+			return id + " : " + ops[op] + " " + arg1.shortRepr() + "\n";
+		} else {
+			return id + " : " + ops[op] + "\n";
+		}
 	}
 
 	@Override
 	public String shortRepr() {
-		return "(" + id + ")";
+		if (deleted) {
+			return "(" + id + "-- del).";
+		} else {
+			return "(" + id + ")";
+		}
 	}
 
 }

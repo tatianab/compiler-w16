@@ -11,8 +11,8 @@ public class StringTable {
 	// Class representing two-way lookup symbol table for
 	// identifiers and ID's.
 
-	private Hashtable<String, StringData> strings;
-	private ArrayList<String>             ids; // Is this needed?
+	private Hashtable<String, Integer> strings;
+	private ArrayList<StringData>      ids; 
 	private int nextOpenID;
 
 	/* Token values. */
@@ -58,22 +58,29 @@ public class StringTable {
 	/* End token values. */ 
 
 	private class StringData {
-		int id;
-		int token;
-		int current; // Increments every time a variable is reassigned.
+		public int id;
+		public String name;
+		public int token;
+		public int current;   // Increments every time a variable is reassigned.
+		public Variable last;
 		// Do we need type here too?
 
-		public StringData(int id, int token) {
+		public StringData(int id, String name, int token) {
 			this.id = id;
+			this.name = name;
 			this.token = token;
 			this.current = 0;
+			this.last    = new Variable(this.id, this.name, this.current);
 		}
 
-		public int updateCurrent() {
-			int old = current;
+		public Variable reassign() {
+			Variable newVar = new Variable(id, name, current);
 			current++;
-			return old;
+			last = newVar;
+			return newVar;
 		}
+
+
 	}
 
 	/* Reserved words. */
@@ -97,24 +104,31 @@ public class StringTable {
 		strings = new Hashtable(reserved.length);
 		ids 	= new ArrayList(reserved.length);
 
+		String name;
+		int id, token;
+
 		// Add reserved words.
 		for (int i = 0; i < reserved.length; i++) {
-			strings.put(reserved[i], new StringData(nextOpenID, reservedID[i]));
-			ids.add(nextOpenID, reserved[i]);
+			name = reserved[i];
+			id    = nextOpenID;
+			token = reservedID[i];
+			strings.put(name, id);
+			ids.add(id, new StringData(id, name, token));
 			nextOpenID++;
 		}
 	}
 
 	public int getSym(String name) {
-		return strings.get(name).token;
+		int id = strings.get(name);
+		return ids.get(id).token;
 	}
 
 	public int getID(String name) {
-		return strings.get(name).id;
+		return strings.get(name);
 	}
 
 	public String getName(int id) {
-		return ids.get(id);
+		return ids.get(id).name;
 	}
 
 	public boolean member(String name) {
@@ -122,20 +136,21 @@ public class StringTable {
 	}
 
 	public void add(String name) {
-		strings.put(name, new StringData(nextOpenID, ident));
-		ids.add(nextOpenID, name);
+		int id = nextOpenID;
 		nextOpenID++;
+		strings.put(name, id);
+		ids.add(id, new StringData(id, name, ident));
 	}
 
-	// Use this when a variable is assigned or reassigned.
-	// Updates the # of assignments of the variable and returns
-	// the (pre-update) value.
-	public int update(String name) {
-		return strings.get(name).updateCurrent();
-
+	public Variable get(int id) {
+		return ids.get(id).last;
 	}
 
-	// Only used for error messages.
+	public Variable reassign(int id) {
+		return ids.get(id).reassign();
+	}
+
+	// // Only used for error messages.
 	public String symToString(int sym) {
 		if (sym == number) {
 			return "Number";

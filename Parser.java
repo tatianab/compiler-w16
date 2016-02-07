@@ -58,31 +58,32 @@ public class Parser {
 	/* End token values. */  
 
 	/* Operation codes for intermediate representation. */
-	public static int neg     = 1;
-	public static int add     = 2;
-	public static int sub     = 3;
-	public static int mul     = 4;
-	public static int div     = 5;
-	public static int cmp     = 6;
-   
-	public static int adda    = 7;
-	public static int load    = 8;
-	public static int store   = 9;
-	public static int move    = 10;
-	public static int phi     = 11;
-   
-	public static int end     = 12;
-	public static int bra     = 13;
-	public static int bne     = 14;
-	public static int beq     = 15;
-	public static int ble     = 16;
-	public static int blt     = 17;
-	public static int bge     = 18;
-	public static int bgt     = 19;
-   
-	public static int read    = 20;
-	public static int write   = 21;
-	public static int writeNL = 22;
+	public static int neg     = Instruction.neg;
+	public static int add     = Instruction.add;
+	public static int sub     = Instruction.sub;
+	public static int mul     = Instruction.mul;
+	public static int div     = Instruction.div;
+	public static int cmp     = Instruction.cmp;
+
+	public static int adda    = Instruction.adda;
+	public static int load    = Instruction.load;
+	public static int store   = Instruction.store;
+	public static int move    = Instruction.move;
+	public static int phi     = Instruction.phi;
+
+	public static int end     = Instruction.end;
+
+	public static int read    = Instruction.read;
+	public static int write   = Instruction.write;
+	public static int writeNL = Instruction.writeNL;
+
+	public static int bra     = Instruction.bra;
+	public static int bne     = Instruction.bne;
+	public static int beq     = Instruction.beq;
+	public static int bge     = Instruction.bge;
+	public static int blt     = Instruction.blt;
+	public static int bgt     = Instruction.bgt;
+	public static int ble     = Instruction.ble;
 	/* End operation codes. */
 
 	/* Main function for accepting PL241 files.
@@ -330,6 +331,7 @@ public class Parser {
 		// New basic block -- fall-through block (true).
 		whileBlock = program.addBlock("While inner block.");
 		endWhileBlock = statSequence();    // Fill in instructions in while loop.
+		program.addInstr(bra, join);       // Branch to join.
 		program.endBlock();				   // End inner block.
 		expect(odToken);
 
@@ -339,6 +341,7 @@ public class Parser {
 		// Connect blocks as appropriate.
 		previous.addNext(join, false);     // Fall-through to join/compare from previous.
 		join.addNext(whileBlock, follow);  // Join/compare falls through to inner block, or jumps to follow.
+		join.fix(follow);                  // Branch to follow.
 		endWhileBlock.addNext(join, true); // Jump from inner block to join/compare.
 
 		if (debug) { System.out.print(")"); };
@@ -360,7 +363,7 @@ public class Parser {
 
 		// New basic block with compare and branch.
 		compare = program.addBlock("If compare.");
-		relation();                          // Grab the if condition.
+		relation();                          // Create cmp and branch instructions. (Must be fixed).
 		program.endBlock();                  // End the compare block.
 		previous.addNext(compare, false);    // Fall through to compare from previous.
 		expect(thenToken);
@@ -368,6 +371,7 @@ public class Parser {
 		// New basic block -- fall through (true).
 		trueBlock    = program.addBlock("If true block.");
 		endTrueBlock = statSequence();       // Instructions in true block.
+		program.addInstr(bra);				 // Unconditional branch. (Must be fixed.)
 		program.endBlock();                  // End true block.
 
 		if (accept(elseToken)) {
@@ -386,12 +390,16 @@ public class Parser {
 		
 		// Block connections for false branch, or no false branch.
 		if (falseBlock != null) {               // If there is a false branch:
+			compare.fix(falseBlock);            // Fix jump instruction.
 			compare.addNext(trueBlock, falseBlock);   
 			endFalseBlock.addNext(join, false); // Fall through to join from false.
 			endTrueBlock.addNext(join, true);   // Jump to join from true.
+			endTrueBlock.fix(join);             // Fix branch from true.
 		} else {								// If there's just a true branch:
+		    compare.fix(join);                  // Fix jump instruction.
 			compare.addNext(trueBlock, join);  
 			endTrueBlock.addNext(join, false);  // Fall through to join from true.
+	        endTrueBlock.fix();                 // Delete branch instruction from true.
 		}
 
 		if (debug) { System.out.print(")"); };
@@ -401,7 +409,7 @@ public class Parser {
 	 * funcCall = "call" ident [ "(" [expression { "," expression } ] ")"].
 	 * We will deal with function calls later...
 	 */
-	private void funcCall() {
+	private Value funcCall() {
 		if (debug) { System.out.print("(FuncCall "); };
 		expect(callToken);
 		ident();             	   // Function name.
@@ -415,6 +423,7 @@ public class Parser {
 			expect(closeparenToken);
 		}
 		if (debug) { System.out.print(")"); };
+		return null; // Return value maybe?
 	}
 
 	/* assignment.
@@ -422,17 +431,17 @@ public class Parser {
 	 */
 	private void assignment() {
 		if (debug) { System.out.print("(Assignment "); };
-		// Emit move instruction.
 		expect(letToken);
-		// Return an identifier id.
-		designator();			// Name of variable.
+
+		Variable var = designator();    // Name of variable.
 		expect(becomesToken);
-		// Return an instruction.
-		expression();			// Value of variable.
+		Value expr = expression();	    // Value of variable.
 		if (debug) { System.out.print(")"); };
-		// Create new Variable.
+
 		// Create new move instruction for this Variable.
-		// Make sure as many pointers/parameters as possible are set.
+		var = scanner.reassign(var);    // Set variable name and instance.
+		Instruction moveInstr = program.addInstr();
+		moveInstr.setDefn(var,expr);    // move var expr
 	}
 
 	/* relation.
@@ -441,63 +450,62 @@ public class Parser {
 	 * Branch instruction must be fixed by caller.
 	 */
 	private void relation() {
-		//Instruction compare, left, right;
+		Value compare, left, right;
 		if (debug) { System.out.print("(Relation "); };
-		/*left   = */ expression(); 		// 1st expression. 
+		left = expression(); 		// 1st expression. 
 		int branchCode = opposite(relOp());	// Comparison operator.
-		/* right  = */ expression();		// 2nd expression.
+		right = expression();		// 2nd expression.
 		if (debug) { System.out.print(")"); };
-		// Emit cmp left right
-		// Emit conditional jump based on operator.
+		compare = program.addInstr(cmp, left, right);
+		program.addInstr(branchCode, compare); // Needs to be fixed by caller.
 	}
 
 	// Helper for relation. Return branch op code that represents
 	// the opposite of a relation operator.
 	private int opposite(int relOp) {
-		// TODO
-		return 0;
+		return relOp; // For now, op codes are cleverly set so this works.
 	}
 
 	/* expression.
 	 * expression = term { ("+" | "-") term }.
 	 * Create instructions to evaluate the expression.
 	 */
-	private void expression() {
-		// Instruction acc, next;
+	private Value expression() {
+		Value expr, next;
 		if (debug) { System.out.print("(Expression "); };
-		/* acc = */ term();        
+		expr = term();        
 		while (check(plusToken) || check(minusToken) ) {
 			if (accept(plusToken)) {
-				/* next = */ term();   
-				// Emit add acc next
+				next = term();   
+				expr = program.addInstr(add, expr, next);
 			} else if (accept(minusToken)) {
-				/* next = */ term();   
-				// Emit sub acc next
+				next = term();   
+				expr = program.addInstr(sub, expr, next);
 			}
 		}
 		if (debug) { System.out.print(")"); };
-		// return acc;
+		return expr;
 	}
 
 	/* term.
 	 * term = factor { ("*" | "/") factor }.
 	 * Create instructions to evaluate the term.
 	 */
-	private void term() {
-		// Instruction acc, next;
+	private Value term() {
+		Value term, next;
 		if (debug) { System.out.print("(Term "); };
-		/* acc = */ factor();      // Factor w/o * or /.
+		term = factor();      
 		while (check(timesToken) || check(divToken)) {
 			if (accept(timesToken)) {
-				/* next = */ factor();
-				// Emit mul acc next
+				next = factor();
+				term = program.addInstr(mul, term, next);
 			} else if (accept(divToken)) {
-				/* next = */ factor();
-				// Emit div acc next
+				next = factor();
+				term = program.addInstr(div, term, next);
 			}
 		}
 		if (debug) { System.out.print(")"); };
-		// return acc;
+		return term;
 	}
 
 	/* factor.
@@ -505,21 +513,23 @@ public class Parser {
 	 * Create instructions to evaluate the factor.
 	 * We may need to return a Value here.
 	 */
-	private void factor() {
+	private Value factor() {
+		Value factor = null;
 		if (debug) { System.out.print("(Factor "); };
 		if (check(ident)) {
-			designator();   // Identifier.
+			factor = designator();   // Identifier.
 		} else if (check(number)) {
-			number();       // Number
+			factor = number();       // Number
 		} else if (accept(openparenToken)) {
-			expression();   // Parenthetical expression.
+			factor = expression();   // Parenthetical expression.
 			expect(closeparenToken);
 		} else if (check(callToken)) {
-			funcCall();     // Function call.
+			factor = funcCall();     // Function call.
 		} else {
 			error("Invalid factor.");
 		}
 		if (debug) { System.out.print(")"); };
+		return factor;
 	}
 
 	/* designator.
@@ -527,7 +537,7 @@ public class Parser {
 	 * Return the integer id corresponding to the identifier found.
 	 * Also need to handle arrays. (Not sure how right now).
 	 */
-	private void designator() {
+	private Variable designator() {
 		int id;
 		if (debug) { System.out.print("(Designator "); };
 		id = ident();          			 // Identifier name. Stop here if a variable.
@@ -537,20 +547,19 @@ public class Parser {
 		}
 		if (debug) { System.out.print(")"); };
 		// For now, pretend we don't have arrays.
-		// return id
+		return scanner.getVar(id);
 	}
 
 	/* number.
 	 * number = digit { digit }
 	 * Returns the integer value of the number.
 	 */
-	private int number() {
-		int result;
+	private Constant number() {
+		int value = 0;
 		if (debug) { System.out.print("(Number " + scanner.currentToken()); };
-		result = expect(number);  // The number.
+		value = expect(number);  // The number.
 		if (debug) { System.out.print(")"); };
-		return result;
-		// Should this be wrapped in a constant?
+		return new Constant(value);
 	}
 
 	/* ident.
@@ -569,16 +578,16 @@ public class Parser {
 	 * Returns the token value of the relation operator found.
 	 */
 	private int relOp() {
-		int result = errorToken;
+		int relOp = errorToken;
 		if (debug) { System.out.print("(Relop "); };
 		if (scanner.sym >= eqlToken && scanner.sym <= gtrToken) {
-			result = scanner.sym;
+			relOp = scanner.sym;
 			scanner.next();
 		} else {
 	    	error("Invalid relation operator.");
 	    }
 	    if (debug) { System.out.print(")"); };
-	    return result;
+	    return relOp;
 	}
 
 	/* Helper functions for checking validity of tokens. */

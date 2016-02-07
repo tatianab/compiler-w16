@@ -12,7 +12,7 @@ public class Tokenizer {
 	public int sym; 		   // The current token. 0 = error, 255 = EOF.
 	public int val; 		   // The value of the last number encountered.
 	public int id;             // The id of the last identifier encountered.
-	private StringTable table; // Table of identifiers.
+	private StringTable table;  // Table of identifiers.
 	private Reader reader;     // File reader.
 
 	/* Token values. */
@@ -154,6 +154,14 @@ public class Tokenizer {
 	}
 
 	/* String table methods.*/
+	public Variable reassign(Variable var) {
+		return table.reassign(var.id);
+	}
+
+	public Variable getVar(int id) {
+		return table.get(id);
+	}
+
 	// Convert an id number to its String representation.
 	public String idToString(int id) {
 		return table.getName(id);

@@ -43,6 +43,7 @@ public class Block extends Value {
 			begin = instr;
 		} else {
 			current.next = instr;
+			instr.prev   = current;
 		}
 		instr.setBlock(this);
 		current = instr;
@@ -71,6 +72,18 @@ public class Block extends Value {
 	public void addNext(Block fallThrough, Block branch) {
 		this.fallThrough = fallThrough;
 		this.branch = branch;
+	}
+
+	// Fix a block by adding a jump to the given block from
+	// the last instruction of this block.
+	// Must only be called when the last instruction of this block
+	// is a conditional branch.
+	public void fix(Block next) {
+		this.end.setArgs(next);
+	}
+
+	public void fix() {
+		this.end.delete();
 	}
 	/* End next block methods. */
 
@@ -103,6 +116,9 @@ public class Block extends Value {
 		while (instr != end) {
 			result += instr.toString();
 			instr = instr.next;
+		}
+		if (end != null) {
+			result += end.toString();
 		}
 		result += "]\" \n} \n";
 		return result;

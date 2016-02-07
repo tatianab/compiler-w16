@@ -7,6 +7,10 @@ public class Constant extends Value {
 	// For now, just a wrapper for an int.
 	int value;
 
+	public Constant(int value) {
+		this.value = value;
+	}
+
 	@Override
 	public String shortRepr() {
 		return "#" + value;

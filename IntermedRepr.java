@@ -35,6 +35,35 @@ public class IntermedRepr {
 	// Block array (for easy printing).
 	public ArrayList<Block> blocks;
 
+	/* Operation codes for intermediate representation. */
+	public static int neg     = Instruction.neg;
+	public static int add     = Instruction.add;
+	public static int sub     = Instruction.sub;
+	public static int mul     = Instruction.mul;
+	public static int div     = Instruction.div;
+	public static int cmp     = Instruction.cmp;
+
+	public static int adda    = Instruction.adda;
+	public static int load    = Instruction.load;
+	public static int store   = Instruction.store;
+	public static int move    = Instruction.move;
+	public static int phi     = Instruction.phi;
+
+	public static int end     = Instruction.end;
+
+	public static int read    = Instruction.read;
+	public static int write   = Instruction.write;
+	public static int writeNL = Instruction.writeNL;
+
+	public static int bra     = Instruction.bra;
+	public static int bne     = Instruction.bne;
+	public static int beq     = Instruction.beq;
+	public static int bge     = Instruction.bge;
+	public static int blt     = Instruction.blt;
+	public static int bgt     = Instruction.bgt;
+	public static int ble     = Instruction.ble;
+	/* End operation codes. */
+
 
 	public Block currentBlock() {
 		if (currentBlocks.empty()) {
@@ -86,6 +115,24 @@ public class IntermedRepr {
 		return instr;
 	}
 
+	public Instruction addInstr(int op) {
+		Instruction instr = addInstr();
+		instr.setOp(op);
+		return instr;
+	}
+
+	public Instruction addInstr(int op, Value arg) {
+		Instruction instr = addInstr(op);
+		instr.setArgs(arg);
+		return instr;
+	}
+
+	public Instruction addInstr(int op, Value arg1, Value arg2) {
+		Instruction instr = addInstr(op);
+		instr.setArgs(arg1, arg2);
+		return instr;
+	}
+
 	// Symbol table methods.
 
 	// Add a new symbol to the symbol table.
@@ -109,12 +156,13 @@ public class IntermedRepr {
 
 	// Signals the end of a program.
 	public void end() {
-		// TODO.
+		// addInstr(end);
+		// currentBlock.endBlock();
 	}
 
 	// Create interference graph.
 	// Must be called only AFTER program is in SSA form.
-	public void interferenceGraph() {
+	public void createInterferenceGraph() {
 		// TODO.
 	}
 
