@@ -21,16 +21,15 @@ public class IntermedRepr {
 	public Stack<Block> currentBlocks;
 	public Block currentBlock;
 
+	// Function compilation.
+	public Function currentFunction;
+
 	// Block ID: Always increment
 	public int nextOpenBlock;  // Next available block ID.
 
 	// Interference graph.
 	// TODO.
 	// This may work best as an adjacency list.
-
-	// Symbol table
-	public SymbolTable table;  // Table of constants, variables, and arrays.
-							   // We may not actually need this.
 
 	// Block array (for easy printing).
 	public ArrayList<Block> blocks;
@@ -76,7 +75,6 @@ public class IntermedRepr {
 	public IntermedRepr() {
 		nextOpenInstr = 0;
 		nextOpenBlock = 0;
-		table  = new SymbolTable();
 		blocks = new ArrayList();
 		currentBlocks = new Stack();
 	}
@@ -109,10 +107,15 @@ public class IntermedRepr {
 
 	// Add a new instruction to the current block.
 	public Instruction addInstr() {
-		Instruction instr = new Instruction(nextOpenInstr);
-		nextOpenInstr++;
-		currentBlock().addInstr(instr);
-		return instr;
+		try {
+			Instruction instr = new Instruction(nextOpenInstr);
+			nextOpenInstr++;
+			currentBlock().addInstr(instr);
+			return instr;
+		} catch (Exception e) { 
+			error("Possible null pointer in addInstr.");
+			return null;
+		}
 	}
 
 	public Instruction addInstr(int op) {
@@ -133,17 +136,10 @@ public class IntermedRepr {
 		return instr;
 	}
 
-	// Symbol table methods.
-
-	// Add a new symbol to the symbol table.
-	/*public void addSymbol(Symbol symbol) {
-		table.add(symbol.name, symbol);
-	}*/
-
-	// Look up an existing symbol from the symbol table.
-	/*public Symbol lookupSymbol(String name) {
-		return table.lookup(name);
-	}*/
+	public void insertFunc(Function func) {
+		// Loop over blocks in function and add them.
+		// TODO.
+	}
 
 	// Signal that the current block is finished.
 	public void endBlock() {
@@ -156,8 +152,12 @@ public class IntermedRepr {
 
 	// Signals the end of a program.
 	public void end() {
-		// addInstr(end);
-		// currentBlock.endBlock();
+		try {
+			addInstr(end);
+			endBlock();
+		} catch (Exception e) { 
+			error("Possible null pointer in end.");
+		}
 	}
 
 	// Create interference graph.
@@ -182,6 +182,11 @@ public class IntermedRepr {
 		}
 		result += "}";
 		return result;
+	}
+
+	public void error(String message) {
+		System.out.println("ERROR (IntermedRepr): " + message);
+		System.exit(0);
 	}
 
 }

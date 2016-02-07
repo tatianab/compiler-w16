@@ -108,6 +108,7 @@ public class Parser {
 
     	// Print out the VCG representation of the CFG of the parsed file.
     	parser.printCFG();
+    	// System.out.println("Program parsed.");
     	
     }
 	/* End main function. */
@@ -409,21 +410,34 @@ public class Parser {
 	 * funcCall = "call" ident [ "(" [expression { "," expression } ] ")"].
 	 * We will deal with function calls later...
 	 */
-	private Value funcCall() {
+	private Instruction funcCall() {
 		if (debug) { System.out.print("(FuncCall "); };
 		expect(callToken);
-		ident();             	   // Function name.
+		/* Function func = scanner.getFunction( */ ident(); // );   // Function name.
+		// if (func == null) {
+		// 	error("Function not defined.");
+		// }
+		// Check for correct # of parameters and store them.
 		if (accept(openparenToken)) {
 			if (!check(closeparenToken)) {
-				expression();      // Parameters.
+				expression();         // Parameters.
 				while (accept(commaToken)) {
-					expression();  // More parameters.
+					expression();     // More parameters.
 				}
 			}
 			expect(closeparenToken);
 		}
+		// program.addBlock("Enter function.");
+		// Set up stack.
+		// Unconditional branch to function.
+		// program.endBlock();
+		// program.addBlock("Exit function.");
+		// Clean up stack?
+		// Link to end of function.
+		// program.endBlock();
+		// program.addBlock("After function.")
 		if (debug) { System.out.print(")"); };
-		return null; // Return value maybe?
+		return null;
 	}
 
 	/* assignment.
@@ -452,9 +466,9 @@ public class Parser {
 	private void relation() {
 		Value compare, left, right;
 		if (debug) { System.out.print("(Relation "); };
-		left = expression(); 		// 1st expression. 
-		int branchCode = opposite(relOp());	// Comparison operator.
-		right = expression();		// 2nd expression.
+		left = expression(); 		           // 1st expression. 
+		int branchCode = opposite(relOp());	   // Comparison operator.
+		right = expression();		           // 2nd expression.
 		if (debug) { System.out.print(")"); };
 		compare = program.addInstr(cmp, left, right);
 		program.addInstr(branchCode, compare); // Needs to be fixed by caller.

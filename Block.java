@@ -51,7 +51,11 @@ public class Block extends Value {
 
 	/* Methods dealing with previous blocks. */
 	public void addPrev(Block in) {
-		in1 = in;
+		if (in1 == null) {
+			in1 = in;
+		} else {
+			in2 = in;
+		}
 	}
 
 	public void addPrev(Block in1, Block in2) {
@@ -67,11 +71,15 @@ public class Block extends Value {
 		} else {
 			fallThrough = next;
 		}
+		next.addPrev(this);
 	}
 
 	public void addNext(Block fallThrough, Block branch) {
 		this.fallThrough = fallThrough;
 		this.branch = branch;
+		fallThrough.addPrev(this);
+		branch.addPrev(this);
+
 	}
 
 	// Fix a block by adding a jump to the given block from
