@@ -70,7 +70,7 @@ public class SymbolTable {
 	private Hashtable<String, Data> hashtable;
 
 	public SymbolTable() {
-		hashtable = new Hashtable();
+		hashtable = new Hashtable<String, Data>();
 	}
 
 	public void add(String name, SymbolType type) {

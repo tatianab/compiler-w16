@@ -77,8 +77,8 @@ public class IntermedRepr {
 		nextOpenInstr = 0;
 		nextOpenBlock = 0;
 		table  = new SymbolTable();
-		blocks = new ArrayList();
-		currentBlocks = new Stack();
+		blocks = new ArrayList<Block>();
+		currentBlocks = new Stack<Block>();
 	}
 
 	// Create a new block and insert it.

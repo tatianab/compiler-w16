@@ -101,8 +101,8 @@ public class StringTable {
 
 	public StringTable() {
 		nextOpenID = 0;
-		strings = new Hashtable(reserved.length);
-		ids 	= new ArrayList(reserved.length);
+		strings = new Hashtable<String, Integer>(reserved.length);
+		ids 	= new ArrayList<StringData>(reserved.length);
 
 		String name;
 		int id, token;
