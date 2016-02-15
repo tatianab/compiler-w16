@@ -4,6 +4,11 @@
  * CS 241 - Advanced Compiler Design
  */
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.HashSet;
+import java.util.Map.Entry;
+
 public class Block extends Value {
 	// Class representing a basic block in the control flow graph.
 
@@ -20,16 +25,22 @@ public class Block extends Value {
 	public Block branch;        // Explicit branch block, (i.e, false branch or unconditional branch).
 
 	public String description;  // Optional description for block for debugging purposes.
-
+    
+    public HashMap<String, Variable> createdValue;
+    
 	// Constructors for a block.
 	public Block(int id) {
 		this.id = id;
 		this.description = "";
+        
+        createdValue = new HashMap<String, Variable>();
 	}
 
 	public Block(int id, String description) {
 		this.id = id;
-		this.description = description;
+        this.description = description;
+        
+        createdValue = new HashMap<String, Variable>();
 	}
 
 	// Signify the end of a basic block.
@@ -49,18 +60,66 @@ public class Block extends Value {
 		current = instr;
 	}
 
+    public void addReturnValue(Variable resultVar) {
+        //Add instruction to the map
+        if (resultVar != null) {
+            createdValue.put(resultVar.ident, resultVar);
+        }
+    }
+    
 	/* Methods dealing with previous blocks. */
 	public void addPrev(Block in) {
 		if (in1 == null) {
 			in1 = in;
 		} else {
 			in2 = in;
+            addPrev(in1, in2);
 		}
 	}
+    
+    public Variable fetchLastDefinedInstance(String variableName) {
+        Variable result = createdValue.get(variableName);
+        if (result == null && in1 != null) {
+            //If there is no definition, and it has a parent block, search up stream
+            return in1.fetchLastDefinedInstance(variableName);
+        }
+        else return result;
+    }
 
 	public void addPrev(Block in1, Block in2) {
 		in1 = in1;
 		in2 = in2;
+        
+        HashSet<String> changeVar = new HashSet<String>();
+        if (in1.in1 == in2) {
+            //If there is no else block, and in1 is the then block
+            changeVar.addAll(in1.createdValue.keySet());
+        } else if (in2.in1 == in1) {
+            //If there is no else block, and in2 is the then block
+            changeVar.addAll(in2.createdValue.keySet());
+        } else {
+            //Either a bi-directional if, or a loop
+            changeVar.addAll(in1.createdValue.keySet());
+            changeVar.addAll(in2.createdValue.keySet());
+        }
+        
+        //Generate Phi function
+        for (String varianceName: changeVar) {
+            Variable var1 = in1.fetchLastDefinedInstance(varianceName);
+            Variable var2 = in2.fetchLastDefinedInstance(varianceName);
+            if (var1 != null && var2 != null) {
+                /*Instruction instr = new Instruction(Instruction.phi);
+                instr.setArgs(var1, var2);
+                
+                instr.prev   = begin;
+                begin = instr;
+            
+                instr.setBlock(this);*/
+                
+                System.out.println("phi "+var1.shortRepr()+" "+var2.shortRepr());
+            }
+        }
+        
 	}
 	/* End previous block methods. */
 
@@ -112,7 +171,7 @@ public class Block extends Value {
 		}
 		return result;
 	}
-
+ 
 	// Create string representation of basic block
 	// and instructions, without edges.
 	public String nodes() {
@@ -128,6 +187,12 @@ public class Block extends Value {
 		if (end != null) {
 			result += end.toString();
 		}
+        
+        result += "createdValue: \n";
+        for (Map.Entry<String, Variable> entry: createdValue.entrySet()) {
+            result += entry.getKey() + ": " + entry.getValue().shortRepr() + "\n";
+        }
+        
 		result += "]\" \n} \n";
 		return result;
 	}
