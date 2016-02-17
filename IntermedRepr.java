@@ -13,6 +13,9 @@ public class IntermedRepr {
 	// program in SSA form.
 
 	// Code
+    
+    public static IntermedRepr currentRespersenation;
+    
 	public int nextOpenInstr;  // Next available instruction ID.
 
 	// Control Flow Graph (CFG)
@@ -77,6 +80,7 @@ public class IntermedRepr {
 		nextOpenBlock = 0;
 		blocks = new ArrayList<Block>();
 		currentBlocks = new Stack<Block>();
+        currentRespersenation = this;
 	}
 
 	// Create a new block and insert it.

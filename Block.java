@@ -103,18 +103,21 @@ public class Block extends Value {
             changeVar.addAll(in2.createdValue.keySet());
         }
         
+        IntermedRepr inpr = IntermedRepr.currentRespersenation;
+        
         //Generate Phi function
         for (String varianceName: changeVar) {
             Variable var1 = in1.fetchLastDefinedInstance(varianceName);
             Variable var2 = in2.fetchLastDefinedInstance(varianceName);
             if (var1 != null && var2 != null) {
-                /*Instruction instr = new Instruction(Instruction.phi);
+                Instruction instr = inpr.addInstr();
                 instr.setArgs(var1, var2);
+                instr.setOp(Instruction.phi);
                 
-                instr.prev   = begin;
-                begin = instr;
+                //instr.prev   = begin;
+                //begin = instr;
             
-                instr.setBlock(this);*/
+                instr.setBlock(this);
                 
                 System.out.println("phi "+var1.shortRepr()+" "+var2.shortRepr());
             }

@@ -124,6 +124,11 @@ public class Instruction extends Value {
 		if (expr instanceof Variable) {
 			this.uses((Variable) expr);
 		}
+        
+        //Add instruction to the map
+        if (block != null) {
+            block.addReturnValue(var);
+        }
 	}
 
 	public void setPrev(Instruction instr) {
