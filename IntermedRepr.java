@@ -171,7 +171,6 @@ public class IntermedRepr {
 	}
 
 	// Print out VCG code for the Control Flow Graph.
-	// We will need more of these...
 	public String cfg() {
 		String result = "graph: { title: \"Control Flow Graph\" \n" 
 						// + "layoutalgorithm: dfs \n" 

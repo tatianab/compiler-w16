@@ -1,0 +1,63 @@
+graph: { title: "Control Flow Graph" 
+manhattan_edges: yes 
+smanhattan_edges: yes 
+orientation: top_to_bottom 
+node: { 
+title: "0" 
+label: "0 Program begins. [
+0 : move #10 n_0
+1 : move #1 f_0
+createdValue: 
+f: f_0
+n: n_0
+]" 
+} 
+edge: { sourcename: "0" 
+targetname: "1" 
+color: blue 
+ } 
+node: { 
+title: "1" 
+label: "1 While join/compare block. [
+2 : cmp n_0 #0
+3 : ble (2) [3]
+createdValue: 
+]" 
+} 
+edge: { sourcename: "1" 
+targetname: "2" 
+color: blue 
+ } 
+edge: { sourcename: "1" 
+targetname: "3" 
+color: red 
+ } 
+node: { 
+title: "2" 
+label: "2 While inner block. [
+4 : mul f_0 n_0
+5 : move (4) f_1
+6 : sub n_0 #1
+7 : move (6) n_1
+8 : bra [1]
+createdValue: 
+f: f_1
+n: n_1
+]" 
+} 
+edge: { sourcename: "2" 
+targetname: "1" 
+color: red 
+ } 
+node: { 
+title: "3" 
+label: "3 Follow (while). [
+9 : phi f_0 f_1
+10 : phi n_0 n_1
+11 : move f_1 n_2
+12 : end
+createdValue: 
+n: n_2
+]" 
+} 
+}

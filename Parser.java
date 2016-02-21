@@ -7,7 +7,10 @@
 import java.io.IOException;
 
 public class Parser {
-	// Parser for PL241 language.
+	/* Parser for PL241 language.
+	   The parser's job is to convert a PL241 into an 
+	   intermediate representation of the progam in SSA form.
+	 */
 
 	// Data members.
 	public Tokenizer scanner;    // Reads file and breaks it into tokens.
@@ -86,40 +89,17 @@ public class Parser {
 	public static int ble     = Instruction.ble;
 	/* End operation codes. */
 
-	/* Main function for accepting PL241 files.
-	 * Usage: java Parser <filename> [-d]
-	 * The -d flag creates debugging output.
-	 */
-	public static void main(String[] args) {
-		// Capture command line arguments and parse the given file.
-		String filename = "";
-		boolean debug = false;
-    	try {
-     		filename = args[0];
-     		if (args.length > 1) {  // Check for debugging flag.
-     			if (args[1].equals("-d")) {
-     				debug = true;
-     			}
-     		} 
-     	} catch (Exception e) {
-      		System.out.println("Usage: java Parser <filename> [-d]");
-    	}
-    	Parser parser = new Parser(filename, debug);
-
-    	// Print out the VCG representation of the CFG of the parsed file.
-    	parser.printCFG();
-    	// System.out.println("Program parsed.");
-    	
-    }
-	/* End main function. */
-
 	/* Constructor. */
 	Parser(String filename, boolean debug) {
 		this.debug = debug;
 		scanner = new Tokenizer(filename);
 		program = new IntermedRepr();
-		computation(); // Begin recursive descent parsing.
-		// Next, create the interference graph...
+	}
+
+	/* Return the program in SSA form. */
+	public IntermedRepr parse() {
+		computation();   // Parse the program recursively.
+		return program;
 	}
 
 	/* Recursive descent methods. */

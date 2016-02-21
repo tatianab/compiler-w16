@@ -119,7 +119,7 @@ public class Block extends Value {
             
                 instr.setBlock(this);
                 
-                System.out.println("phi "+var1.shortRepr()+" "+var2.shortRepr());
+                // System.out.println("phi "+var1.shortRepr()+" "+var2.shortRepr());
             }
         }
         
