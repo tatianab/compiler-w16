@@ -26,5 +26,16 @@ public class RegAllocator {
 		return program;
 	}
 
+	/* Tracking live ranges / interference graph.
+
+	 */
+
+	/* Interference graph coloring. 
+
+	 */
+
+	/* Elimination of phi instructions (replace with move instructions).
+
+	 */
 
 }

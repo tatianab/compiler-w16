@@ -21,7 +21,7 @@ public class Instruction extends Value {
 							  // creation rather than position in program.
 
 	public Variable[] varsUsed; // Variables used in this instruction, up to two.
-	public Variable   varDefd;  // Variables defined in this instrcution, up to 1.
+	public Variable   varDefd;  // Variables defined in this instruction, up to 1.
 
 	/* Operation codes. */
 	public static int neg     = 1;
@@ -144,6 +144,19 @@ public class Instruction extends Value {
 	}
 
 	/* End setters. */
+
+	// Two instructions are equivalent if they have the same op code and
+	// arguments, except for phi functions.
+	public boolean equivalent(Instruction other) {
+		if (op != phi) {
+			if (this.op == other.op) {
+				if (this.arg1 == other.arg1 && this.arg2 == other.arg2) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
 	@Override
 	public String toString() {

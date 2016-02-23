@@ -184,6 +184,12 @@ public class Tokenizer {
 	public String tokenToString(int token) {
 		return table.symToString(token);
 	}
+
+	// Check if the given identifier is a built-in function.
+	public boolean isBuiltIn(int id) {
+		String name = table.getName(id);
+		return ( name.equals("InputNum") || name.equals("OutputNum")|| name.equals("OutputNewLine") );
+	}
 	/* End identifier table methods. */
 
 	/* Helper functions to check the type of characters

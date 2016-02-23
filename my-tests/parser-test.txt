@@ -1,5 +1,5 @@
 main 
-var f, g;
+var f, g, n;
 {
     let n <- 10;
     let f <- 1;
@@ -9,5 +9,8 @@ var f, g;
     	let n <- n - 1
     od;
 
-    let n <- f
+    let n <- f;
+    let n <- call InputNum;
+    call OutputNum(n);
+    call OutputNL
 } .

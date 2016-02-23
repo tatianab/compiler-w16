@@ -21,4 +21,12 @@ public class Optimizer {
 		program.copyPropagation();
 		return program;
 	}
+
+	/* Common subexpression elimination.
+
+	 */
+
+	/* Copy propagation.
+	
+	 */
 }

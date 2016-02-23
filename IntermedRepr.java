@@ -14,59 +14,42 @@ public class IntermedRepr {
 
 	// Code
     
-    public static IntermedRepr currentRespersenation;
+    public static IntermedRepr currentRepresentation;
     
 	public int nextOpenInstr;  // Next available instruction ID.
+	public int nextOpenBlock;  // Next available block ID.
 
 	// Control Flow Graph (CFG)
-	// Maybe this should be its own class?
 	public Block firstBlock;
 	public Stack<Block> currentBlocks;
 	public Block currentBlock;
 
+	// public DominatorTree dominatorTree; // Dominator tree.
+	public InterferenceGraph ifg;       // Interference graph.
+
 	// Function compilation.
 	public Function currentFunction;
 
-	// Block ID: Always increment
-	public int nextOpenBlock;  // Next available block ID.
+	public ArrayList<Block> blocks;       // Block array.
+	public ArrayList<Instruction> instrs; // Instruction array.
 
-	// Interference graph.
-	// TODO.
-	// This may work best as an adjacency list.
+	// Constructor.
+	public IntermedRepr() {
+		nextOpenInstr = 0;
+		nextOpenBlock = 0;
+		blocks = new ArrayList<Block>();
+		instrs = new ArrayList<Instruction>();
+		currentBlocks = new Stack<Block>();
+        currentRepresentation = this;
+	}
 
-	// Block array (for easy printing).
-	public ArrayList<Block> blocks;
+	public Block begin() {
+		Block block = addBlock("Program begins.");
+		// dominatorTree = new DominatorTree(block);
+		return block;
+	}
 
-	/* Operation codes for intermediate representation. */
-	public static int neg     = Instruction.neg;
-	public static int add     = Instruction.add;
-	public static int sub     = Instruction.sub;
-	public static int mul     = Instruction.mul;
-	public static int div     = Instruction.div;
-	public static int cmp     = Instruction.cmp;
-
-	public static int adda    = Instruction.adda;
-	public static int load    = Instruction.load;
-	public static int store   = Instruction.store;
-	public static int move    = Instruction.move;
-	public static int phi     = Instruction.phi;
-
-	public static int end     = Instruction.end;
-
-	public static int read    = Instruction.read;
-	public static int write   = Instruction.write;
-	public static int writeNL = Instruction.writeNL;
-
-	public static int bra     = Instruction.bra;
-	public static int bne     = Instruction.bne;
-	public static int beq     = Instruction.beq;
-	public static int bge     = Instruction.bge;
-	public static int blt     = Instruction.blt;
-	public static int bgt     = Instruction.bgt;
-	public static int ble     = Instruction.ble;
-	/* End operation codes. */
-
-
+	// Return the current block.
 	public Block currentBlock() {
 		if (currentBlocks.empty()) {
 			return null;
@@ -74,15 +57,7 @@ public class IntermedRepr {
 		return currentBlocks.peek();
 	}
 
-	// Constructor.
-	public IntermedRepr() {
-		nextOpenInstr = 0;
-		nextOpenBlock = 0;
-		blocks = new ArrayList<Block>();
-		currentBlocks = new Stack<Block>();
-        currentRespersenation = this;
-	}
-
+	
 	// Create a new block and insert it.
 	public Block addBlock() {
 		Block block = new Block(nextOpenBlock);
@@ -114,7 +89,8 @@ public class IntermedRepr {
 		try {
 			Instruction instr = new Instruction(nextOpenInstr);
 			nextOpenInstr++;
-			currentBlock().addInstr(instr);
+			currentBlock().addInstr(instr); // Add instruction to current block.
+			instrs.add(instr);              // Add instruction to list of instructions.
 			return instr;
 		} catch (Exception e) { 
 			error("Possible null pointer in addInstr.");
@@ -164,13 +140,7 @@ public class IntermedRepr {
 		}
 	}
 
-	// Create interference graph.
-	// Must be called only AFTER program is in SSA form.
-	public void createInterferenceGraph() {
-		// TODO.
-	}
-
-	// Print out VCG code for the Control Flow Graph.
+	// Generate VCG code for the Control Flow Graph.
 	public String cfg() {
 		String result = "graph: { title: \"Control Flow Graph\" \n" 
 						// + "layoutalgorithm: dfs \n" 
@@ -187,9 +157,80 @@ public class IntermedRepr {
 		return result;
 	}
 
+	// Generate VCG code for the Dominator Tree.
+	public String domTree() {
+		String result = "graph: { title: \"Dominator Tree\" \n" 
+						// + "layoutalgorithm: dfs \n" 
+						+ "manhattan_edges: yes \n" 
+						+ "smanhattan_edges: yes \n"
+						+ "orientation: top_to_bottom \n";
+		// Print blocks.
+		Block block;
+		for (int i = 0; i < nextOpenBlock; i++) {
+			block = blocks.get(i);
+			result += block.dominanceString();
+		}
+		result += "}";
+		return result;
+	}
+
 	public void error(String message) {
 		System.out.println("ERROR (IntermedRepr): " + message);
 		System.exit(0);
 	}
+
+	/** Methods related to OPTIMIZATION. **/
+
+	/** Methods related to REGISTER ALLOCATION. **/
+
+	/* Create interference graph. */
+	public void createInterferenceGraph() {
+		// Loop over all SSA values.
+		// for (Instruction instr : instrs) {
+		// 	current = instr.varDef;
+		// 	if (current != null) {
+		// 		for (Instruction use : current.uses) {
+		// 			if (use.op == phi ) { // && something else
+		// 				// Do something.
+		// 			} else {
+		// 				// beginLiveRange(use, current);
+		// 			}
+		// 		}
+		// 	}
+		// }
+	}
+
+	/** Methods related to CODE GENERATION. **/
+
+	/** Other data. **/
+
+	/* Operation codes for intermediate representation. */
+	public static final int neg     = Instruction.neg;
+	public static final int add     = Instruction.add;
+	public static final int sub     = Instruction.sub;
+	public static final int mul     = Instruction.mul;
+	public static final int div     = Instruction.div;
+	public static final int cmp     = Instruction.cmp;
+
+	public static final int adda    = Instruction.adda;
+	public static final int load    = Instruction.load;
+	public static final int store   = Instruction.store;
+	public static final int move    = Instruction.move;
+	public static final int phi     = Instruction.phi;
+
+	public static final int end     = Instruction.end;
+
+	public static final int read    = Instruction.read;
+	public static final int write   = Instruction.write;
+	public static final int writeNL = Instruction.writeNL;
+
+	public static final int bra     = Instruction.bra;
+	public static final int bne     = Instruction.bne;
+	public static final int beq     = Instruction.beq;
+	public static final int bge     = Instruction.bge;
+	public static final int blt     = Instruction.blt;
+	public static final int bgt     = Instruction.bgt;
+	public static final int ble     = Instruction.ble;
+	/* End operation codes. */
 
 }

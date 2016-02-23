@@ -124,7 +124,7 @@ public class Parser {
 		
 		expect(beginToken);
 		// Signal beginning of program.
-		program.addBlock("Program begins.");
+		program.begin();
 		statSequence(); // The program.
 
 		expect(endToken);    
@@ -325,6 +325,11 @@ public class Parser {
 		join.fix(follow);                  // Branch to follow.
 		endWhileBlock.addNext(join, true); // Jump from inner block to join/compare.
 
+		// Add dominance.
+		previous.dominates(join);
+		join.dominates(whileBlock);
+		join.dominates(follow);
+
 		if (debug) { System.out.print(")"); };
 	}
 
@@ -371,17 +376,27 @@ public class Parser {
 		
 		// Block connections for false branch, or no false branch.
 		if (falseBlock != null) {               // If there is a false branch:
+			// Fix CFG.
 			compare.fix(falseBlock);            // Fix jump instruction.
 			compare.addNext(trueBlock, falseBlock);   
 			endFalseBlock.addNext(join, false); // Fall through to join from false.
 			endTrueBlock.addNext(join, true);   // Jump to join from true.
 			endTrueBlock.fix(join);             // Fix branch from true.
+
+			// Add dominance.
+			compare.dominates(falseBlock);
 		} else {								// If there's just a true branch:
+			// Fix CFG.
 		    compare.fix(join);                  // Fix jump instruction.
 			compare.addNext(trueBlock, join);  
 			endTrueBlock.addNext(join, false);  // Fall through to join from true.
 	        endTrueBlock.fix();                 // Delete branch instruction from true.
 		}
+
+		// Add dominance.
+		previous.dominates(compare);
+		compare.dominates(trueBlock);
+		compare.dominates(join);
 
 		if (debug) { System.out.print(")"); };
 	}
@@ -392,31 +407,60 @@ public class Parser {
 	 */
 	private Instruction funcCall() {
 		if (debug) { System.out.print("(FuncCall "); };
+		Value expr = null;
 		expect(callToken);
-		/* Function func = scanner.getFunction( */ ident(); // );   // Function name.
+
+		// Capture function call details.
+		/* Function func = scanner.getFunction( */ int id = ident(); // );   // Function name.
 		// if (func == null) {
 		// 	error("Function not defined.");
 		// }
+
 		// Check for correct # of parameters and store them.
 		if (accept(openparenToken)) {
 			if (!check(closeparenToken)) {
-				expression();         // Parameters.
+				expr = expression();         // Parameters.
 				while (accept(commaToken)) {
 					expression();     // More parameters.
 				}
 			}
 			expect(closeparenToken);
 		}
-		// program.addBlock("Enter function.");
-		// Set up stack.
-		// Unconditional branch to function.
-		// program.endBlock();
-		// program.addBlock("Exit function.");
-		// Clean up stack?
-		// Link to end of function.
-		// program.endBlock();
-		// program.addBlock("After function.")
+
+		if (scanner.isBuiltIn(id)) {
+			// Handle built-in function.
+			return generateBuiltInFunc(id, expr);
+		} else {
+			// Handle user-defined function.
+			// program.addBlock("Enter function.");
+			// Set up stack.
+			// Unconditional branch to function.
+			// program.endBlock();
+			// program.addBlock("Exit function.");
+			// Clean up stack?
+			// Link to end of function.
+			// program.endBlock();
+			// program.addBlock("After function.")
+		}
+
 		if (debug) { System.out.print(")"); };
+		return null;
+	}
+
+	// Generate code for the given build in function.
+	private Instruction generateBuiltInFunc(int id, Value param) {
+		String funcName = scanner.idToString(id);
+
+		if (funcName.equals("InputNum")) {
+			return program.addInstr(read);
+		} else if (funcName.equals("OutputNum")) {
+			return program.addInstr(write, param);
+		} else if (funcName.equals("OutputNewLine")) {
+			return program.addInstr(writeNL);
+		} else {
+			error("Built in function " + funcName + " not found.");
+		}
+
 		return null;
 	}
 

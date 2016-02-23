@@ -8,12 +8,117 @@ import java.util.Hashtable;
 import java.util.ArrayList;
 
 public class StringTable {
-	// Class representing two-way lookup symbol table for
-	// identifiers and ID's.
+	/* Class representing two-way lookup symbol table for string identifiers
+	   and ids. Used to keep track of how many times a variable has been
+	   redefined. */
 
-	private Hashtable<String, Integer> strings;
-	private ArrayList<StringData>      ids; 
+
+	private Hashtable<String, Integer> strings; // Lookup string --> id.
+	private ArrayList<StringData>      ids;     // Lookup id --> string info.
 	private int nextOpenID;
+
+	private class StringData {
+		/* Stores information about a string in the program. */
+		public int id;        // ID number for this string.
+		public String name;   // Name used in original program for this string.
+		public int token;     // Token value of this string.
+		public int current;   // Number of times we have re-defined this string.
+		public Variable last; // The last variable associated with this string.
+
+		public StringData(int id, String name, int token) {
+			this.id = id;
+			this.name = name;
+			this.token = token;
+			this.current = 0;
+			this.last    = new Variable(this.id, this.name, this.current);
+		}
+
+		// This is called when a variable is redefined in the program.
+		public Variable reassign() {
+			Variable newVar = new Variable(id, name, current);
+			current++;
+			last = newVar;
+			return newVar;
+		}
+
+
+	}
+
+	// Constructor.
+	// Automatically adds all reserved words to the string table.
+	public StringTable() {
+		nextOpenID = 0;
+		strings = new Hashtable<String, Integer>(reserved.length);
+		ids 	= new ArrayList<StringData>(reserved.length);
+
+		String name;
+		int id, token;
+
+		// Add reserved words.
+		for (int i = 0; i < reserved.length; i++) {
+			name = reserved[i];
+			id    = nextOpenID;
+			token = reservedID[i];
+			strings.put(name, id);
+			ids.add(id, new StringData(id, name, token));
+			nextOpenID++;
+		}
+	}
+
+	// Create and return a new variable associated with the given id.
+	public Variable reassign(int id) {
+		return ids.get(id).reassign();
+	}
+
+	// Get the variable currently associated with the given id.
+	public Variable get(int id) {
+		return ids.get(id).last;
+	}
+
+	// Add a new string to the string table.
+	public void add(String name) {
+		int id = nextOpenID;
+		nextOpenID++;
+		strings.put(name, id);
+		ids.add(id, new StringData(id, name, ident));
+	}
+
+	// Get the token associated with the given string.
+	public int getSym(String name) {
+		int id = strings.get(name);
+		return ids.get(id).token;
+	}
+
+	// Get the id associated with the given string.
+	public int getID(String name) {
+		return strings.get(name);
+	}
+
+	// Get the string associated with the given id.
+	public String getName(int id) {
+		return ids.get(id).name;
+	}
+
+	// Check if the given string is already in the string table.
+	public boolean member(String name) {
+		return strings.containsKey(name);
+	}
+
+	// Only used for error messages.
+	public String symToString(int sym) {
+		if (sym == number) {
+			return "Number";
+		} else if (sym == ident) {
+			return "Ident";
+		} else {
+			for (int i = 0; i < reserved.length; i++) {
+				if (reservedID[i] == sym) {
+					return reserved[i];
+				}
+			}
+		}
+		return "Symbol not found.";
+	}
 
 	/* Token values. */
 	private static final int errorToken 	   = 0;
@@ -57,114 +162,27 @@ public class StringTable {
 	private static final int eofToken		   = 255;   
 	/* End token values. */ 
 
-	private class StringData {
-		public int id;
-		public String name;
-		public int token;
-		public int current;   // Increments every time a variable is reassigned.
-		public Variable last;
-		// Do we need type here too?
-
-		public StringData(int id, String name, int token) {
-			this.id = id;
-			this.name = name;
-			this.token = token;
-			this.current = 0;
-			this.last    = new Variable(this.id, this.name, this.current);
-		}
-
-		public Variable reassign() {
-			Variable newVar = new Variable(id, name, current);
-			current++;
-			last = newVar;
-			return newVar;
-		}
-
-
-	}
-
 	/* Reserved words. */
 	private static final String[] reserved = new String[]{
 		"*", "/", "+", "-", "==", "!=", "<", ">=", "<=", ">", ".",
 		",", "[", "]", ")", "<-", "then", "do", "(", ";", "{", "}", "od",
 		"fi", "else", "let", "call", "if", "while", "return", "var",
-		"array", "function", "procedure", "main"
+		"array", "function", "procedure", "main", "InputNum", "OutputNum",
+		"OutputNewLine"
 	};
 
 	private static final int[] reservedID = new int[]{
-		timesToken, divToken, plusToken, minusToken, eqlToken, neqToken, lssToken, geqToken, leqToken, 
-		gtrToken, periodToken, commaToken, openbracketToken, closebracketToken, closeparenToken,
-		becomesToken, thenToken, doToken, openparenToken, semiToken, beginToken, endToken, odToken,
-		fiToken, elseToken, letToken, callToken, ifToken, whileToken, returnToken, varToken,
-		arrToken, funcToken, procToken, mainToken
+		timesToken, divToken, plusToken, minusToken, eqlToken, neqToken, 
+		lssToken, geqToken, leqToken, 
+		gtrToken, periodToken, commaToken, openbracketToken, closebracketToken,
+		closeparenToken,
+		becomesToken, thenToken, doToken, openparenToken, semiToken, beginToken,
+		endToken, odToken,
+		fiToken, elseToken, letToken, callToken, ifToken, whileToken, 
+		returnToken, varToken,
+		arrToken, funcToken, procToken, mainToken, ident, ident, ident
 	};
-
-	public StringTable() {
-		nextOpenID = 0;
-		strings = new Hashtable<String, Integer>(reserved.length);
-		ids 	= new ArrayList<StringData>(reserved.length);
-
-		String name;
-		int id, token;
-
-		// Add reserved words.
-		for (int i = 0; i < reserved.length; i++) {
-			name = reserved[i];
-			id    = nextOpenID;
-			token = reservedID[i];
-			strings.put(name, id);
-			ids.add(id, new StringData(id, name, token));
-			nextOpenID++;
-		}
-	}
-
-	public int getSym(String name) {
-		int id = strings.get(name);
-		return ids.get(id).token;
-	}
-
-	public int getID(String name) {
-		return strings.get(name);
-	}
-
-	public String getName(int id) {
-		return ids.get(id).name;
-	}
-
-	public boolean member(String name) {
-		return strings.containsKey(name);
-	}
-
-	public void add(String name) {
-		int id = nextOpenID;
-		nextOpenID++;
-		strings.put(name, id);
-		ids.add(id, new StringData(id, name, ident));
-	}
-
-	public Variable get(int id) {
-		return ids.get(id).last;
-	}
-
-	public Variable reassign(int id) {
-		return ids.get(id).reassign();
-	}
-
-	// // Only used for error messages.
-	public String symToString(int sym) {
-		if (sym == number) {
-			return "Number";
-		} else if (sym == ident) {
-			return "Ident";
-		} else {
-			for (int i = 0; i < reserved.length; i++) {
-				if (reservedID[i] == sym) {
-					return reserved[i];
-				}
-			}
-		}
-		return "Symbol not found.";
-	}
+	/* End reserved words. */
 
 
 }

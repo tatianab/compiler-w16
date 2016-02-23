@@ -9,12 +9,13 @@ public class Compiler {
 	   Options: -d   : Print debugging output
 	   			-cfg : Print control flow graph (in VCG format).
 	   			-ifg : Print interference graph (in VCG format). 
-	   Usage: java Compiler <filename> [-d] [-cfg] [-ifg]
+	   Usage: java Compiler <filename> [-d] [-cfg] [-dt] [-ifg]
 	 */
 
 	// Output flags.
 	final boolean debug; // Debugging.
 	final boolean cfg;   // Control flow graph.
+	final boolean dt;    // Dominator tree.
 	final boolean ifg;   // Interference graph.
 
 	// Filename data.
@@ -33,6 +34,7 @@ public class Compiler {
 		boolean debug = false;
 		boolean cfg   = false;
 		boolean ifg   = false;
+		boolean dt    = false;
 
     	try {
      		filename = args[0];     // Get the filename.
@@ -43,16 +45,19 @@ public class Compiler {
      			if (contains(args, "-cfg")) {
      				cfg = true;
      			}
+     			if (contains(args, "-dt")) {
+     				dt  = true;
+     			}
      			if (contains(args, "-ifg")) {
      				ifg = true;
      			}
      		} 
      	} catch (Exception e) {
-      		System.out.println("Usage: java Compiler <filename> [-d] [-cfg] [-ifg]");
+      		System.out.println("Usage: java Compiler <filename> [-d] [-cfg] [-dt] [-ifg]");
     	}
 
     	// Compile the file.
-    	Compiler compiler = new Compiler(filename, debug, cfg, ifg);
+    	Compiler compiler = new Compiler(filename, debug, cfg, dt, ifg);
     	compiler.compile();
 		
 	}
@@ -71,17 +76,21 @@ public class Compiler {
 		if (cfg) { 
 			System.out.println(program.cfg()); 
 		}
+		if (dt) {
+			System.out.println(program.domTree());
+		}
 		if (ifg) {
 			// Print out interference graph.
 		}
 	}
 
 	// Constructor.
-	public Compiler(String filename, boolean debug, boolean cfg, boolean ifg) {
-		this.filename = filename;
+	public Compiler(String filename, boolean debug, boolean cfg, boolean dt, boolean ifg) {
+		this.filename   = filename;
 		this.filePrefix = getFilePrefix();
 		this.debug    = debug;
 		this.cfg      = cfg;
+		this.dt       = dt;
 		this.ifg      = ifg;
 	}
 
