@@ -11,8 +11,7 @@ public class StringTable {
 	/* Class representing two-way lookup symbol table for string identifiers
 	   and ids. Used to keep track of how many times a variable has been
 	   redefined. */
-
-
+    
 	private Hashtable<String, Integer> strings; // Lookup string --> id.
 	private ArrayList<StringData>      ids;     // Lookup id --> string info.
 	private int nextOpenID;
@@ -182,7 +181,9 @@ public class StringTable {
 		returnToken, varToken,
 		arrToken, funcToken, procToken, mainToken, ident, ident, ident
 	};
-	/* End reserved words. */
+    /* End reserved words. */
+    
+    public static StringTable sharedTable = new StringTable();
 
 
 }

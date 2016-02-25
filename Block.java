@@ -114,6 +114,8 @@ public class Block extends Value {
         
         IntermedRepr inpr = IntermedRepr.currentRepresentation;
         
+        StringTable table  = StringTable.sharedTable;
+        
         // Generate Phi function
         for (String varianceName: changeVar) {
             Variable var1 = in1.fetchLastDefinedInstance(varianceName);
@@ -130,8 +132,17 @@ public class Block extends Value {
                 
                 // System.out.println("phi "+var1.shortRepr()+" "+
                 // var2.shortRepr());
+                
+                // Create new move instruction for this Variable.
+                Variable var = table.reassign(var1.id);    // Set variable name and instance.
+                Instruction moveInstr = inpr.addInstr();
+                moveInstr.setDefn(var,instr);    // move var expr
             }
         }
+        
+        //TODO: For loop fix
+        //Go back to the inside of loop, replace the the old value with the phi version, such that the value
+        //Example: a3 = phi(a1, a2), if a[x] is the upstream, replace a[x] with a3 ([x] = 1 or 2)
         
 	}
 	/* End previous block methods. */

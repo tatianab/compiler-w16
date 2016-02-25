@@ -14,7 +14,7 @@ public class IntermedRepr {
 
 	// Code
     
-    public static IntermedRepr currentRepresentation;
+    public static IntermedRepr currentRepresentation = new IntermedRepr();
     
 	public int nextOpenInstr;  // Next available instruction ID.
 	public int nextOpenBlock;  // Next available block ID.

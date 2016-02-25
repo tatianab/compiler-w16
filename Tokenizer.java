@@ -60,7 +60,7 @@ public class Tokenizer {
 	// Constructor. Opens filename and scans the first token into sym.
 	public Tokenizer(String filename) {
 		reader = new Reader(filename);
-		table  = new StringTable();
+        table  = StringTable.sharedTable;
 		next(); // Read first token.
 	}
 
