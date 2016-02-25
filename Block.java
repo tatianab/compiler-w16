@@ -182,21 +182,42 @@ public class Block extends Value {
 
 	/* Methods related to dominance. */
 
-	// This block dominates the other block.
+	// This block immediately dominates the other block.
 	public void dominates(Block other) {
 		dominees.add(other);
 		other.dominator = this;
 	}
 
+	// Is this block an immediate dominator of the other block?
+	public boolean isIDominatorOf(Block other) {
+		return (other.dominator == this);
+	}
+
+	// Is the other block an immediate dominator of this block?
+	public boolean isIDominatedBy(Block other) {
+		return (this.dominator == other);
+	}
+
 	// Is this block a dominator of the other block?
 	public boolean isDominatorOf(Block other) {
-		return (other.dominator == this);
+		if (this.dominees.size() = 0) {
+			return false;
+		} else if (this.isIDominatorOf(other)) {
+			return true;
+		} else {
+			for (Block dominee : dominees) {
+				if (dominee.isDominatorOf(other)) {
+					return true;
+				}
+			}
+		}
 	}
 
 	// Is the other block a dominator of this block?
 	public boolean isDominatedBy(Block other) {
-		return (this.dominator == other);
+		return other.isDominatorOf(this);
 	}
+
 
 	/* End methods related to dominance. */
 
