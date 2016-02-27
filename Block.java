@@ -169,6 +169,8 @@ public class Block extends Value {
                     //Go back to the inside of loop, replace the the old value with the phi version, such that the value
                     //Example: a3 = phi(a1, a2), if a[x] is the upstream, replace a[x] with a3 ([x] = 1 or 2)
                     System.out.println("inner: "+inner.id);
+                    this.fixLoopingPhi(var1, var);
+                    this.fixLoopingPhi(var2, var);
                     inner.fixLoopingPhi(var1, var);
                     inner.fixLoopingPhi(var2, var);
                 }
