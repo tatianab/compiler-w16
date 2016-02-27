@@ -162,6 +162,10 @@ public class Tokenizer {
 		return table.get(id);
 	}
 
+	public Variable newVar(int id) {
+		return new Variable(id, table.getName(id));
+	}
+
 	// Convert an id number to its String representation.
 	public String idToString(int id) {
 		return table.getName(id);

@@ -477,9 +477,9 @@ public class Parser {
 		if (debug) { System.out.print(")"); };
 
 		// Create new move instruction for this Variable.
-		var = scanner.reassign(var);    // Set variable name and instance.
-		Instruction moveInstr = program.addInstr();
-		moveInstr.setDefn(var,expr);    // move var expr
+		// var = scanner.reassign(var);    // Set variable name and instance.
+		/* Instruction moveInstr = */ program.addAssignment(var, expr);
+		// moveInstr.setDefn(var,expr);    // move var expr
 	}
 
 	/* relation.
@@ -585,7 +585,7 @@ public class Parser {
 		}
 		if (debug) { System.out.print(")"); };
 		// For now, pretend we don't have arrays.
-		return scanner.getVar(id);
+		return scanner.newVar(id);
 	}
 
 	/* number.

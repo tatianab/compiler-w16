@@ -24,6 +24,15 @@ public class Variable extends Value {
 		nextAvailableId++;
 	}
 
+	public Variable(int id, String ident) {
+		this.id = id;
+		this.uses = new LinkedList<Instruction>();
+		this.ident = ident;
+
+		this.uid = nextAvailableId;
+		nextAvailableId++;
+	}
+
 	public Variable(int id, String ident, int instance) {
 		this.id       = id;
 		this.ident    = ident;
@@ -41,6 +50,7 @@ public class Variable extends Value {
 	// Set the instruction that defines this variable.
 	public void definedAt(Instruction def) {
 		this.def = def;
+		this.instance = def.id;
 	}
 
 	// Set the next instruction that uses this variable.

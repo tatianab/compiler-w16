@@ -11,9 +11,7 @@ import java.util.Stack;
 public class IntermedRepr {
 	// Encapsulates intermediate representation of a PL241
 	// program in SSA form.
-
-	// Code
-    
+  
     public static IntermedRepr currentRepresentation = new IntermedRepr();
     
 	public int nextOpenInstr;  // Next available instruction ID.
@@ -25,7 +23,7 @@ public class IntermedRepr {
 	public Block currentBlock;
 
 	// public DominatorTree dominatorTree; // Dominator tree.
-	public InterferenceGraph ifg;       // Interference graph.
+	public InterferenceGraph ifg;          // Interference graph.
 
 	// Function compilation.
 	public Function currentFunction;
@@ -116,6 +114,13 @@ public class IntermedRepr {
 		return instr;
 	}
 
+	public Instruction addAssignment(Variable var, Value expr) {
+		Instruction moveInstr = addInstr(move, expr, var);
+		moveInstr.defines(var);
+		var.definedAt(moveInstr);
+		return moveInstr;
+	}
+
 	public void insertFunc(Function func) {
 		// Loop over blocks in function and add them.
 		// TODO.
@@ -141,36 +146,73 @@ public class IntermedRepr {
 	}
 
 	// Generate VCG code for the Control Flow Graph.
-	public String cfg() {
-		String result = "graph: { title: \"Control Flow Graph\" \n" 
-						// + "layoutalgorithm: dfs \n" 
-						+ "manhattan_edges: yes \n" 
-						+ "smanhattan_edges: yes \n"
-						+ "orientation: top_to_bottom \n";
-		// Print blocks.
-		Block block;
-		for (int i = 0; i < nextOpenBlock; i++) {
-			block = blocks.get(i);
-			result += block.cfg();
+	public String cfgToString() {
+		String result = VCG.header("Control Flow Graph");
+		// Generate string for each block.
+		for (Block block : blocks) {
+			// Generate string for the block's instructions.
+			result += VCG.node(block.id, block.toString(), 
+							   block.instrsToString());
+
+			// For now, don't show previous edges.
+			// if (block.in1 != null) { // Previous block 1.
+			// 	result += VCG.edge(block.id, block.in1.id, "red");
+			// }
+			// if (block.in2 != null) { // Previous block 2.
+			// 	result += VCG.edge(block.id, block.in2.id, "red");
+			// }
+
+			// Generate control flow edges.
+			if (block.fallThrough != null) {  // Fall through.
+				result += VCG.edge(block.id, block.fallThrough.id, "black");
+			}
+			if (block.branch != null) {       // Explicit branch.
+				result += VCG.edge(block.id, block.branch.id, "blue");
+			}
 		}
-		result += "}";
+		result += VCG.footer();
 		return result;
 	}
 
 	// Generate VCG code for the Dominator Tree.
-	public String domTree() {
-		String result = "graph: { title: \"Dominator Tree\" \n" 
-						// + "layoutalgorithm: dfs \n" 
-						+ "manhattan_edges: yes \n" 
-						+ "smanhattan_edges: yes \n"
-						+ "orientation: top_to_bottom \n";
-		// Print blocks.
-		Block block;
-		for (int i = 0; i < nextOpenBlock; i++) {
-			block = blocks.get(i);
-			result += block.dominanceString();
+	public String domTreeToString() {
+		String description, contents;
+		String result = VCG.header("Dominator Tree");
+		// Generate string for each block.
+		for (Block block : blocks) {
+			// Generate node for block with description and instructions.
+			result += VCG.node(block.id, block.toString(), 
+							   block.instrsToString());
+			// Generate dominance related edges.
+			if (block.dominator != null) { // Dominators.
+				result += VCG.edge(block.id, block.dominator.id, "red");
+			}
+			if (block.dominees != null) {  // Dominees.
+				for (Block dominee : block.dominees) {
+					result += VCG.edge(block.id, dominee.id, "blue"); 
+				}
+			}
 		}
-		result += "}";
+		result += VCG.footer();
+		return result;
+	}
+
+	// Generate VCG code for instruction relationships.
+	public String instrsToString() {
+		String result = VCG.header("SSA Instructions");
+		for (Instruction instr : instrs) {
+			// Generate the instruction.
+			result += VCG.node(instr.id, instr.toString(), 
+					  instr.dataToString());
+			// Generate edges.
+			if (instr.prev != null) {
+				result += VCG.edge(instr.id, instr.prev.id, "red");  // previous
+			}
+			if (instr.next != null) {
+				result += VCG.edge(instr.id, instr.next.id, "blue"); // next
+			}
+		}
+		result += VCG.footer();
 		return result;
 	}
 
@@ -231,6 +273,13 @@ public class IntermedRepr {
 	public static final int blt     = Instruction.blt;
 	public static final int bgt     = Instruction.bgt;
 	public static final int ble     = Instruction.ble;
+
+	public static final int[] opCodes = new int[]{neg, add, sub, mul, div, cmp,    
+ 												  adda, load, store, move, phi,  
+ 												  end, read, write, writeNL, 
+ 												  bra, bne, beq, bge, blt, bgt,    
+ 												  ble};
 	/* End operation codes. */
+
 
 }

@@ -9,7 +9,7 @@ public class Compiler {
 	   Options: -d   : Print debugging output
 	   			-cfg : Print control flow graph (in VCG format).
 	   			-ifg : Print interference graph (in VCG format). 
-	   Usage: java Compiler <filename> [-d] [-cfg] [-dt] [-ifg]
+	   Usage: java Compiler <filename> [-d] [-cfg] [-dt] [-ifg] [-instr]
 	 */
 
 	// Output flags.
@@ -17,6 +17,7 @@ public class Compiler {
 	final boolean cfg;   // Control flow graph.
 	final boolean dt;    // Dominator tree.
 	final boolean ifg;   // Interference graph.
+	final boolean instr; // SSA instructions.
 
 	// Filename data.
 	final String filename;    // The file to compile.
@@ -35,6 +36,7 @@ public class Compiler {
 		boolean cfg   = false;
 		boolean ifg   = false;
 		boolean dt    = false;
+		boolean instr = false;
 
     	try {
      		filename = args[0];     // Get the filename.
@@ -51,13 +53,16 @@ public class Compiler {
      			if (contains(args, "-ifg")) {
      				ifg = true;
      			}
+     			if (contains(args, "-instr")) {
+     				instr = true;
+     			}
      		} 
      	} catch (Exception e) {
-      		System.out.println("Usage: java Compiler <filename> [-d] [-cfg] [-dt] [-ifg]");
+      		System.out.println("Usage: java Compiler <filename> [-d] [-cfg] [-dt] [-ifg] [-instr]");
     	}
 
     	// Compile the file.
-    	Compiler compiler = new Compiler(filename, debug, cfg, dt, ifg);
+    	Compiler compiler = new Compiler(filename, debug, cfg, dt, ifg, instr);
     	compiler.compile();
 		
 	}
@@ -74,24 +79,29 @@ public class Compiler {
 		// CodeGenerator generator = new CodeGenerator(program);
 		// generator.generateCode();
 		if (cfg) { 
-			System.out.println(program.cfg()); 
+			System.out.println(program.cfgToString()); 
 		}
 		if (dt) {
-			System.out.println(program.domTree());
+			System.out.println(program.domTreeToString());
 		}
 		if (ifg) {
 			// Print out interference graph.
 		}
+		if (instr) {
+			System.out.println(program.instrsToString());
+		}
 	}
 
 	// Constructor.
-	public Compiler(String filename, boolean debug, boolean cfg, boolean dt, boolean ifg) {
+	public Compiler(String filename, boolean debug, boolean cfg, boolean dt, boolean ifg,
+					boolean instr) {
 		this.filename   = filename;
 		this.filePrefix = getFilePrefix();
 		this.debug    = debug;
 		this.cfg      = cfg;
 		this.dt       = dt;
 		this.ifg      = ifg;
+		this.instr    = instr;
 	}
 
 	// Get the filename prefix, i.e., cut off the extension.

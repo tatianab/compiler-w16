@@ -61,6 +61,11 @@ public class Instruction extends Value {
 	/* Constructor. */
 	public Instruction(int id) {
 		this.id = id;
+		this.block    = null;
+		this.varDefd  = null;
+		this.varsUsed = null;
+		this.prev     = null;
+		this.next     = null;
 	}
 
 	public void delete() {
@@ -78,6 +83,10 @@ public class Instruction extends Value {
 			this.varsUsed[1] = var;
 		}
 		
+	}
+
+	public void defines(Variable var) {
+		this.varDefd = var;
 	}
 
 	/* Setters. */
@@ -157,6 +166,36 @@ public class Instruction extends Value {
 		}
 		return false;
 	}
+
+	/* Output data about the instruction:
+	 *		Containing block, variables used, variables defined.
+	 */ 		
+	public String dataToString() {
+		String result = "";
+		if (block != null) {
+			result += "In block " + block.id + ".\n";
+		} else {
+			result += "No containing block.\n";
+		}
+		if (varDefd != null) {
+			result += "Variable defined: " + varDefd.shortRepr() + ".\n";
+		} else {
+			result += "No variables defined.\n";
+		}
+		if (varsUsed != null) {
+			result += "Variables used: ";
+			for (Variable var : varsUsed) {
+				if (var != null) {
+					result += var.shortRepr() + " ";
+				}
+			}
+			result += ".\n";
+		} else {
+			result += "No variables used.\n";
+		}
+		return result;
+	}
+
 
 	@Override
 	public String toString() {

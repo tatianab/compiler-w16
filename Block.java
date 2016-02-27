@@ -17,7 +17,7 @@ public class Block extends Value {
 	public Instruction end;     // Last instruction in block.
 	public Instruction current; // Current instruction in block.
 
-	private final int id; 	    // Id of the block.
+	public final int id; 	    // Id of the block.
 
 	public Block in1;
 	public Block in2;   	    // If a join block.
@@ -200,7 +200,7 @@ public class Block extends Value {
 
 	// Is this block a dominator of the other block?
 	public boolean isDominatorOf(Block other) {
-		if (this.dominees.size() = 0) {
+		if (this.dominees.size() == 0) {
 			return false;
 		} else if (this.isIDominatorOf(other)) {
 			return true;
@@ -211,6 +211,7 @@ public class Block extends Value {
 				}
 			}
 		}
+		return false;
 	}
 
 	// Is the other block a dominator of this block?
@@ -218,49 +219,13 @@ public class Block extends Value {
 		return other.isDominatorOf(this);
 	}
 
-
 	/* End methods related to dominance. */
 
 	/* Methods related to string representation (in VCG form). */
 
-	// Create VCG representation of block with CFG edges.
-	public String cfg() {
-		String result = blockToString(); // Get the basic block.
-
-		// Add outgoing edges.
-		if (fallThrough != null) {
-			result += "edge: { sourcename: \"" + id + "\" \n" +
-					  "targetname: \"" + fallThrough.id + "\" \n" +
-					  "color: blue \n } \n";
-		}
-		if (branch != null) {
-			result += "edge: { sourcename: \"" + id + "\" \n" +
-					  "targetname: \"" + branch.id + "\" \n" +
-					  "color: red \n } \n";
-		}
-		return result;
-	}
-
-	// Create VCG representation of block with dominance edges.
-	public String dominanceString() {
-		String result = blockToString(); // Get the basic block.
-
-		// Add outgoing edges.
-		for (int i = 0; i < dominees.size(); i++) {
-			result += "edge: { sourcename: \"" + id + "\" \n" +
-					  "targetname: \"" + dominees.get(i).id + "\" \n" +
-					  "color: black \n } \n";
-		}
-		return result;
-	}
- 
-	// Create string representation of basic block
-	// and instructions, without edges.
-	public String blockToString() {
-		String result = "node: { \n" +
-						"title: \"" + id + "\" \n" +
-						"label: \"" + id + " " + description + " [\n";
-		// Instructions.
+	// String representation of the instructions in this block.
+	public String instrsToString() {
+		String result = "";
 		Instruction instr = begin;
 		while (instr != end) {
 			result += instr.toString();
@@ -269,15 +234,13 @@ public class Block extends Value {
 		if (end != null) {
 			result += end.toString();
 		}
-        
-        result += "createdValue: \n";
-        for (Map.Entry<String, Variable> entry: createdValue.entrySet()) {
-            result += entry.getKey() + ": " + entry.getValue().shortRepr() 
-            + "\n";
-        }
-        
-		result += "]\" \n} \n";
 		return result;
+	}
+ 
+ 	// String representation of this block with id and description.
+	@Override
+	public String toString() {
+		return id + ": " + description;
 	}
 
 	@Override
