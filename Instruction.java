@@ -99,6 +99,15 @@ public class Instruction extends Value {
 			this.uses( (Variable) arg2);
 		}
 	}
+    
+    public void updateArg(Value original, Value updated) {
+        if (this.arg1 == original) {
+            this.arg1 = updated;
+        }
+        if (this.arg2 == original) {
+            this.arg2 = updated;
+        }
+    }
 
 	public void setArgs(Value arg) {
 		if (arg1 != null) {

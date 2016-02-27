@@ -17,7 +17,7 @@ public class Block extends Value {
 	public Instruction end;     // Last instruction in block.
 	public Instruction current; // Current instruction in block.
 
-	private final int id; 	    // Id of the block.
+	public final int id; 	    // Id of the block.
 
 	public Block in1;
 	public Block in2;   	    // If a join block.
@@ -116,12 +116,27 @@ public class Block extends Value {
         
         StringTable table  = StringTable.sharedTable;
         
+        //TODO:
+        //Got the last block of inner loop
+        Block inner = null;
+        if (in1.id > id)
+            inner = in1;
+        if (in2.id > id)
+            inner = in2;
+        
+        Instruction phiBegin = null;
+        Instruction phiEnd = null;
+        
         // Generate Phi function
         for (String varianceName: changeVar) {
             Variable var1 = in1.fetchLastDefinedInstance(varianceName);
             Variable var2 = in2.fetchLastDefinedInstance(varianceName);
             if (var1 != null && var2 != null) {
-                Instruction instr = inpr.addInstr();
+                Instruction instr = inpr.createInstr();
+                System.out.println(instr);
+                
+                //this.addInstr(instr); // Add instruction to current block.
+                
                 instr.setArgs(var1, var2);
                 instr.setOp(Instruction.phi);
                 
@@ -130,19 +145,39 @@ public class Block extends Value {
             
                 instr.setBlock(this);
                 
-                // System.out.println("phi "+var1.shortRepr()+" "+
-                // var2.shortRepr());
+                 System.out.println("Block"+id+"phi "+var1.shortRepr()+" "+
+                 var2.shortRepr());
                 
                 // Create new move instruction for this Variable.
                 Variable var = table.reassign(var1.id);    // Set variable name and instance.
-                Instruction moveInstr = inpr.addInstr();
+                Instruction moveInstr = inpr.createInstr();
+                //this.addInstr(moveInstr); // Add instruction to current block.
                 moveInstr.setDefn(var,instr);    // move var expr
+                
+                
+                instr.next = moveInstr;
+                
+                if (phiBegin == null) {
+                    phiBegin = instr;
+                } else {
+                    phiEnd.next = instr;
+                }
+                
+                phiEnd = moveInstr;
+                
+                if (inner != null) {
+                    //Go back to the inside of loop, replace the the old value with the phi version, such that the value
+                    //Example: a3 = phi(a1, a2), if a[x] is the upstream, replace a[x] with a3 ([x] = 1 or 2)
+                    System.out.println("inner: "+inner.id);
+                    inner.fixLoopingPhi(var1, var);
+                    inner.fixLoopingPhi(var2, var);
+                }
+                
             }
         }
         
-        //TODO: For loop fix
-        //Go back to the inside of loop, replace the the old value with the phi version, such that the value
-        //Example: a3 = phi(a1, a2), if a[x] is the upstream, replace a[x] with a3 ([x] = 1 or 2)
+        phiEnd.next = begin;
+        begin = phiBegin;
         
 	}
 	/* End previous block methods. */
@@ -178,7 +213,15 @@ public class Block extends Value {
 	}
 	/* End next block methods. */
 
-
+    public void fixLoopingPhi(Variable originalVar, Variable replacementVar) {
+        //TODO:
+        //Look for all instruction that use originalVar, and replace it with replacement
+        Instruction instr = begin;
+        while (instr != end) {
+            instr.updateArg(originalVar, replacementVar);
+            instr = instr.next;
+        }
+    }
 
 	/* Methods related to dominance. */
 

@@ -85,6 +85,18 @@ public class IntermedRepr {
 	}
 
 	// Add a new instruction to the current block.
+    public Instruction createInstr() {
+        try {
+            Instruction instr = new Instruction(nextOpenInstr);
+            nextOpenInstr++;
+            //instrs.add(instr);              // Add instruction to list of instructions.
+            return instr;
+        } catch (Exception e) {
+            error("Possible null pointer in addInstr.");
+            return null;
+        }
+    }
+    
 	public Instruction addInstr() {
 		try {
 			Instruction instr = new Instruction(nextOpenInstr);
