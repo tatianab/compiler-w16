@@ -8,8 +8,11 @@ public class Compiler {
 	/* Class representing the entire compiler.
 	   Options: -d   : Print debugging output
 	   			-cfg : Print control flow graph (in VCG format).
+	   			-dt  : Print dominator tree.
 	   			-ifg : Print interference graph (in VCG format). 
-	   Usage: java Compiler <filename> [-d] [-cfg] [-dt] [-ifg] [-instr]
+	   			-instr : Print instructions.
+	   			-O   : Perform optimizations.
+	   Usage: java Compiler <filename> [-d] [-cfg] [-dt] [-ifg] [-instr] [-O]
 	 */
 
 	// Output flags.
@@ -18,6 +21,7 @@ public class Compiler {
 	final boolean dt;    // Dominator tree.
 	final boolean ifg;   // Interference graph.
 	final boolean instr; // SSA instructions.
+	final boolean optimize; // Optimizations.
 
 	// Filename data.
 	final String filename;    // The file to compile.
@@ -37,6 +41,7 @@ public class Compiler {
 		boolean ifg   = false;
 		boolean dt    = false;
 		boolean instr = false;
+		boolean optimize = false;
 
     	try {
      		filename = args[0];     // Get the filename.
@@ -56,13 +61,16 @@ public class Compiler {
      			if (contains(args, "-instr")) {
      				instr = true;
      			}
+     			if (contains(args, "-O")) {
+     				optimize = true;
+     			}
      		} 
      	} catch (Exception e) {
-      		System.out.println("Usage: java Compiler <filename> [-d] [-cfg] [-dt] [-ifg] [-instr]");
+      		System.out.println("Usage: java Compiler <filename> [-d] [-cfg] [-dt] [-ifg] [-instr] [-O]");
     	}
 
     	// Compile the file.
-    	Compiler compiler = new Compiler(filename, debug, cfg, dt, ifg, instr);
+    	Compiler compiler = new Compiler(filename, debug, cfg, dt, ifg, instr, optimize);
     	compiler.compile();
 		
 	}
@@ -72,8 +80,10 @@ public class Compiler {
 		Parser parser        = new Parser(filename, debug);
 		IntermedRepr program = parser.parse();
 
-		// Optimizer optimizer  = new Optimizer(program);
-		// program = optimizer.optimize();
+		if (optimize) {
+			Optimizer optimizer  = new Optimizer(program, debug);
+			program = optimizer.optimize();
+		}
 		// RegAllocator allocator = new RegAllocator(program);
 		// program = allocator.allocate();
 		// CodeGenerator generator = new CodeGenerator(program);
@@ -94,7 +104,7 @@ public class Compiler {
 
 	// Constructor.
 	public Compiler(String filename, boolean debug, boolean cfg, boolean dt, boolean ifg,
-					boolean instr) {
+					boolean instr, boolean optimize) {
 		this.filename   = filename;
 		this.filePrefix = getFilePrefix();
 		this.debug    = debug;
@@ -102,6 +112,7 @@ public class Compiler {
 		this.dt       = dt;
 		this.ifg      = ifg;
 		this.instr    = instr;
+		this.optimize = optimize;
 	}
 
 	// Get the filename prefix, i.e., cut off the extension.

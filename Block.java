@@ -30,6 +30,8 @@ public class Block extends Value {
     
     public HashMap<String, Variable> createdValue;
 
+    public boolean visited;     // For use in topological sorting.
+
     // Dominator relationships.
     public ArrayList<Block> dominees;  // The blocks that this block dominates.
     public Block            dominator; // Dominator of this block.
@@ -41,6 +43,7 @@ public class Block extends Value {
         
         createdValue = new HashMap<String, Variable>();
         dominees     = new ArrayList<Block>();
+        this.visited = false;
 	}
 
 	public Block(int id, String description) {
@@ -49,6 +52,7 @@ public class Block extends Value {
         
         createdValue = new HashMap<String, Variable>();
         dominees     = new ArrayList<Block>();
+        this.visited = false;
 	}
 
 	// Signify the end of a basic block.
@@ -134,9 +138,12 @@ public class Block extends Value {
                 // var2.shortRepr());
                 
                 // Create new move instruction for this Variable.
-                Variable var = table.reassign(var1.id);    // Set variable name and instance.
-                Instruction moveInstr = inpr.addInstr();
-                moveInstr.setDefn(var,instr);    // move var expr
+                Variable var = new Variable(id, table.getName(id));
+                table.update(id, var);
+                inpr.addAssignment(var, instr);
+                // Variable var = table.reassign(var1.id);    // Set variable name and instance.
+                // Instruction moveInstr = inpr.addInstr();
+                // moveInstr.setDefn(var,instr);    // move var expr
             }
         }
         
@@ -200,6 +207,12 @@ public class Block extends Value {
 
 	// Is this block a dominator of the other block?
 	public boolean isDominatorOf(Block other) {
+		// True if the blocks are the same.
+		if (this == other) {
+			return true;
+		}
+
+		// Otherwise, recursively check for dominance.
 		if (this.dominees.size() == 0) {
 			return false;
 		} else if (this.isIDominatorOf(other)) {

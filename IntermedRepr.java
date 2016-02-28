@@ -12,7 +12,9 @@ public class IntermedRepr {
 	// Encapsulates intermediate representation of a PL241
 	// program in SSA form.
   
-    public static IntermedRepr currentRepresentation = new IntermedRepr();
+    public static IntermedRepr currentRepresentation = null;
+
+    public boolean debug;
     
 	public int nextOpenInstr;  // Next available instruction ID.
 	public int nextOpenBlock;  // Next available block ID.
@@ -32,11 +34,12 @@ public class IntermedRepr {
 	public ArrayList<Instruction> instrs; // Instruction array.
 
 	// Constructor.
-	public IntermedRepr() {
+	public IntermedRepr(boolean debug) {
+		this.debug    = debug;
 		nextOpenInstr = 0;
 		nextOpenBlock = 0;
-		blocks = new ArrayList<Block>();
-		instrs = new ArrayList<Instruction>();
+		blocks        = new ArrayList<Block>();
+		instrs        = new ArrayList<Instruction>();
 		currentBlocks = new Stack<Block>();
         currentRepresentation = this;
 	}
@@ -135,6 +138,16 @@ public class IntermedRepr {
 		}
 	}
 
+    /* Convert all variables into instructions.
+	 */
+	public void varsToInstrs() {
+		// Loop over all instructions and convert any 
+		// variables to instructions.
+		for (Instruction instr : instrs) {
+			instr.varsToInstrs();
+		}
+	}
+
 	// Signals the end of a program.
 	public void end() {
 		try {
@@ -222,6 +235,59 @@ public class IntermedRepr {
 	}
 
 	/** Methods related to OPTIMIZATION. **/
+
+	// // Topologically sort blocks based on dominator
+	// // relationships. 
+	// public ArrayList<Block> topoSort() {
+	// 	ArrayList<Block> sortedBlocks = new ArrayList<Block>();
+
+	// 	// Set all visited flags to false.
+	// 	for (Block current : blocks) {
+	// 		current.visited = false;
+	// 	}
+
+	// 	// Visit every block.
+	// 	for (Block current : blocks) {
+	// 		visit(current, sortedBlocks);
+	// 	}
+
+	// 	blocks = sortedBlocks;
+	// }
+
+	// // Helper for topological sort.
+	// public void visit(Block block, ArrayList<Block> sortedBlocks) {
+	// 	block.visited = true;
+	// 	for (Block dominee : block.dominees) {
+	// 		visit(dominee);
+	// 	}
+	// 	sortedBlocks.pushFront(current);
+	// }
+
+	public void setInstrDominators() {
+		for (Instruction instr : instrs) {
+			if (!instr.visited) {
+				visit(instr);
+			}
+		}
+	}
+
+	public void visit(Instruction instr) {
+		instr.visited = true;
+		Instruction current = instr;
+		Instruction prev    = instr.dominatingInstr();
+		while (prev != null) {
+			if (current.op == prev.op) {
+				current.sameOpDominator = prev;
+				if (!prev.visited) {
+					visit(prev);
+				}
+				return;
+			} else {
+				prev = prev.dominatingInstr();
+			}
+			
+		}
+	}
 
 	/** Methods related to REGISTER ALLOCATION. **/
 

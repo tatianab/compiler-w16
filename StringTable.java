@@ -29,7 +29,7 @@ public class StringTable {
 			this.name = name;
 			this.token = token;
 			// this.current = 0;
-			this.last    = new Variable(this.id, this.name, this.current);
+			this.last    = null;
 		}
 
 		// This is called when a variable is redefined in the program.
@@ -71,6 +71,10 @@ public class StringTable {
 	// Get the variable currently associated with the given id.
 	public Variable get(int id) {
 		return ids.get(id).last;
+	}
+
+	public void update(int id, Variable var) {
+		ids.get(id).last = var;
 	}
 
 	// Add a new string to the string table.

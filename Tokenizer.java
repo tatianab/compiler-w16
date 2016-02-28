@@ -154,16 +154,21 @@ public class Tokenizer {
 	}
 
 	/* String table methods.*/
-	public Variable reassign(Variable var) {
-		return table.reassign(var.id);
-	}
+	// public Variable reassign(Variable var) {
+	// 	return table.reassign(var.id);
+	// }
 
 	public Variable getVar(int id) {
 		return table.get(id);
 	}
 
 	public Variable newVar(int id) {
-		return new Variable(id, table.getName(id));
+		Variable newVar = new Variable(id, table.getName(id));
+		return newVar;
+	}
+
+	public void updateVar(Variable var) {
+		table.update(var.id, var);
 	}
 
 	// Convert an id number to its String representation.

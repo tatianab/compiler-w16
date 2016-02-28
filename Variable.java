@@ -7,12 +7,12 @@
 import java.util.LinkedList;
 
 public class Variable extends Value {
-	String ident;                 // Variable identifier - original name in program.
-	int instance;                 // The instance of this variable. e.g, a_1, a_2 etc.
-	int id;                       // Variable's id in the string table. Won't be unique.
-	int uid;                      // Variable's unique id.
-	Instruction def;              // The instruction that defines this variable.
-	LinkedList<Instruction> uses; // The instructions that use this variable, but don't re-define it.
+	public String ident;                 // Variable identifier - original name in program.
+	public int instance;                 // The instance of this variable. e.g, a_1, a_2 etc.
+	public int id;                       // Variable's id in the string table. Won't be unique.
+	public int uid;                      // Variable's unique id.
+	public Instruction def;              // The instruction that defines this variable.
+	public LinkedList<Instruction> uses; // The instructions that use this variable, but don't re-define it.
 
 	private static int nextAvailableId = 0;
 
