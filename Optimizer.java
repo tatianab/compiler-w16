@@ -23,8 +23,6 @@ public class Optimizer {
 	}
 
 	public IntermedRepr optimize() {
-		if (debug) { System.out.println("Converting variables to instructions..."); }
-		program.varsToInstrs();
 		if (debug) { System.out.println("Eliminating dead code..."); }
 		// deadCodeElim();
 		if (debug) { System.out.println("Eliminating common subexpressions..."); }
@@ -60,7 +58,7 @@ public class Optimizer {
 	// True if it is OK to delete an instruction of this type
 	// that has no uses.
 	public boolean deletable(int op) {
-		if (op == write || op == phi) {
+		if (op >= write || op == phi || op == end) {
 			return false;
 		} else { return true; }
 	}
