@@ -5,7 +5,8 @@
  */
 
 public class InterferenceGraph {
-	/* Shows which variables interfere with each other. */
+	/* Shows which variables interfere with each other.
+	   This can be deleted or changed completely. */
 
 	private int numVars;        // The number of variables.
 	private boolean[][] matrix; // The interference matrix.

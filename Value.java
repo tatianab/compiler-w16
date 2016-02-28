@@ -7,7 +7,7 @@
 public class Value {
 	// Basically do nothing for now.
 	// Represents an SSA value.
-
+	
 	// This should be overridden.
 	public String shortRepr() {
 		return "Value of some kind.";

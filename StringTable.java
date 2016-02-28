@@ -9,8 +9,8 @@ import java.util.ArrayList;
 
 public class StringTable {
 	/* Class representing two-way lookup symbol table for string identifiers
-	   and ids. Used to keep track of how many times a variable has been
-	   redefined. */
+	   and ids. 
+	 */
     
 	private Hashtable<String, Integer> strings; // Lookup string --> id.
 	private ArrayList<StringData>      ids;     // Lookup id --> string info.
@@ -21,25 +21,24 @@ public class StringTable {
 		public int id;        // ID number for this string.
 		public String name;   // Name used in original program for this string.
 		public int token;     // Token value of this string.
-		public int current;   // Number of times we have re-defined this string.
+		// public int current;   // Number of times we have re-defined this string.
 		public Variable last; // The last variable associated with this string.
 
 		public StringData(int id, String name, int token) {
 			this.id = id;
 			this.name = name;
 			this.token = token;
-			this.current = 0;
-			this.last    = new Variable(this.id, this.name, this.current);
+			// this.current = 0;
+			this.last    = null;
 		}
 
 		// This is called when a variable is redefined in the program.
-		public Variable reassign() {
-			Variable newVar = new Variable(id, name, current);
-			current++;
-			last = newVar;
-			return newVar;
-		}
-
+		// public Variable reassign() {
+		// 	Variable newVar = new Variable(id, name, current);
+		// 	current++;
+		// 	last = newVar;
+		// 	return newVar;
+		// }
 
 	}
 
@@ -65,13 +64,17 @@ public class StringTable {
 	}
 
 	// Create and return a new variable associated with the given id.
-	public Variable reassign(int id) {
-		return ids.get(id).reassign();
-	}
+	// public Variable reassign(int id) {
+	// 	return ids.get(id).reassign();
+	// }
 
 	// Get the variable currently associated with the given id.
 	public Variable get(int id) {
 		return ids.get(id).last;
+	}
+
+	public void update(int id, Variable var) {
+		ids.get(id).last = var;
 	}
 
 	// Add a new string to the string table.

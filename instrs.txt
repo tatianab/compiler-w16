@@ -1,0 +1,188 @@
+Instruction (0)
+In block 0.
+Variable defined: n_0.
+No variables used.
+No instructions used.
+Use sites: .
+
+In block 0.
+Variable defined: n_0.
+No variables used.
+No instructions used.
+Use sites: (6) (4) (2) .
+
+Instruction (1)
+In block 0.
+Variable defined: f_1.
+No variables used.
+No instructions used.
+Use sites: .
+
+In block 0.
+Variable defined: f_1.
+No variables used.
+No instructions used.
+Use sites: (4) .
+
+Instruction (2)
+In block 1.
+No variables defined.
+Variables used: n_0 .
+No instructions used.
+Use sites: (3) .
+
+Adding used instr (0)
+In block 1.
+No variables defined.
+Variables used: n_0 .
+Instructions used: (0) .
+Use sites: (3) .
+
+Instruction (3)
+In block 1.
+No variables defined.
+No variables used.
+Instructions used: (2) .
+Use sites: .
+
+In block 1.
+No variables defined.
+No variables used.
+Instructions used: (2) .
+Use sites: .
+
+Instruction (4)
+In block 2.
+No variables defined.
+Variables used: f_1 n_0 .
+No instructions used.
+Use sites: (5) .
+
+Adding used instr (1)
+Adding used instr (0)
+In block 2.
+No variables defined.
+Variables used: f_1 n_0 .
+Instructions used: (1) (0) .
+Use sites: (5) .
+
+Instruction (5)
+In block 2.
+Variable defined: f_5.
+No variables used.
+Instructions used: (4) .
+Use sites: .
+
+In block 2.
+Variable defined: f_5.
+No variables used.
+Instructions used: (4) .
+Use sites: (9) .
+
+Instruction (6)
+In block 2.
+No variables defined.
+Variables used: n_0 .
+No instructions used.
+Use sites: (7) .
+
+Adding used instr (0)
+In block 2.
+No variables defined.
+Variables used: n_0 .
+Instructions used: (0) .
+Use sites: (7) .
+
+Instruction (7)
+In block 2.
+Variable defined: n_7.
+No variables used.
+Instructions used: (6) .
+Use sites: .
+
+In block 2.
+Variable defined: n_7.
+No variables used.
+Instructions used: (6) .
+Use sites: .
+
+Instruction (8)
+In block 2.
+No variables defined.
+No variables used.
+No instructions used.
+Use sites: .
+
+In block 2.
+No variables defined.
+No variables used.
+No instructions used.
+Use sites: .
+
+Instruction (9)
+In block 3.
+Variable defined: n_9.
+Variables used: f_5 .
+No instructions used.
+Use sites: .
+
+Adding used instr (5)
+In block 3.
+Variable defined: n_9.
+Variables used: f_5 .
+Instructions used: (5) .
+Use sites: .
+
+Instruction (10)
+In block 3.
+No variables defined.
+No variables used.
+No instructions used.
+Use sites: (11) .
+
+In block 3.
+No variables defined.
+No variables used.
+No instructions used.
+Use sites: (11) .
+
+Instruction (11)
+In block 3.
+Variable defined: n_11.
+No variables used.
+Instructions used: (10) .
+Use sites: .
+
+In block 3.
+Variable defined: n_11.
+No variables used.
+Instructions used: (10) .
+Use sites: (12) .
+
+Instruction (12)
+In block 3.
+No variables defined.
+Variables used: n_11 .
+No instructions used.
+Use sites: .
+
+Adding used instr (11)
+In block 3.
+No variables defined.
+Variables used: n_11 .
+Instructions used: (11) .
+Use sites: .
+
+Instruction (13)
+In block 3.
+No variables defined.
+No variables used.
+No instructions used.
+Use sites: .
+
+In block 3.
+No variables defined.
+No variables used.
+No instructions used.
+Use sites: .
+

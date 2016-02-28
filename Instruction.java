@@ -3,11 +3,13 @@
  * Winter 2016
  * CS 241 - Advanced Compiler Design
  */
+import java.util.LinkedList;
 
 public class Instruction extends Value {
 	// Class representing an instruction in intermediate form.
 
 	private boolean deleted;  // True if this instruction has been deleted.
+	public boolean visited;   // Used for searching algorithms.
 
 	public int op;            // Operation code.
 	public Value arg1;  	  // First argument, or only argument.
@@ -22,6 +24,12 @@ public class Instruction extends Value {
 
 	public Variable[] varsUsed; // Variables used in this instruction, up to two.
 	public Variable   varDefd;  // Variables defined in this instruction, up to 1.
+
+	public Instruction sameOpDominator; // The most immediate dominating instruction with the
+										// same op code as this instruction.
+
+	public Instruction[] instrsUsed; // The instructions used by this one.
+	LinkedList<Instruction> uses;    // The instructions that use the result of this instruction.
 
 	/* Operation codes. */
 	public static int neg     = 1;
@@ -61,6 +69,13 @@ public class Instruction extends Value {
 	/* Constructor. */
 	public Instruction(int id) {
 		this.id = id;
+		this.block    = null;
+		this.varDefd  = null;
+		this.varsUsed = null;
+		this.prev     = null;
+		this.next     = null;
+		// this.instrsUsed = new Instruction[2];
+		this.uses     = new LinkedList<Instruction>();
 	}
 
 	public void delete() {
@@ -77,7 +92,30 @@ public class Instruction extends Value {
 		} else {
 			this.varsUsed[1] = var;
 		}
-		
+	}
+
+	public void uses(Instruction instr) {
+		if (this.instrsUsed == null) {
+			this.instrsUsed = new Instruction[]{instr, null};
+		} else {
+			this.instrsUsed[1] = instr;
+		}
+	}
+
+	public void deleteUse(Instruction instr) {
+		if (instrsUsed[0] == instr) {
+			instrsUsed[0] = null;
+		} else if (instrsUsed[1] == instr) {
+			instrsUsed[1] = null;
+		}
+	}
+
+	public void usedIn(Instruction instr) {
+		uses.add(instr);
+	}
+
+	public void defines(Variable var) {
+		this.varDefd = var;
 	}
 
 	/* Setters. */
@@ -90,14 +128,8 @@ public class Instruction extends Value {
 		this.arg1 = arg1;
 		this.arg2 = arg2;
 
-		if (arg1 instanceof Variable) {
-			((Variable) arg1).usedIn(this);
-			this.uses( (Variable) arg1);
-		}
-		if (arg2 instanceof Variable) {
-			((Variable) arg2).usedIn(this);
-			this.uses( (Variable) arg2);
-		}
+		setUsage(arg1);
+		setUsage(arg2);
 	}
     
     public void updateArg(Value original, Value updated) {
@@ -117,10 +149,18 @@ public class Instruction extends Value {
 			this.arg1 = arg;
 			this.arg2 = null;
 		}
-		
-		if (arg instanceof Variable) {
+		setUsage(arg);
+	}
+
+	public void setUsage(Value arg) {
+		if (arg == arg2 && op == move) {
+			// Do nothing.
+		} else if (arg instanceof Variable) {
 			((Variable) arg).usedIn(this);
 			this.uses( (Variable) arg);
+		} else if (arg instanceof Instruction) {
+			((Instruction) arg).usedIn(this);
+			this.uses( (Instruction) arg);
 		}
 	}
 
@@ -134,7 +174,7 @@ public class Instruction extends Value {
 			this.uses((Variable) expr);
 		}
         
-        //Add instruction to the map
+        // Add instruction to the map
         if (block != null) {
             block.addReturnValue(var);
         }
@@ -154,11 +194,53 @@ public class Instruction extends Value {
 
 	/* End setters. */
 
+	// Return instruction that immediately dominates this instruction.
+	// If none exists, return null.
+	public Instruction dominatingInstr() {
+		if (prev != null) {
+			return prev; // Return the previous instruction.
+		} else {         // Go up to the previous block and grab the last block.
+			if (block.dominator != null) {
+				return block.dominator.end;
+			}
+		}
+		return null;
+	}
+
+	// True if this instruction is in a block that dominates the block
+	// of the other instruction.
+	public boolean isDominatorOf(Instruction other) {
+		return block.isDominatorOf(other.block);
+	}
+
+	// True if the other instruction is in a block that dominates the block
+	// of this instruction.
+	public boolean isDominatedBy(Instruction other) {
+		return block.isDominatedBy(other.block);
+	}
+
+	// Return the most immediately dominating instruction that is equivalent
+	// to this instruction. If none exists, return null.
+	public Instruction equivDominatingInstr() {
+		Instruction current = this;
+		Instruction prev    = this.sameOpDominator;
+		while (prev != null) {
+			if (current.equivalent(next)) {
+				return prev;
+			}
+			current = prev;
+			prev    = prev.sameOpDominator;
+		}
+		return null;
+	}
+
 	// Two instructions are equivalent if they have the same op code and
-	// arguments, except for phi functions.
+	// arguments. Exceptions: phi functions, deleted instructions.
 	public boolean equivalent(Instruction other) {
-		if (op != phi) {
-			if (this.op == other.op) {
+		if (other == null) {
+			return false;
+		} else if (op != phi) {
+			if (this.op == other.op && !this.deleted() && !other.deleted()) {
 				if (this.arg1 == other.arg1 && this.arg2 == other.arg2) {
 					return true;
 				}
@@ -167,10 +249,116 @@ public class Instruction extends Value {
 		return false;
 	}
 
+	// Convert all variables related to this instruction into 
+	// pure instructions.
+	public void varsToInstrs() {
+		 //System.out.println("Instruction " + shortRepr()); 
+	 //System.out.println(dataToString()); 
+		if (varDefd != null) {
+			uses = varDefd.uses;
+		}
+		if (arg1 != null) {
+			if (arg1 instanceof Variable) {
+				arg1 = ((Variable) arg1).def;	
+			}
+		}
+		if (arg2 != null) {
+			if (arg2 instanceof Variable) {
+				arg2 = ((Variable) arg2).def;
+			}
+		}
+		if (varsUsed != null) {
+			if (instrsUsed == null) {
+				instrsUsed = new Instruction[2];
+			}
+			for (int i = 0; i < 2; i++) {
+				if (varsUsed[i] != null && instrsUsed[i] == null) {
+					//System.out.println("Adding used instr " + varsUsed[i].def.shortRepr()); 
+					instrsUsed[i] = varsUsed[i].def;
+				}
+			}
+		}
+		//System.out.println(dataToString()); 
+	}
+
+	// Replace all instances of oldInstr seen by this instruction
+	// with newInstr.
+	public void replace(Instruction oldInstr, Value newValue) {
+		if (arg1 != null) {
+			if (arg1 == oldInstr) {
+				arg1 = newValue;	
+			}
+		}
+		if (arg2 != null) {
+			if (arg2 == oldInstr) {
+				arg2 = newValue;
+			}
+		}
+		if (instrsUsed != null && newValue instanceof Instruction) {
+			for (int i = 0; i < 2; i++) {
+				if (instrsUsed[i] == oldInstr) {
+					instrsUsed[i] = (Instruction) newValue;
+				}
+			}
+		}
+	}
+
+	/* Methods related to string representation of the instruction. */
+
+	/* Output data about the instruction:
+	 *		Containing block, variables used, variables defined.
+	 */ 		
+	public String dataToString() {
+		String result = "";
+		if (block != null) {
+			result += "In block " + block.id + ".\n";
+		} else {
+			result += "No containing block.\n";
+		}
+		if (varDefd != null) {
+			result += "Variable defined: " + varDefd.shortRepr() + ".\n";
+		} else {
+			result += "No variables defined.\n";
+		}
+		if (varsUsed != null) {
+			result += "Variables used: ";
+			for (Variable var : varsUsed) {
+				if (var != null) {
+					result += var.shortRepr() + " ";
+				}
+			}
+			result += ".\n";
+		} else {
+			result += "No variables used.\n";
+		}
+		if (instrsUsed != null) {
+			result += "Instructions used: ";
+			for (Instruction instr : instrsUsed) {
+				if (instr != null) {
+					result += instr.shortRepr() + " ";
+				}
+			}
+			result += ".\n";
+		} else {
+			result += "No instructions used.\n";
+		}
+		if (uses != null) {
+			result += "Use sites: ";
+			for (Instruction useSite: uses) {
+				result += useSite.shortRepr() + " ";
+			}
+			result += ".\n";
+		} else {
+			result += "Never used by another instruction.";
+		}
+		return result;
+	}
+
+
 	@Override
 	public String toString() {
 		if (deleted) {
-			return id + " deleted.";
+			return id + " deleted. \n";
 		} else if (arg1 != null && arg2 != null) {
 			return id + " : " + ops[op] + " " + arg1.shortRepr() 
 				   + " " + arg2.shortRepr() + "\n";
@@ -184,7 +372,7 @@ public class Instruction extends Value {
 	@Override
 	public String shortRepr() {
 		if (deleted) {
-			return "(" + id + "-- del).";
+			return "(" + id + " del)";
 		} else {
 			return "(" + id + ")";
 		}

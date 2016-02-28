@@ -93,11 +93,12 @@ public class Parser {
 	Parser(String filename, boolean debug) {
 		this.debug = debug;
 		scanner = new Tokenizer(filename);
-		program = new IntermedRepr();
+		program = new IntermedRepr(debug);
 	}
 
 	/* Return the program in SSA form. */
 	public IntermedRepr parse() {
+		if (debug) { System.out.println("Parsing program..."); }
 		computation();   // Parse the program recursively.
 		return program;
 	}
@@ -109,7 +110,6 @@ public class Parser {
 	 * Parses a PL241 program and converts it into SSA form.
 	 */
 	private void computation() {
-		if (debug) { System.out.print("(Computation "); };
 
 		expect(mainToken);
 
@@ -133,17 +133,12 @@ public class Parser {
 		// Signal end of program.
 		program.end();
 
-		if (debug) { 
-			System.out.print(")"); 
-			System.out.print("\nProgram parsed successfully.");
-		};
 	}
 
 	/* funcBody - function body.
 	 * funcBody = { varDecl } "{" [statSequence] "}".
 	 */
 	private void funcBody() {
-		if (debug) { System.out.print("(FuncBody "); };
 
 		// Variable declarations.
 		while (check(arrToken) || check(varToken)) {
@@ -157,7 +152,6 @@ public class Parser {
 		} 
 		expect(endToken);
 
-		if (debug) { System.out.print(")"); };
 	}
 
 	/* formalParam - formal parameter.
@@ -165,7 +159,6 @@ public class Parser {
 	 * Parameters in function/procedure definitions.
 	 */
 	private void formalParam() {
-		if (debug) { System.out.print("(FormalParam "); };
 		expect(openparenToken);
 
 		// Find 0 or more identifiers separated by commas.
@@ -177,14 +170,14 @@ public class Parser {
 		}
 
 		expect(closeparenToken);
-		if (debug) { System.out.print(")"); };
+
 	}
 
 	/* funcDecl - function declaration.
 	 * funcDecl = ("function" | "procedure") ident [formalParam] ";" funcBody ";".
 	 */
 	private void funcDecl() {
-		if (debug) { System.out.print("(FuncDecl "); };
+
 
 		if (accept(funcToken) || accept(procToken)) {
 			ident();             // Procedure/function name.
@@ -197,7 +190,7 @@ public class Parser {
 		} else { 
 			error("Invalid function declaration.");
 	 	}
-	 	if (debug) { System.out.print(")"); };
+
 	 	// Add function/procedure block pointer to string table.
 	}
 
@@ -206,7 +199,7 @@ public class Parser {
 	 * Not quite sure how to handle this yet.
 	 */
 	private void varDecl() {
-		if (debug) { System.out.print("(VarDecl "); };
+
 		/* Type type = */ typeDecl();   // Type of variable.
 		/* int id = */ ident();
 		// Add variable to symbol table.
@@ -215,14 +208,14 @@ public class Parser {
 			// Add variable to symbol table.
 		}
 		expect(semiToken);
-		if (debug) { System.out.print(")"); };
+
 	}
 
 	/* typeDecl - type declaration.
 	 * typeDecl = "var" | "array" "[" number "]" { "[" number "]" }.
 	 */
 	private void typeDecl() {
-		if (debug) { System.out.print("(TypeDecl "); };
+
 		int type = -1;
 		if (accept(varToken)) {        // If of variable type.
 			// type = var
@@ -238,7 +231,7 @@ public class Parser {
 		} else {
 			error("Invalid type declaration.");
 		}
-		if (debug) { System.out.print(")"); };
+
 		// Return structure representing type and dimensions.
 	}
 
@@ -247,12 +240,12 @@ public class Parser {
 	 * Mostly pass on work to other functions.
 	 */
 	private Block statSequence() {
-		if (debug) { System.out.print("(StatSequence "); };
+
 		statement();		// First statement.
 		while (accept(semiToken)) {
 			statement();    // More statements.
 		}
-		if (debug) { System.out.print(")"); };
+
 		return program.currentBlock(); // Return the last block seen.
 	}
 
@@ -261,7 +254,7 @@ public class Parser {
 	 * For now, we pass on the work to other functions.
 	 */
 	private void statement() {
-		if (debug) { System.out.print("(Statement "); };
+
 		if (check(letToken)) {
 			assignment();			// If assigment statement.
 		} else if (check(callToken)) {
@@ -275,7 +268,7 @@ public class Parser {
 		} else {
 			error("Invalid statement.");
 		}
-		if (debug) { System.out.print(")"); };
+
 	}
 
 	/* returnStatement.
@@ -283,12 +276,12 @@ public class Parser {
 	 * Function call related. Handle this later.
 	 */
 	private void returnStatement() {
-		if (debug) { System.out.print("(ReturnStatement "); };
+
 		expect(returnToken);
 		if (!check(semiToken)) {
 			expression();       // Expression to return.
 		}
-		if (debug) { System.out.print(")"); };
+
 	}
 
 	/* whileStatement.
@@ -298,7 +291,7 @@ public class Parser {
 	 */
 	private void whileStatement() {
 		Block previous, join, whileBlock, endWhileBlock, follow;
-		if (debug) { System.out.print("(WhileStatement "); };
+
 		expect(whileToken);
 		previous = program.currentBlock(); // Grab previous block.
 		program.endBlock();				   // End previous block.
@@ -330,7 +323,7 @@ public class Parser {
 		join.dominates(whileBlock);
 		join.dominates(follow);
 
-		if (debug) { System.out.print(")"); };
+
 	}
 
 	/* ifStatement.
@@ -342,7 +335,7 @@ public class Parser {
 		Block previous, compare, trueBlock, falseBlock, 
 			  endTrueBlock, endFalseBlock, join;
 		
-		if (debug) { System.out.print("(IfStatement "); };
+
 		expect(ifToken);
 		previous = program.currentBlock();   // Grab the previous block.
 		program.endBlock();					 // End the previous block.
@@ -398,7 +391,7 @@ public class Parser {
 		compare.dominates(trueBlock);
 		compare.dominates(join);
 
-		if (debug) { System.out.print(")"); };
+
 	}
 
 	/* funcCall. 
@@ -406,7 +399,7 @@ public class Parser {
 	 * We will deal with function calls later...
 	 */
 	private Instruction funcCall() {
-		if (debug) { System.out.print("(FuncCall "); };
+
 		Value expr = null;
 		expect(callToken);
 
@@ -443,7 +436,6 @@ public class Parser {
 			// program.addBlock("After function.")
 		}
 
-		if (debug) { System.out.print(")"); };
 		return null;
 	}
 
@@ -468,18 +460,19 @@ public class Parser {
 	 * assignment = "let" "<-" expression.
 	 */
 	private void assignment() {
-		if (debug) { System.out.print("(Assignment "); };
+
 		expect(letToken);
 
-		Variable var = designator();    // Name of variable.
+		Variable var = designator(true); // Name of variable.
 		expect(becomesToken);
-		Value expr = expression();	    // Value of variable.
-		if (debug) { System.out.print(")"); };
+		Value expr = expression();	     // Value of variable.
+
 
 		// Create new move instruction for this Variable.
-		var = scanner.reassign(var);    // Set variable name and instance.
-		Instruction moveInstr = program.addInstr();
-		moveInstr.setDefn(var,expr);    // move var expr
+		// var = scanner.reassign(var);    // Set variable name and instance.
+		scanner.updateVar(var);
+		program.addAssignment(var, expr);
+		// moveInstr.setDefn(var,expr);    // move var expr
 	}
 
 	/* relation.
@@ -489,11 +482,11 @@ public class Parser {
 	 */
 	private void relation() {
 		Value compare, left, right;
-		if (debug) { System.out.print("(Relation "); };
+
 		left = expression(); 		           // 1st expression. 
 		int branchCode = opposite(relOp());	   // Comparison operator.
 		right = expression();		           // 2nd expression.
-		if (debug) { System.out.print(")"); };
+
 		compare = program.addInstr(cmp, left, right);
 		program.addInstr(branchCode, compare); // Needs to be fixed by caller.
 	}
@@ -510,7 +503,7 @@ public class Parser {
 	 */
 	private Value expression() {
 		Value expr, next;
-		if (debug) { System.out.print("(Expression "); };
+
 		expr = term();        
 		while (check(plusToken) || check(minusToken) ) {
 			if (accept(plusToken)) {
@@ -521,7 +514,7 @@ public class Parser {
 				expr = program.addInstr(sub, expr, next);
 			}
 		}
-		if (debug) { System.out.print(")"); };
+
 		return expr;
 	}
 
@@ -531,7 +524,7 @@ public class Parser {
 	 */
 	private Value term() {
 		Value term, next;
-		if (debug) { System.out.print("(Term "); };
+
 		term = factor();      
 		while (check(timesToken) || check(divToken)) {
 			if (accept(timesToken)) {
@@ -542,7 +535,6 @@ public class Parser {
 				term = program.addInstr(div, term, next);
 			}
 		}
-		if (debug) { System.out.print(")"); };
 		return term;
 	}
 
@@ -553,9 +545,9 @@ public class Parser {
 	 */
 	private Value factor() {
 		Value factor = null;
-		if (debug) { System.out.print("(Factor "); };
+
 		if (check(ident)) {
-			factor = designator();   // Identifier.
+			factor = designator(false);   // Identifier.
 		} else if (check(number)) {
 			factor = number();       // Number
 		} else if (accept(openparenToken)) {
@@ -566,7 +558,7 @@ public class Parser {
 		} else {
 			error("Invalid factor.");
 		}
-		if (debug) { System.out.print(")"); };
+
 		return factor;
 	}
 
@@ -574,18 +566,26 @@ public class Parser {
 	 * designator = ident { "[" expression "]" }.
 	 * Return the integer id corresponding to the identifier found.
 	 * Also need to handle arrays. (Not sure how right now).
+	 * newVar flag should be false if called from a non-assignment context.
 	 */
-	private Variable designator() {
+	private Variable designator(boolean newVar) {
 		int id;
-		if (debug) { System.out.print("(Designator "); };
+
 		id = ident();          			 // Identifier name. Stop here if a variable.
 		while (accept(openbracketToken)) {
 			expression(); 	             // (If array) array indices.
 			expect(closebracketToken);
 		}
-		if (debug) { System.out.print(")"); };
+
 		// For now, pretend we don't have arrays.
-		return scanner.getVar(id);
+		if (newVar) {
+			return scanner.newVar(id);
+		} else if (scanner.getVar(id) == null) {
+			error("Uninitialized variable."); 
+		} else {
+			return scanner.getVar(id);
+		}
+		return null;
 	}
 
 	/* number.
@@ -594,9 +594,7 @@ public class Parser {
 	 */
 	private Constant number() {
 		int value = 0;
-		if (debug) { System.out.print("(Number " + scanner.currentToken()); };
 		value = expect(number);  // The number.
-		if (debug) { System.out.print(")"); };
 		return new Constant(value);
 	}
 
@@ -606,9 +604,7 @@ public class Parser {
 	 */
 	private int ident() {
 		int result;
-		if (debug) { System.out.print("(Ident " + scanner.currentToken()); };
 		result = expect(ident);  // The identifier.
-		if (debug) { System.out.print(")"); };
 		return result;
 	}
 
@@ -617,14 +613,14 @@ public class Parser {
 	 */
 	private int relOp() {
 		int relOp = errorToken;
-		if (debug) { System.out.print("(Relop "); };
+
 		if (scanner.sym >= eqlToken && scanner.sym <= gtrToken) {
 			relOp = scanner.sym;
 			scanner.next();
 		} else {
 	    	error("Invalid relation operator.");
 	    }
-	    if (debug) { System.out.print(")"); };
+
 	    return relOp;
 	}
 
@@ -678,9 +674,9 @@ public class Parser {
 
 	// Print out the CFG in vcg format.
 	// Should only be called after parsing is complete.
-	public void printCFG() {
-		System.out.println(program.cfg());
-	}
+	// public void printCFG() {
+	// 	System.out.println(program.cfg());
+	// }
 	
 
 }
