@@ -106,10 +106,10 @@ public class Compiler {
 			// RegAllocator allocator = new RegAllocator(program);
 		    // program = allocator.allocate();
 		}
-		if (assem || byteCode) {
+		if (assembly || byteCode) {
 			// CodeGenerator generator = new CodeGenerator(program);
 		    // generator.generateCode();
-		    if (assem) {
+		    if (assembly) {
 		    	// System.out.println(generator.assemblyToString());
 		    } else {
 		    	// System.out.println(generator.byteCodeToString());
@@ -143,15 +143,13 @@ public class Compiler {
 		this.ifg      = ifg;
 		this.instr    = instr;
 		this.optimize = optimize;
-		this.regAlloc = regAlloc;
 		this.byteCode = byteCode;
-		this.assem    = assem;
+		this.assembly    = assem;
 
-		if (ifg) {
+		if (ifg||byteCode || assembly) {
 			this.regAlloc = true;
-		}
-		if (byteCode || assem) {
-			this.regAlloc = true;
+		} else {
+			this.regAlloc = regAlloc;
 		}
 	}
 

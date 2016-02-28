@@ -3,7 +3,7 @@
  * Winter 2016
  * CS 241 - Advanced Compiler Design
  */
-package compiler-w16;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Stack;
@@ -86,6 +86,19 @@ public class IntermedRepr {
 	}
 
 	// Add a new instruction to the current block.
+    public Instruction createInstr() {
+        try {
+            Instruction instr = new Instruction(nextOpenInstr);
+            nextOpenInstr++;
+            //instrs.add(instr);              // Add instruction to list of instructions.
+            return instr;
+        } catch (Exception e) {
+            error("Possible null pointer in addInstr.");
+            return null;
+        }
+    }
+
+	// Add a new instruction to the current block.
 	public Instruction addInstr() {
 		try {
 			Instruction instr = new Instruction(nextOpenInstr);
@@ -120,7 +133,8 @@ public class IntermedRepr {
 	public Instruction addAssignment(Variable var, Value expr) {
 		Instruction moveInstr = addInstr(move, expr, var);
 		moveInstr.defines(var);
-		var.definedAt(moveInstr);
+        var.definedAt(moveInstr);
+        currentBlock().addReturnValue(var);
 		return moveInstr;
 	}
 

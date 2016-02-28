@@ -3,7 +3,7 @@
  * Winter 2016
  * CS 241 - Advanced Compiler Design
  */
-package compiler-w16;
+
 import java.util.LinkedList;
 
 public class Instruction extends Value {
@@ -145,6 +145,15 @@ public class Instruction extends Value {
 		}
 		setUsage(arg);
 	}
+    
+    public void updateArg(Value original, Value updated) {
+        if (this.arg1 == original) {
+            this.arg1 = updated;
+        }
+        if (this.arg2 == original) {
+            this.arg2 = updated;
+        }
+    }
 
 	public void setUsage(Value arg) {
 		if (arg == arg2 && op == move) {

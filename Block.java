@@ -3,7 +3,7 @@
  * Winter 2016
  * CS 241 - Advanced Compiler Design
  */
-package compiler-w16;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.HashSet;
@@ -115,41 +115,70 @@ public class Block extends Value {
             changeVar.addAll(in1.createdValue.keySet());
             changeVar.addAll(in2.createdValue.keySet());
         }
-        
+
         IntermedRepr inpr = IntermedRepr.currentRepresentation;
         
         StringTable table  = StringTable.sharedTable;
+        
+        //Got the last block of inner loop
+        Block inner = null;
+        if (in1.id > id)
+            inner = in1;
+        if (in2.id > id)
+            inner = in2;
+        
+        Instruction phiBegin = null;
+        Instruction phiEnd = null;
         
         // Generate Phi function
         for (String varianceName: changeVar) {
             Variable var1 = in1.fetchLastDefinedInstance(varianceName);
             Variable var2 = in2.fetchLastDefinedInstance(varianceName);
             if (var1 != null && var2 != null) {
-                Instruction instr = inpr.addInstr();
+                Instruction instr = inpr.createInstr();
+                
+                //this.addInstr(instr); // Add instruction to current block.
+                
                 instr.setArgs(var1, var2);
                 instr.setOp(Instruction.phi);
-                
-                // instr.prev   = begin;
-                // begin = instr;
             
                 instr.setBlock(this);
                 
-                // System.out.println("phi "+var1.shortRepr()+" "+
-                // var2.shortRepr());
+                // Reassign for this Variable.
+                Variable var = new Variable(var1.id, table.getName(var1.id));
+                table.update(var1.id, var);
+
+                instr.defines(var);
+        		var.definedAt(instr);
+        		inpr.currentBlock().addReturnValue(var);
+		
+
+                //inpr.addAssignment(var, instr);
                 
-                // Create new move instruction for this Variable.
-                Variable var = new Variable(id, table.getName(id));
-                table.update(id, var);
-                inpr.addAssignment(var, instr);
-                // Variable var = table.reassign(var1.id);    // Set variable name and instance.
-                // Instruction moveInstr = inpr.addInstr();
-                // moveInstr.setDefn(var,instr);    // move var expr
+                if (phiBegin == null) {
+                    phiBegin = instr;
+                } else {
+                    phiEnd.next = instr;
+                }
+                
+                phiEnd = instr;
+                
+                if (inner != null) {
+                    //Go back to the inside of loop, replace the the old value with the phi version, such that the value
+                    //Example: a3 = phi(a1, a2), if a[x] is the upstream, replace a[x] with a3 ([x] = 1 or 2)
+                    this.fixLoopingPhi(var1, var);
+                    this.fixLoopingPhi(var2, var);
+                    inner.fixLoopingPhi(var1, var);
+                    inner.fixLoopingPhi(var2, var);
+                }
+                
             }
         }
         
-        //TODO: For loop fix
-        //Go back to the inside of loop, replace the the old value with the phi version, such that the value
-        //Example: a3 = phi(a1, a2), if a[x] is the upstream, replace a[x] with a3 ([x] = 1 or 2)
+        if (phiEnd != null) {
+        	phiEnd.next = begin;
+        	begin = phiBegin;
+        }
         
 	}
 	/* End previous block methods. */
@@ -185,6 +214,16 @@ public class Block extends Value {
 	}
 	/* End next block methods. */
 
+
+    public void fixLoopingPhi(Variable originalVar, Variable replacementVar) {
+        //TODO:
+        //Look for all instruction that use originalVar, and replace it with replacement
+        Instruction instr = begin;
+        while (instr != end) {
+            instr.updateArg(originalVar, replacementVar);
+            instr = instr.next;
+        }
+    }
 
 
 	/* Methods related to dominance. */

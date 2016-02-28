@@ -3,7 +3,7 @@
  * Winter 2016
  * CS 241 - Advanced Compiler Design
  */
-package compiler-w16;
+
 public class CodeGenerator {
 	/* The code generator's responsibility is to emit native programs in DLX format
 	   after optimizations and register allocation.

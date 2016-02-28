@@ -4,7 +4,7 @@
  * CS 241 - Advanced Compiler Design
  */
 
-package compiler-w16;
+
 import java.util.ArrayList;
 
 public class RegAllocator {

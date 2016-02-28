@@ -1,7 +1,7 @@
 // The DLX Virtual Machine
 // chs / mf 2001-08-07
 // File provided by Michael Franz.
-package compiler-w16;
+
 import java.io.*;
 
 // All variables and methods are realized as class variables/methods which

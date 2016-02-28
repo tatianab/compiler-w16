@@ -3,7 +3,7 @@
  * Winter 2016
  * CS 241 - Advanced Compiler Design
  */
-package compiler-w16;
+
 public class Function {
 	public int id;
 	public String ident;
