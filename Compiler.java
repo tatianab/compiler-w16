@@ -6,13 +6,16 @@
 
 public class Compiler {
 	/* Class representing the entire compiler.
-	   Options: -d   : Print debugging output
-	   			-cfg : Print control flow graph (in VCG format).
-	   			-dt  : Print dominator tree.
-	   			-ifg : Print interference graph (in VCG format). 
-	   			-instr : Print instructions.
-	   			-O   : Perform optimizations.
-	   Usage: java Compiler <filename> [-d] [-cfg] [-dt] [-ifg] [-instr] [-O]
+	   Options: -d        : Print debugging output
+	   			-cfg      : Print control flow graph (in VCG format).
+	   			-dt       : Print dominator tree.
+	   			-ifg      : Print interference graph (in VCG format). 
+	   			-instr    : Print SSA instructions.
+	   			-O        : Perform optimizations.
+	   			-regAlloc : Allocate registers.
+	   			-assem    : Print assembly code.
+	   			-o        : Print object code.
+	   Usage: java Compiler <filename> [-d] [-cfg] [-dt] [-ifg] [-instr] [-O] [-regAlloc] [-assem] [-o]
 	 */
 
 	// Output flags.
@@ -22,6 +25,9 @@ public class Compiler {
 	final boolean ifg;   // Interference graph.
 	final boolean instr; // SSA instructions.
 	final boolean optimize; // Optimizations.
+	final boolean regAlloc; // Register allocation.
+	final boolean byteCode; // Byte code.
+	final boolean assembly; // Assembly code.
 
 	// Filename data.
 	final String filename;    // The file to compile.
@@ -42,6 +48,9 @@ public class Compiler {
 		boolean dt    = false;
 		boolean instr = false;
 		boolean optimize = false;
+		boolean regAlloc = false;
+		boolean byteCode = false;
+		boolean assembly = 	false;
 
     	try {
      		filename = args[0];     // Get the filename.
@@ -64,13 +73,22 @@ public class Compiler {
      			if (contains(args, "-O")) {
      				optimize = true;
      			}
+     			if (contains(args, "-regAlloc")) {
+     				regAlloc = true;
+     			}
+     			if (contains(args, "-o")) {
+     				byteCode = true;
+     			}
+     			if (contains(args, "-assem")) {
+     				assembly = true;
+     			}
      		} 
      	} catch (Exception e) {
       		System.out.println("Usage: java Compiler <filename> [-d] [-cfg] [-dt] [-ifg] [-instr] [-O]");
     	}
 
     	// Compile the file.
-    	Compiler compiler = new Compiler(filename, debug, cfg, dt, ifg, instr, optimize);
+    	Compiler compiler = new Compiler(filename, debug, cfg, dt, ifg, instr, optimize, regAlloc, byteCode, assembly);
     	compiler.compile();
 		
 	}
@@ -84,10 +102,21 @@ public class Compiler {
 			Optimizer optimizer  = new Optimizer(program, debug);
 			program = optimizer.optimize();
 		}
-		// RegAllocator allocator = new RegAllocator(program);
-		// program = allocator.allocate();
-		// CodeGenerator generator = new CodeGenerator(program);
-		// generator.generateCode();
+		if (regAlloc) {
+			// RegAllocator allocator = new RegAllocator(program);
+		    // program = allocator.allocate();
+		}
+		if (assem || byteCode) {
+			// CodeGenerator generator = new CodeGenerator(program);
+		    // generator.generateCode();
+		    if (assem) {
+		    	// System.out.println(generator.assemblyToString());
+		    } else {
+		    	// System.out.println(generator.byteCodeToString());
+		    }
+		}
+
+		// Auxillary data.
 		if (cfg) { 
 			System.out.println(program.cfgToString()); 
 		}
@@ -100,11 +129,12 @@ public class Compiler {
 		if (instr) {
 			System.out.println(program.instrsToString());
 		}
+
 	}
 
 	// Constructor.
 	public Compiler(String filename, boolean debug, boolean cfg, boolean dt, boolean ifg,
-					boolean instr, boolean optimize) {
+					boolean instr, boolean optimize, boolean regAlloc, boolean byteCode, boolean assem) {
 		this.filename   = filename;
 		this.filePrefix = getFilePrefix();
 		this.debug    = debug;
@@ -113,6 +143,16 @@ public class Compiler {
 		this.ifg      = ifg;
 		this.instr    = instr;
 		this.optimize = optimize;
+		this.regAlloc = regAlloc;
+		this.byteCode = byteCode;
+		this.assem    = assem;
+
+		if (ifg) {
+			this.regAlloc = true;
+		}
+		if (byteCode || assem) {
+			this.regAlloc = true;
+		}
 	}
 
 	// Get the filename prefix, i.e., cut off the extension.

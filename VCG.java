@@ -3,6 +3,7 @@
  * Winter 2016
  * CS 241 - Advanced Compiler Design
  */
+package compiler-w16;
 public class VCG {
 	/* A collection of static methods to aid in
 	   creation of VCG code to visualize intermediate

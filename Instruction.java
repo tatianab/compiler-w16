@@ -3,6 +3,7 @@
  * Winter 2016
  * CS 241 - Advanced Compiler Design
  */
+package compiler-w16;
 import java.util.LinkedList;
 
 public class Instruction extends Value {
@@ -30,6 +31,8 @@ public class Instruction extends Value {
 
 	public Instruction[] instrsUsed; // The instructions used by this one.
 	LinkedList<Instruction> uses;    // The instructions that use the result of this instruction.
+
+	int register; // The register that the value of this instruction is assigned to.
 
 	/* Operation codes. */
 	public static int neg     = 1;
