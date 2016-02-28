@@ -133,20 +133,13 @@ public class Block extends Value {
             Variable var2 = in2.fetchLastDefinedInstance(varianceName);
             if (var1 != null && var2 != null) {
                 Instruction instr = inpr.createInstr();
-                System.out.println(instr);
                 
                 //this.addInstr(instr); // Add instruction to current block.
                 
                 instr.setArgs(var1, var2);
                 instr.setOp(Instruction.phi);
-                
-                // instr.prev   = begin;
-                // begin = instr;
             
                 instr.setBlock(this);
-                
-                 System.out.println("Block"+id+"phi "+var1.shortRepr()+" "+
-                 var2.shortRepr());
                 
                 // Create new move instruction for this Variable.
                 Variable var = table.reassign(var1.id);    // Set variable name and instance.
@@ -168,7 +161,6 @@ public class Block extends Value {
                 if (inner != null) {
                     //Go back to the inside of loop, replace the the old value with the phi version, such that the value
                     //Example: a3 = phi(a1, a2), if a[x] is the upstream, replace a[x] with a3 ([x] = 1 or 2)
-                    System.out.println("inner: "+inner.id);
                     this.fixLoopingPhi(var1, var);
                     this.fixLoopingPhi(var2, var);
                     inner.fixLoopingPhi(var1, var);
@@ -309,5 +301,13 @@ public class Block extends Value {
 		return "[" + id + "]";
 	}
 
+    //Search for instruction with variable
+    public Instruction instructionsWithDefVariable(Variable var) {
+        
+    }
+    
+    public ArrayList<Instruction> instructionsWithUsageOfVariable(Variable var) {
+        
+    }
 
 }
