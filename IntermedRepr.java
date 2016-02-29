@@ -90,10 +90,10 @@ public class IntermedRepr {
         try {
             Instruction instr = new Instruction(nextOpenInstr);
             nextOpenInstr++;
-            //instrs.add(instr);              // Add instruction to list of instructions.
+            instrs.add(instr);              // Add instruction to list of instructions.
             return instr;
         } catch (Exception e) {
-            error("Possible null pointer in addInstr.");
+            error("Possible null pointer in createInstr.");
             return null;
         }
     }
@@ -238,6 +238,12 @@ public class IntermedRepr {
 			if (instr.next != null) {
 				result += VCG.edge(instr.id, instr.next.id, "blue"); // next
 			}
+			if (instr.sameOpDominator != null) {
+				result += VCG.edge(instr.id, instr.sameOpDominator.id, "yellow");        // previous instr with same op
+			}
+			if (instr.equivDominatingInstr() != null) {
+				result += VCG.edge(instr.id, instr.equivDominatingInstr().id, "orange"); // immediately dominating instr
+			}
 		}
 		result += VCG.footer();
 		return result;
@@ -285,6 +291,7 @@ public class IntermedRepr {
 		}
 	}
 
+	// Helper for setInstrDominators.
 	public void visit(Instruction instr) {
 		instr.visited = true;
 		Instruction current = instr;
@@ -301,6 +308,11 @@ public class IntermedRepr {
 			}
 			
 		}
+	}
+
+	// Get rid of any deleted instructions or blocks.
+	public void clean() {
+		// TODO.
 	}
 
 	/** Methods related to REGISTER ALLOCATION. **/

@@ -100,6 +100,10 @@ public class Parser {
 	public IntermedRepr parse() {
 		if (debug) { System.out.println("Parsing program..."); }
 		computation();   // Parse the program recursively.
+		if (debug) { System.out.println("Converting variables to instructions..."); }
+		program.varsToInstrs();
+		if (debug) { System.out.println("Setting instruction dominators..."); }
+		program.setInstrDominators();
 		return program;
 	}
 
@@ -470,8 +474,9 @@ public class Parser {
 
 		// Create new move instruction for this Variable.
 		// var = scanner.reassign(var);    // Set variable name and instance.
+		Instruction moveInstr = program.addAssignment(var, expr);
 		scanner.updateVar(var);
-		program.addAssignment(var, expr);
+		if (debug) { System.out.println("Generated instruction " + moveInstr); }
 		// moveInstr.setDefn(var,expr);    // move var expr
 	}
 

@@ -129,15 +129,14 @@ public class Block extends Value {
         
         Instruction phiBegin = null;
         Instruction phiEnd = null;
+        Instruction instr;
         
         // Generate Phi function
         for (String varianceName: changeVar) {
             Variable var1 = in1.fetchLastDefinedInstance(varianceName);
             Variable var2 = in2.fetchLastDefinedInstance(varianceName);
             if (var1 != null && var2 != null) {
-                Instruction instr = inpr.createInstr();
-                
-                //this.addInstr(instr); // Add instruction to current block.
+                instr = inpr.createInstr();
                 
                 instr.setArgs(var1, var2);
                 instr.setOp(Instruction.phi);
@@ -151,7 +150,6 @@ public class Block extends Value {
                 instr.defines(var);
         		var.definedAt(instr);
         		inpr.currentBlock().addReturnValue(var);
-		
 
                 //inpr.addAssignment(var, instr);
                 

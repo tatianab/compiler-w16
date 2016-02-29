@@ -6,6 +6,7 @@
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Stack;
 
 public class Optimizer {
 	/* The optimizer's job is to perform the following optimizations
@@ -24,7 +25,7 @@ public class Optimizer {
 
 	public IntermedRepr optimize() {
 		if (debug) { System.out.println("Eliminating dead code..."); }
-		// deadCodeElim();
+		deadCodeElim();
 		if (debug) { System.out.println("Eliminating common subexpressions..."); }
 		commonSubexprElim();
 		if (debug) { System.out.println("Copy propagation..."); }
@@ -32,31 +33,40 @@ public class Optimizer {
 		return program;
 	}
 
-	/* Dead code elimination. Deletes instructions that have no side effects
-	   and are never used. */
+	/* Dead code elimination. 
+	 * Deletes instructions that have no side effects
+	 * and are never used. 
+	 */
 	public void deadCodeElim() {
-		// ArrayList<Instruction> workList = new ArrayList<Instruction>(program.instrs);
-		// Instruction current;
-		// for (Instruction instr : program.instrs) {
-		// 	instr.visited = false;
-		// }
-		// while (workList.size() != 0) {
-		// 	current = workList.pop();
-		// 	current.visited == true;
-		// 	if (deletable(current.op)) {
-		// 		if (current.uses == null || current.uses.size() == 0) { 
-		// 			current.delete();
-		// 		}
-		// 		for (Instr instrUsed : instr.instrsUsed) {
-		// 			instrUsed.deleteUse(instr);
-		// 			workList.add(instrUsed);
-		// 		}
-		// 	}
-		// }
+		Stack<Instruction> workList = new Stack<Instruction>();
+		Instruction current;
+		for (Instruction instr : program.instrs) {
+			instr.visited = false;
+			workList.push(instr);
+		}
+		while (workList.size() != 0) {
+			current = workList.pop();
+			if (!current.visited) {
+				current.visited = true;
+				if (deletable(current.op)) {
+					if (current.uses == null || current.uses.size() == 0) { 
+						current.delete();
+					}
+					if (current.instrsUsed != null) {
+						for (Instruction instrUsed : current.instrsUsed) {
+							if (instrUsed != null) {
+								instrUsed.deleteUse(current);
+								workList.push(instrUsed);
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 
-	// True if it is OK to delete an instruction of this type
-	// that has no uses.
+	/* True if it is OK to delete an instruction of this type.
+	 */
 	public boolean deletable(int op) {
 		if (op >= write || op == phi || op == end) {
 			return false;
@@ -64,20 +74,24 @@ public class Optimizer {
 	}
 
 	/* Common subexpression elimination.
+	 * Avoid unnecessary re-computation of values.
 	 */
 	public void commonSubexprElim() {
-		program.setInstrDominators();
 		Instruction currentInstr, equivInstr;
 		// If instruction Y dominates instruction X and Y = X, replace all
 		// occurrences of X with Y and delete X.
 		for (int i = program.instrs.size() - 1; i >= 0; i--) {
 			currentInstr = program.instrs.get(i);
-			equivInstr   = currentInstr.equivDominatingInstr();
-			if (equivInstr != null) {
-				for (Instruction useSite : currentInstr.uses) {
-					useSite.replace(currentInstr, equivInstr);
+			if (debug) {System.out.print(currentInstr.op + " ");}
+			if (deletable(currentInstr.op)) {
+				equivInstr   = currentInstr.equivDominatingInstr();
+				if (equivInstr != null) {
+					for (Instruction useSite : currentInstr.uses) {
+						useSite.replace(currentInstr, equivInstr);
+					}
+					currentInstr.delete();
+					if (debug) { System.out.print(" deleted"); }
 				}
-				currentInstr.delete();
 			}
 		}
 	}
@@ -92,8 +106,13 @@ public class Optimizer {
 		Value newValue;
 		for (Instruction instr : program.instrs) {
 			if (instr.op == move) {
+				if (debug) {System.out.print(instr + " ");}
 				newValue = instr.arg1;
 				oldInstr = (Instruction) instr.arg2;
+
+				if (oldInstr.op == phi) { continue; }
+
+				if (debug) {System.out.print(oldInstr + " ");}
 				for (Instruction useSite : oldInstr.uses) {
 					if (newValue instanceof Instruction) {
 						useSite.replace(oldInstr, (Instruction) newValue);
@@ -102,6 +121,7 @@ public class Optimizer {
 					}
 				}
 				oldInstr.delete();
+				if (debug) { System.out.print(" deleted \n"); }
 			}
 		}
 	}

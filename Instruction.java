@@ -106,10 +106,12 @@ public class Instruction extends Value {
 	}
 
 	public void deleteUse(Instruction instr) {
-		if (instrsUsed[0] == instr) {
-			instrsUsed[0] = null;
-		} else if (instrsUsed[1] == instr) {
-			instrsUsed[1] = null;
+		if (instrsUsed != null) {
+			if (instrsUsed[0] == instr) {
+				instrsUsed[0] = null;
+			} else if (instrsUsed[1] == instr) {
+				instrsUsed[1] = null;
+			}
 		}
 	}
 
@@ -225,14 +227,14 @@ public class Instruction extends Value {
 	// Return the most immediately dominating instruction that is equivalent
 	// to this instruction. If none exists, return null.
 	public Instruction equivDominatingInstr() {
-		Instruction current = this;
-		Instruction prev    = this.sameOpDominator;
-		while (prev != null) {
-			if (current.equivalent(next)) {
-				return prev;
+		Instruction current  = this;
+		Instruction previous = this.sameOpDominator;
+		while (previous != null) {
+			if (current.equivalent(previous)) {
+				return previous;
 			}
-			current = prev;
-			prev    = prev.sameOpDominator;
+			current = previous;
+			previous = previous.sameOpDominator;
 		}
 		return null;
 	}
@@ -255,8 +257,6 @@ public class Instruction extends Value {
 	// Convert all variables related to this instruction into 
 	// pure instructions.
 	public void varsToInstrs() {
-		 //System.out.println("Instruction " + shortRepr()); 
-	 //System.out.println(dataToString()); 
 		if (varDefd != null) {
 			uses = varDefd.uses;
 		}
@@ -276,12 +276,10 @@ public class Instruction extends Value {
 			}
 			for (int i = 0; i < 2; i++) {
 				if (varsUsed[i] != null && instrsUsed[i] == null) {
-					//System.out.println("Adding used instr " + varsUsed[i].def.shortRepr()); 
 					instrsUsed[i] = varsUsed[i].def;
 				}
 			}
 		}
-		//System.out.println(dataToString()); 
 	}
 
 	// Replace all instances of oldInstr seen by this instruction
@@ -362,6 +360,8 @@ public class Instruction extends Value {
 	public String toString() {
 		if (deleted) {
 			return id + " deleted. \n";
+		} else if (op == phi) {
+			return id + " : PHI " + varDefd.shortRepr() + " := " + arg1.shortRepr() + " " + arg2.shortRepr() + "\n";
 		} else if (arg1 != null && arg2 != null) {
 			return id + " : " + ops[op] + " " + arg1.shortRepr() 
 				   + " " + arg2.shortRepr() + "\n";
