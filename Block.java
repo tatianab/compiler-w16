@@ -135,8 +135,15 @@ public class Block extends Value {
         for (String varianceName: changeVar) {
             Variable var1 = in1.fetchLastDefinedInstance(varianceName);
             Variable var2 = in2.fetchLastDefinedInstance(varianceName);
+<<<<<<< HEAD
             if (var1 != null && var2 != null) {
                 instr = inpr.createInstr();
+=======
+            if (var1 != null && var2 != null && var1 != var2) {
+                Instruction instr = inpr.createInstr();
+                
+                //this.addInstr(instr); // Add instruction to current block.
+>>>>>>> 1019d3dbc8db5cb7b10a44e8ea3db4c3d30abb43
                 
                 instr.setArgs(var1, var2);
                 instr.setOp(Instruction.phi);
@@ -181,8 +188,17 @@ public class Block extends Value {
 	}
 	/* End previous block methods. */
 
+	public void smartlyCopy(HashMap<String, Variable> source, HashMap<String, Variable> target) {
+		for (String key: source.keySet()) {
+			if (target.containsKey(key) == false) {
+				target.put(key, source.get(key));
+			}
+		}
+	}
+
 	/* Methods dealing with next blocks. */
 	public void addNext(Block next, boolean jump) {
+		smartlyCopy(createdValue, next.createdValue);
 		if (jump) {
 			branch = next;
 		} else {
@@ -192,6 +208,9 @@ public class Block extends Value {
 	}
 
 	public void addNext(Block fallThrough, Block branch) {
+		smartlyCopy(createdValue, fallThrough.createdValue);
+		smartlyCopy(createdValue, branch.createdValue);
+
 		this.fallThrough = fallThrough;
 		this.branch = branch;
 		fallThrough.addPrev(this);
