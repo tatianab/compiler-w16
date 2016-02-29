@@ -152,7 +152,7 @@ public class Instruction extends Value {
         if (this.arg1 == original) {
             this.arg1 = updated;
         }
-        if (this.arg2 == original) {
+        if (this.arg2 == original && op != move) {
             this.arg2 = updated;
         }
     }

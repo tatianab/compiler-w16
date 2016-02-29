@@ -135,15 +135,11 @@ public class Block extends Value {
         for (String varianceName: changeVar) {
             Variable var1 = in1.fetchLastDefinedInstance(varianceName);
             Variable var2 = in2.fetchLastDefinedInstance(varianceName);
-<<<<<<< HEAD
-            if (var1 != null && var2 != null) {
-                instr = inpr.createInstr();
-=======
+
             if (var1 != null && var2 != null && var1 != var2) {
-                Instruction instr = inpr.createInstr();
+                instr = inpr.createInstr();
                 
                 //this.addInstr(instr); // Add instruction to current block.
->>>>>>> 1019d3dbc8db5cb7b10a44e8ea3db4c3d30abb43
                 
                 instr.setArgs(var1, var2);
                 instr.setOp(Instruction.phi);
