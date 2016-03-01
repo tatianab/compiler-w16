@@ -1,6 +1,7 @@
 main
 var a, b,c,d,e;
 {
+	let b <- 0;
     let e <- b;
     
     if c < 3 then

@@ -65,15 +65,20 @@ public class Block extends Value {
 		if (begin == null) {
 			begin = instr;
 		} else {
-			current.next = instr;
-			instr.prev   = current;
+			if (current != null) {
+				current.next = instr;
+				instr.prev   = current;
+			} else {
+				Compiler.error("(In Block " + this + instrsToString() + "\n" +
+					"No current instruction set.");
+			}
 		}
 		instr.setBlock(this);
 		current = instr;
 	}
 
     public void addReturnValue(Variable resultVar) {
-        //Add instruction to the map
+        // Add instruction to the map
         if (resultVar != null) {
             createdValue.put(resultVar.ident, resultVar);
         }
@@ -145,6 +150,7 @@ public class Block extends Value {
                 instr.setOp(Instruction.phi);
             
                 instr.setBlock(this);
+                this.current = instr;
                 
                 // Reassign for this Variable.
                 Variable var = new Variable(var1.id, table.getName(var1.id));
@@ -291,7 +297,7 @@ public class Block extends Value {
 		String result = "";
 		Instruction instr = begin;
 		while (instr != end) {
-			result += instr.toString();
+			result += instr.toString() + "\n";
 			instr = instr.next;
 		}
 		if (end != null) {

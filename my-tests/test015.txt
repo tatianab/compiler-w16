@@ -35,6 +35,7 @@ main
 		return x
     };
     {
+        let too <- 0;
         let foo <- 3+too;
         let af <- foo+6
 

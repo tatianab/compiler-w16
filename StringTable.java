@@ -102,6 +102,14 @@ public class StringTable {
 		}
 	}
 
+	public void declareFormalParam(int id) {
+		Variable variable = new Variable(id);
+		StringData data = get(id);
+		data.lastVar = variable;
+		variable.instance = 0;
+		variable.ident = data.name;
+	}
+
 	/* StringData class to encapsulate information about each string in the
 	   program. */
 	private class StringData {

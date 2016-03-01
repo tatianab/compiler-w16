@@ -41,11 +41,29 @@ public class IntermedRepr {
 		instrs        = new ArrayList<Instruction>();
 		currentBlocks = new Stack<Block>();
         currentRepresentation = this;
+
+        currentFunction = null;
 	}
 
 	public Block begin() {
 		Block block = addBlock("Program begins.");
 		return block;
+	}
+
+	// Begin compiling a function.
+	public void beginFunction(Function function) {
+		this.currentFunction = function;
+		Block enter = addBlock("Enter function " + function.shortRepr());
+		endBlock();
+		function.begin(enter);
+	}
+
+	// Clean up after compiling a function.
+	public void endFunction() {
+		Block exit = addBlock("Exit function " + currentFunction.shortRepr());
+		currentFunction.end(exit);
+		endBlock();
+		this.currentFunction = null;
 	}
 
 	// Return the current block.
@@ -56,7 +74,19 @@ public class IntermedRepr {
 		return currentBlocks.peek();
 	}
 
-	
+	// Create a new block without inserting it.
+	public Block createBlock() {
+		Block block = new Block(nextOpenBlock);
+		nextOpenBlock++;
+		return block;
+	}
+
+	public Block createBlock(String description) {
+		Block block = new Block(nextOpenBlock, description);
+		nextOpenBlock++;
+		return block;
+	}
+
 	// Create a new block and insert it.
 	public Block addBlock() {
 		Block block = new Block(nextOpenBlock);
@@ -98,15 +128,10 @@ public class IntermedRepr {
 
 	// Add a new instruction to the current block.
 	public Instruction addInstr() {
-		try {
-			Instruction instr = new Instruction(nextOpenInstr);
-			nextOpenInstr++;
-			insertInstr(instr);
-			return instr;
-		} catch (Exception e) { 
-			error("Possible null pointer in addInstr.");
-			return null;
-		}
+		Instruction instr = new Instruction(nextOpenInstr);
+		nextOpenInstr++;
+		insertInstr(instr);
+		return instr;
 	}
 
 	public Instruction addInstr(int op) {
@@ -129,8 +154,13 @@ public class IntermedRepr {
 
 	// Insert an existing instruction into the current block.
 	public void insertInstr(Instruction instr) {
-		currentBlock().addInstr(instr); // Add instruction to current block.
-		instrs.add(instr);              // Add instruction to list of instructions.
+		Block current = currentBlock(); 
+		if (current != null) {
+			currentBlock().addInstr(instr); // Add instruction to current block.
+			instrs.add(instr);              // Add instruction to list of instructions.
+		} else {
+			if (debug) { System.out.println("Instruction could not be added to current block."); }
+		}
 	}
 
 	// Add function call instruction.

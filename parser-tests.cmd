@@ -1,38 +1,7 @@
 @echo off
 
-echo Compiling...
-javac Parser.java
-
-echo Testing...
-echo.
-echo ---------------------------------
-echo Running syntax-error...
-java Parser my-tests/syntax-error.txt
-echo ---------------------------------
-
-echo.
-echo ---------------------------------
-echo Running big...
-java Parser my-tests/big.txt
-echo ---------------------------------
-
-echo.
-echo ---------------------------------
-echo Running cell...
-java Parser my-tests/cell.txt
-echo ---------------------------------
-
-echo.
-echo ---------------------------------
-echo Running factorial...
-java Parser my-tests/factorial.txt
-echo ---------------------------------
-
-echo.
-echo ---------------------------------
-echo Running parser-test...
-java Parser my-tests/parser-test.txt
-echo ---------------------------------
+echo Testing...                              > result.out 2>&1                              
+echo.                                       >> result.out 2>&1
 
 set x=1
 :loop
@@ -40,12 +9,12 @@ set x=1
    set padded=00%x%
    set padded=%padded:~-2%
 
-   REM: Run Parser.
-   echo.
-   echo ---------------------------------
-   echo Running test0%padded%...
-   java Parser my-tests/test0%padded%.txt
-   echo ---------------------------------
+   REM: Run compiler.
+   echo.                                    >> result.out 2>&1 
+   echo ---------------------------------   >> result.out 2>&1   
+   echo Running test0%padded%...            >> result.out 2>&1
+   java Compiler my-tests/test0%padded%.txt >> result.out 2>&1
+   echo ---------------------------------   >> result.out 2>&1
    
 
    REM: Increment value.

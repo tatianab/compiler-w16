@@ -16,6 +16,7 @@ public class Array extends Value {
 	// Constructor
 	public Array() {
 		// TODO
+		collectDims = new ArrayList<Integer>();
 	}
 
 	public void addDim(int dim) {
@@ -24,6 +25,7 @@ public class Array extends Value {
 
 	public void commitDims() {
 		int i = 0;
+		dims = new int[collectDims.size()];
 		for (Integer dim : collectDims) {
 			dims[i] = dim;
 			i++;

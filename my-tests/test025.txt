@@ -1,6 +1,7 @@
 main
 var a, b, c, d, e, f, g;
 {
+	let b <- 0;
 	let a <- b + c;
 	let d <- b + c;
 	let e <- c + b + d;

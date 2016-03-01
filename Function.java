@@ -14,8 +14,8 @@ public class Function extends Value {
 
 	public boolean builtIn;
 
-	public Block start;
-	public Block end;
+	public Block enter;
+	public Block exit;
 	public IntermedRepr program; // The program that contains this function.
 
 	public Instruction returnInstr;
@@ -33,15 +33,24 @@ public class Function extends Value {
 	}
 
 	public void setNumParams(int numParams) {
-		this.numParams = numParams;
+		this.numParams    = numParams;
+		this.formalParams = new String[numParams];
+		for (int i = 0; i < numParams; i++) {
+			formalParams[i] = "var" + Integer.toString(i); 
+		}
 	}
 
-	public void begin() {
-		// TODO
+	public void setFormalParams(String[] formalParams) {
+		this.numParams = formalParams.length;
+		this.formalParams = formalParams;
 	}
 
-	public void end() {
-		// TODO
+	public void begin(Block enter) {
+		this.enter = enter;
+	}
+
+	public void end(Block exit) {
+		this.exit = exit;
 	}
 
 	// Generate a call to this function.
@@ -70,15 +79,24 @@ public class Function extends Value {
 
 	@Override
 	public String shortRepr() {
-		String result = ident + "(" + numParams + ")";
-		// int i;
-		// for (i = 0; i < numParams - 1; i++) {
-		// 	result += formalParams[i] + ",";
-		// }
-		// if (numParams > 0) {
-		// 	result += formalParams[i];
-		// }
-		// result += ")";
+		String result = ident + "("; // + numParams + ")";
+		int i;
+		for (i = 0; i < numParams - 1; i++) {
+			result += formalParams[i] + ",";
+		}
+		if (numParams > 0) {
+			result += formalParams[i];
+		}
+		result += ")";
+		return result;
+	}
+
+	public static String paramsToString(Value[] params) {
+		String result = "(";
+		for (Value val : params) {
+			result += val.shortRepr();
+		}
+		result += ")";
 		return result;
 	}
 

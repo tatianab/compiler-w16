@@ -33,7 +33,7 @@ public class Instruction extends Value {
 	public Instruction[] instrsUsed; // The instructions used by this one.
 	LinkedList<Instruction> uses;    // The instructions that use the result of this instruction.
 
-	int register; // The register that the value of this instruction is assigned to.
+	public int register; // The register that the value of this instruction is assigned to.
 
 	/* Operation codes. */
 	public static int neg     = 1;
@@ -151,8 +151,12 @@ public class Instruction extends Value {
 		setUsage(arg);
 	}
 
+	// Should only be called for call instructions.
 	public void setParams(Value[] params) {
 		this.params = params;
+		for (Value param : params) {
+			setUsage(param);
+		}
 	}
     
     public void updateArg(Value original, Value updated) {
@@ -175,22 +179,6 @@ public class Instruction extends Value {
 			this.uses( (Instruction) arg);
 		}
 	}
-
-	// public void setDefn(Variable var, Value expr) {
-	// 	this.op = move;
-	// 	this.arg1 = expr;
-	// 	this.arg2 = var;
-	// 	this.varDefd = var;
-	// 	var.def = this;
-	// 	if (expr instanceof Variable) {
-	// 		this.uses((Variable) expr);
-	// 	}
-        
- //        // Add instruction to the map
- //        if (block != null) {
- //            block.addReturnValue(var);
- //        }
-	// }
 
 	public void setPrev(Instruction instr) {
 		this.prev = instr;
@@ -366,16 +354,18 @@ public class Instruction extends Value {
 	@Override
 	public String toString() {
 		if (deleted) {
-			return id + " deleted. \n";
+			return id + " deleted.";
+		} else if (op == call) {
+			return id + " : call " + arg1.shortRepr() + " on input " + Function.paramsToString(params);
 		} else if (op == phi) {
-			return id + " : PHI " + varDefd.shortRepr() + " := " + arg1.shortRepr() + " " + arg2.shortRepr() + "\n";
+			return id + " : PHI " + varDefd.shortRepr() + " := " + arg1.shortRepr() + " " + arg2.shortRepr();
 		} else if (arg1 != null && arg2 != null) {
 			return id + " : " + ops[op] + " " + arg1.shortRepr() 
-				   + " " + arg2.shortRepr() + "\n";
+				   + " " + arg2.shortRepr();
 		} else if (arg1 != null) {
-			return id + " : " + ops[op] + " " + arg1.shortRepr() + "\n";
+			return id + " : " + ops[op] + " " + arg1.shortRepr();
 		} else {
-			return id + " : " + ops[op] + "\n";
+			return id + " : " + ops[op];
 		}
 	}
 

@@ -5,6 +5,7 @@
  */
 //
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class Parser {
 	/* Parser for PL241 language.
@@ -142,42 +143,59 @@ public class Parser {
 	/* funcBody - function body.
 	 * funcBody = { varDecl } "{" [statSequence] "}".
 	 */
-	private void funcBody() {
+	private void funcBody(Function function) {
+
+		// Begin function and set up.
+		program.beginFunction(function);
+		Block body = program.addBlock("Body of function " + function.shortRepr());
+		function.enter.addNext(body, false); // Connect blocks - fall through.
 
 		// Variable declarations.
 		while (check(arrToken) || check(varToken)) {
 			varDecl();
 		}
-
+		
 		// Function body.
 		expect(beginToken);
 		if (!check(endToken)) {
-			statSequence();
+			body = statSequence();
 		} 
 		expect(endToken);
 
+		// End function and clean up.
+		program.endBlock();
+		program.endFunction();
+		body.addNext(function.exit, false); // Connect blocks - fall through.
 	}
 
 	/* formalParam - formal parameter.
 	 * formalParam = "(" [ident { "," ident }] ")".
 	 * Parameters in function/procedure definitions.
 	 */
-	private int formalParam() {
+	private void formalParam(Function function) {
 		expect(openparenToken);
-		int numParams = 0;
+		int id;
+		ArrayList<String> formalParams = new ArrayList<String>();
 
-		// Find 0 or more identifiers separated by commas.
+		if (debug) { System.out.println("Capturing formal parameters of " + function.shortRepr()); }
+
+		// Find 0 or more formal parameters separated by commas.
 		if (!check(closeparenToken)) {
-			ident();
-			numParams++;
+			id = ident();
+			table.declareFormalParam(id);
+			formalParams.add(table.getName(id));
 			while (accept(commaToken)) { 
-				ident();
-				numParams++;
+				id = ident();
+				table.declareFormalParam(id);
+				formalParams.add(table.getName(id));
 			}
 		}
 
+		function.setFormalParams(formalParams.toArray(new String[formalParams.size()]));
+
+		if (debug) { System.out.println("Formal parameters: " + function.shortRepr()); }
+
 		expect(closeparenToken);
-		return numParams;
 	}
 
 	/* funcDecl - function declaration.
@@ -185,20 +203,23 @@ public class Parser {
 	 */
 	private void funcDecl() {
 		if (accept(funcToken) || accept(procToken)) {
-			int funcId;
-			int numParams = 0;
-			funcId = ident();                // Procedure/function id.
+			int funcId = ident(); // Procedure/function id.
+
+			// Add function/procedure to string table.
+	 		String funcName = table.getName(funcId);
+	 		Function function = new Function(funcId, funcName);
+	 		table.declare(function, funcId);
+
+	 		// Get formal parameters.
 			if (!check(semiToken)) {
-				numParams = formalParam();   // # of formal parameters.
+				formalParam(function);   
 			}
+
+	 		// Get body of function or procedure.
 			expect(semiToken);
-			funcBody();          // Body of function/procedure.
+			funcBody(function);         
 			expect(semiToken);
 
-			// Add function/procedure block pointer to string table.
-	 		String funcName = table.getName(funcId);
-	 		Function function = new Function(funcId, funcName, numParams);
-	 		table.declare(function, funcId);
 		} else { 
 			error("Invalid function declaration.");
 	 	}
@@ -299,6 +320,8 @@ public class Parser {
 	private void whileStatement() {
 		Block previous, join, whileBlock, endWhileBlock, follow;
 
+		if (debug) { System.out.println("Parsing while block."); }
+
 		expect(whileToken);
 		previous = program.currentBlock(); // Grab previous block.
 		program.endBlock();				   // End previous block.
@@ -341,7 +364,8 @@ public class Parser {
 	private void ifStatement() {
 		Block previous, compare, trueBlock, falseBlock, 
 			  endTrueBlock, endFalseBlock, join;
-		
+
+		if (debug) { System.out.println("Parsing if statement."); }
 
 		expect(ifToken);
 		previous = program.currentBlock();   // Grab the previous block.
@@ -490,9 +514,11 @@ public class Parser {
 			if (accept(plusToken)) {
 				next = term();   
 				expr = program.addInstr(add, expr, next);
+				if (debug) { System.out.println("Generated instruction " + expr); }
 			} else if (accept(minusToken)) {
 				next = term();   
 				expr = program.addInstr(sub, expr, next);
+				if (debug) { System.out.println("Generated instruction " + expr); }
 			}
 		}
 
@@ -511,9 +537,11 @@ public class Parser {
 			if (accept(timesToken)) {
 				next = factor();
 				term = program.addInstr(mul, term, next);
+				if (debug) { System.out.println("Generated instruction " + term); }
 			} else if (accept(divToken)) {
 				next = factor();
 				term = program.addInstr(div, term, next);
+				if (debug) { System.out.println("Generated instruction " + term); }
 			}
 		}
 		return term;
