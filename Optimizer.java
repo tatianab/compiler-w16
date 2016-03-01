@@ -23,6 +23,14 @@ public class Optimizer {
 		this.debug   = debug;
 	}
 
+	public IntermedRepr preprocess() {
+		if (debug) { System.out.println("Converting variables to instructions..."); }
+		program.varsToInstrs();
+		if (debug) { System.out.println("Setting instruction dominators..."); }
+		program.setInstrDominators();
+		return program;
+	}
+
 	public IntermedRepr optimize() {
 		if (debug) { System.out.println("Eliminating dead code..."); }
 		deadCodeElim();

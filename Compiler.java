@@ -28,6 +28,7 @@ public class Compiler {
 	final boolean regAlloc; // Register allocation.
 	final boolean byteCode; // Byte code.
 	final boolean assembly; // Assembly code.
+	final boolean vtoi;     // Convert vars to instrs after parsing.
 
 	// Filename data.
 	final String filename;    // The file to compile.
@@ -50,7 +51,8 @@ public class Compiler {
 		boolean optimize = false;
 		boolean regAlloc = false;
 		boolean byteCode = false;
-		boolean assembly = 	false;
+		boolean assembly = false;
+		boolean vtoi     = false;
 
     	try {
      		filename = args[0];     // Get the filename.
@@ -82,13 +84,16 @@ public class Compiler {
      			if (contains(args, "-assem")) {
      				assembly = true;
      			}
+     			if (contains(args, "-vtoi")) {
+     				vtoi     = true;
+     			}
      		} 
      	} catch (Exception e) {
-      		System.out.println("Usage: java Compiler <filename> [-d] [-cfg] [-dt] [-ifg] [-instr] [-O]");
+      		System.out.println("Usage: java Compiler <filename> [-d] [-cfg] [-dt] [-ifg] [-instr] [-O] [-o] [-assem] [-vtoi]");
     	}
 
     	// Compile the file.
-    	Compiler compiler = new Compiler(filename, debug, cfg, dt, ifg, instr, optimize, regAlloc, byteCode, assembly);
+    	Compiler compiler = new Compiler(filename, debug, cfg, dt, ifg, instr, optimize, regAlloc, byteCode, assembly, vtoi);
     	compiler.compile();
 		
 	}
@@ -98,8 +103,11 @@ public class Compiler {
 		Parser parser        = new Parser(filename, debug);
 		IntermedRepr program = parser.parse();
 
+		Optimizer optimizer  = new Optimizer(program, debug);
+		if (vtoi || optimize || regAlloc) {
+			program = optimizer.preprocess();
+		}
 		if (optimize) {
-			Optimizer optimizer  = new Optimizer(program, debug);
 			program = optimizer.optimize();
 		}
 		if (regAlloc) {
@@ -134,7 +142,7 @@ public class Compiler {
 
 	// Constructor.
 	public Compiler(String filename, boolean debug, boolean cfg, boolean dt, boolean ifg,
-					boolean instr, boolean optimize, boolean regAlloc, boolean byteCode, boolean assem) {
+					boolean instr, boolean optimize, boolean regAlloc, boolean byteCode, boolean assembly, boolean vtoi) {
 		this.filename   = filename;
 		this.filePrefix = getFilePrefix();
 		this.debug    = debug;
@@ -144,9 +152,10 @@ public class Compiler {
 		this.instr    = instr;
 		this.optimize = optimize;
 		this.byteCode = byteCode;
-		this.assembly    = assem;
+		this.assembly = assembly;
+		this.vtoi     = vtoi;
 
-		if (ifg||byteCode || assembly) {
+		if (ifg || byteCode || assembly) {
 			this.regAlloc = true;
 		} else {
 			this.regAlloc = regAlloc;

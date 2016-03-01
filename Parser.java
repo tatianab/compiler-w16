@@ -104,10 +104,6 @@ public class Parser {
 	public IntermedRepr parse() {
 		if (debug) { System.out.println("Parsing program..."); }
 		computation();   // Parse the program recursively.
-		if (debug) { System.out.println("Converting variables to instructions..."); }
-		program.varsToInstrs();
-		if (debug) { System.out.println("Setting instruction dominators..."); }
-		program.setInstrDominators();
 		return program;
 	}
 
