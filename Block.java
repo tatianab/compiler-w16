@@ -148,13 +148,11 @@ public class Block extends Value {
                 
                 // Reassign for this Variable.
                 Variable var = new Variable(var1.id, table.getName(var1.id));
-                table.update(var1.id, var);
+                table.reassignVar(var1.id, var);
 
                 instr.defines(var);
         		var.definedAt(instr);
         		inpr.currentBlock().addReturnValue(var);
-
-                //inpr.addAssignment(var, instr);
                 
                 if (phiBegin == null) {
                     phiBegin = instr;

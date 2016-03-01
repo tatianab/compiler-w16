@@ -148,58 +148,22 @@ public class Tokenizer {
 	// Signal an error with current file position.
 	public void error(String errorMsg) {
 		System.out.println("\nERROR: " + errorMsg);
-		System.out.println("Last ident: " + idToString(id) + 
+		System.out.println("Last ident: " + table.getName(id) + 
 						   ", last val = " + val + ", current symbol = " + sym + ".");
 		System.exit(0);
 	}
 
-	/* String table methods.*/
-	// public Variable reassign(Variable var) {
-	// 	return table.reassign(var.id);
-	// }
-
-	public Variable getVar(int id) {
-		return table.get(id);
-	}
-
-	public Variable newVar(int id) {
-		Variable newVar = new Variable(id, table.getName(id));
-		return newVar;
-	}
-
-	public void updateVar(Variable var) {
-		table.update(var.id, var);
-	}
-
-	// Convert an id number to its String representation.
-	public String idToString(int id) {
-		return table.getName(id);
-	}
-
-	// Convert an identifier name to its integer id.
-	public int stringToId(String name) {
-		return table.getID(name);
+	// Grab the string table.
+	public StringTable getTable() {
+		return table;
 	}
 
 	// Returns the String representation of the current token.
 	public String currentToken() {
 		if (sym != number) {
-			return idToString(id);
+			return table.getName(id);
 		} else { return Integer.toString(val); }
 	}
-
-	// Return the String representation of the given token.
-	// Input token is a token code, not an id.
-	public String tokenToString(int token) {
-		return table.symToString(token);
-	}
-
-	// Check if the given identifier is a built-in function.
-	public boolean isBuiltIn(int id) {
-		String name = table.getName(id);
-		return ( name.equals("InputNum") || name.equals("OutputNum")|| name.equals("OutputNewLine") );
-	}
-	/* End identifier table methods. */
 
 	/* Helper functions to check the type of characters
 	   and do type conversions. */

@@ -16,6 +16,13 @@ public class Variable extends Value {
 
 	private static int nextAvailableId = 0;
 
+	public Variable() {
+		this.uses = new LinkedList<Instruction>();
+
+		this.uid = nextAvailableId;
+		nextAvailableId++;
+	}
+
 	public Variable(int id) {
 		this.id = id;
 		this.uses = new LinkedList<Instruction>();
@@ -56,6 +63,12 @@ public class Variable extends Value {
 	// Set the next instruction that uses this variable.
 	public void usedIn(Instruction use) {
 		this.uses.push(use);
+	}
+
+	// This variable is declared but uninitialized if the
+	// instance is -1.
+	public boolean uninit() {
+		return (instance == -1);
 	}
 
 	// Print out ident_id, e.g, a_1, a_2 etc.

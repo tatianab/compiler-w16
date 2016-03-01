@@ -176,4 +176,10 @@ public class Compiler {
 		return false;
 	}
 
+	// Generic error message that does not show location in program.
+	public static void error(String message) {
+		System.out.println("ERROR: " + message);
+		System.exit(0);
+	}
+
 }

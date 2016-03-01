@@ -2,9 +2,10 @@ main
 var q,par;
 {
 let par <- 0;
+let q <- 1;
 while 3 < par do
     if 2 < 3 then
-        let q <- par+q
+        let q <- par + q
     fi;
     while 4 >= q do
         let q <- par - q

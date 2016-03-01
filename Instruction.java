@@ -15,6 +15,7 @@ public class Instruction extends Value {
 	public int op;            // Operation code.
 	public Value arg1;  	  // First argument, or only argument.
 	public Value arg2;  	  // Second argument.
+	public Value[] params;    // For call instructions only.
 
 	public Instruction prev;  // Previous instruction, or null if first in block.
 	public Instruction next;  // Next instruction, or null if end of block.
@@ -61,12 +62,14 @@ public class Instruction extends Value {
 	public static int blt     = 23;
 	public static int bgt     = 24;
 	public static int ble     = 25;
+
+	public static int call    = 30;
 	/* End operation codes. */
 
 	private static String[] ops = new String[]{null, "neg","add","sub","mul","div",
 												"cmp","adda","load","store","move","phi","end","bra",
 												"read","write","writeNL", null, null, null,
-												"bne","beq","bge","blt","bgt","ble"};
+												"bne","beq","bge","blt","bgt","ble", null, null, null, null, "call"};
 	/* End operation codes. */
 
 	/* Constructor. */
@@ -147,6 +150,10 @@ public class Instruction extends Value {
 		}
 		setUsage(arg);
 	}
+
+	public void setParams(Value[] params) {
+		this.params = params;
+	}
     
     public void updateArg(Value original, Value updated) {
         if (this.arg1 == original) {
@@ -169,21 +176,21 @@ public class Instruction extends Value {
 		}
 	}
 
-	public void setDefn(Variable var, Value expr) {
-		this.op = move;
-		this.arg1 = expr;
-		this.arg2 = var;
-		this.varDefd = var;
-		var.def = this;
-		if (expr instanceof Variable) {
-			this.uses((Variable) expr);
-		}
+	// public void setDefn(Variable var, Value expr) {
+	// 	this.op = move;
+	// 	this.arg1 = expr;
+	// 	this.arg2 = var;
+	// 	this.varDefd = var;
+	// 	var.def = this;
+	// 	if (expr instanceof Variable) {
+	// 		this.uses((Variable) expr);
+	// 	}
         
-        // Add instruction to the map
-        if (block != null) {
-            block.addReturnValue(var);
-        }
-	}
+ //        // Add instruction to the map
+ //        if (block != null) {
+ //            block.addReturnValue(var);
+ //        }
+	// }
 
 	public void setPrev(Instruction instr) {
 		this.prev = instr;

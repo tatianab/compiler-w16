@@ -24,7 +24,6 @@ public class IntermedRepr {
 	public Stack<Block> currentBlocks;
 	public Block currentBlock;
 
-	// public DominatorTree dominatorTree; // Dominator tree.
 	public InterferenceGraph ifg;          // Interference graph.
 
 	// Function compilation.
@@ -46,7 +45,6 @@ public class IntermedRepr {
 
 	public Block begin() {
 		Block block = addBlock("Program begins.");
-		// dominatorTree = new DominatorTree(block);
 		return block;
 	}
 
@@ -85,7 +83,7 @@ public class IntermedRepr {
 		currentBlocks.push(block); // Add block to block stack.
 	}
 
-	// Add a new instruction to the current block.
+	// Create a new instruction without adding it to the current block.
     public Instruction createInstr() {
         try {
             Instruction instr = new Instruction(nextOpenInstr);
@@ -103,8 +101,7 @@ public class IntermedRepr {
 		try {
 			Instruction instr = new Instruction(nextOpenInstr);
 			nextOpenInstr++;
-			currentBlock().addInstr(instr); // Add instruction to current block.
-			instrs.add(instr);              // Add instruction to list of instructions.
+			insertInstr(instr);
 			return instr;
 		} catch (Exception e) { 
 			error("Possible null pointer in addInstr.");
@@ -130,17 +127,26 @@ public class IntermedRepr {
 		return instr;
 	}
 
+	// Insert an existing instruction into the current block.
+	public void insertInstr(Instruction instr) {
+		currentBlock().addInstr(instr); // Add instruction to current block.
+		instrs.add(instr);              // Add instruction to list of instructions.
+	}
+
+	// Add function call instruction.
+	public Instruction addFunctionCall(Function function, Value[] params) {
+		Instruction instr = addInstr();
+		function.generateCall(instr, params);
+		return instr;
+	}
+
+	// Add assignment (move) instruction.
 	public Instruction addAssignment(Variable var, Value expr) {
 		Instruction moveInstr = addInstr(move, expr, var);
 		moveInstr.defines(var);
         var.definedAt(moveInstr);
         currentBlock().addReturnValue(var);
 		return moveInstr;
-	}
-
-	public void insertFunc(Function func) {
-		// Loop over blocks in function and add them.
-		// TODO.
 	}
 
 	// Signal that the current block is finished.

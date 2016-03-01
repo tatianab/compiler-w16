@@ -16,34 +16,9 @@ public class StringTable {
 	private ArrayList<StringData>      ids;     // Lookup id --> string info.
 	private int nextOpenID;
 
-	private class StringData {
-		/* Stores information about a string in the program. */
-		public int id;        // ID number for this string.
-		public String name;   // Name used in original program for this string.
-		public int token;     // Token value of this string.
-		// public int current;   // Number of times we have re-defined this string.
-		public Variable last; // The last variable associated with this string.
-
-		public StringData(int id, String name, int token) {
-			this.id = id;
-			this.name = name;
-			this.token = token;
-			// this.current = 0;
-			this.last    = null;
-		}
-
-		// This is called when a variable is redefined in the program.
-		// public Variable reassign() {
-		// 	Variable newVar = new Variable(id, name, current);
-		// 	current++;
-		// 	last = newVar;
-		// 	return newVar;
-		// }
-
-	}
-
-	// Constructor.
-	// Automatically adds all reserved words to the string table.
+	/* Constructor.
+	 * Adds all reserved words to the string table.
+	 */
 	public StringTable() {
 		nextOpenID = 0;
 		strings = new Hashtable<String, Integer>(reserved.length);
@@ -61,20 +36,20 @@ public class StringTable {
 			ids.add(id, new StringData(id, name, token));
 			nextOpenID++;
 		}
-	}
 
-	// Create and return a new variable associated with the given id.
-	// public Variable reassign(int id) {
-	// 	return ids.get(id).reassign();
-	// }
+		// Register built-in functions.
+		Function func;
+		int funcId;
+		for (String funcName : builtInFunctions) {
+			funcId = getID(funcName);
+			func = new Function(funcId, funcName);
+			if (funcName.equals("OutputNum")) {
+				func.setNumParams(1);
+			}
+			func.builtIn = true;
+			declare(func, funcId);
+		}
 
-	// Get the variable currently associated with the given id.
-	public Variable get(int id) {
-		return ids.get(id).last;
-	}
-
-	public void update(int id, Variable var) {
-		ids.get(id).last = var;
 	}
 
 	// Add a new string to the string table.
@@ -85,10 +60,81 @@ public class StringTable {
 		ids.add(id, new StringData(id, name, ident));
 	}
 
+	/* Methods related to variables, functions and arrays. */
+
+	/* Get the variable currently associated with the given id.
+	   Null if none exists. */
+	public Variable getVar(int id) {
+		return get(id).lastVar;
+	}
+
+	/* Get the array currently associated with the given id.
+	   Null if none exists. */
+	public Array getArr(int id) {
+		return get(id).lastArr;
+	}
+
+	/* Get the (user-defined) function currently associated with the given id.
+	   Null if none exists. */
+	public Function getFunc(int id) {
+		return get(id).lastFunc;
+	}
+
+	// Reset the "lastVar" data on the given id.
+	// Used when there is a new assignment to a variable.
+	public void reassignVar(int id, Variable var) {
+		get(id).lastVar = var;
+	}
+
+	// Declare a variable, array, or function.
+	public void declare(Value value, int id) {
+		StringData data = get(id);
+		if (value instanceof Variable) {
+			data.lastVar = (Variable) value;
+		    ((Variable) value).instance = -1;
+		    ((Variable) value).ident = data.name;
+		} else if (value instanceof Array) {
+			data.lastArr = (Array) value;
+			// ((Array) value).instance = -1;
+			((Array) value).ident = data.name;
+		} else if (value instanceof Function) {
+			data.lastFunc = (Function) value;
+		}
+	}
+
+	/* StringData class to encapsulate information about each string in the
+	   program. */
+	private class StringData {
+		/* Stores information about a string in the program. */
+		public int id;           // ID number for this string.
+		public String name;      // Name used in original program for this string.
+		public int token;        // Token value of this string.
+
+		public Variable lastVar;  // The last variable associated with this string.
+		public Array    lastArr;  // The last array associated with this string.
+		public Function lastFunc; // The last function associated with this string.
+
+		public StringData(int id, String name, int token) {
+			this.id       = id;
+			this.name     = name;
+			this.token    = token;
+			this.lastVar  = null;
+			this.lastArr  = null;
+			this.lastFunc = null;
+		}
+	}
+
+	/* Methods related to low-level conversions. */
+
+	// Get the StringData object associated with the given id.
+	public StringData get(int id) {
+		return ids.get(id);
+	}
+
 	// Get the token associated with the given string.
 	public int getSym(String name) {
 		int id = strings.get(name);
-		return ids.get(id).token;
+		return get(id).token;
 	}
 
 	// Get the id associated with the given string.
@@ -98,7 +144,7 @@ public class StringTable {
 
 	// Get the string associated with the given id.
 	public String getName(int id) {
-		return ids.get(id).name;
+		return get(id).name;
 	}
 
 	// Check if the given string is already in the string table.
@@ -169,9 +215,12 @@ public class StringTable {
 		"*", "/", "+", "-", "==", "!=", "<", ">=", "<=", ">", ".",
 		",", "[", "]", ")", "<-", "then", "do", "(", ";", "{", "}", "od",
 		"fi", "else", "let", "call", "if", "while", "return", "var",
-		"array", "function", "procedure", "main", "InputNum", "OutputNum",
+		"array", "function", "procedure", "main","InputNum", "OutputNum",
 		"OutputNewLine"
 	};
+
+	private static final String[] builtInFunctions = new String[]{"InputNum", "OutputNum",
+		"OutputNewLine"};
 
 	private static final int[] reservedID = new int[]{
 		timesToken, divToken, plusToken, minusToken, eqlToken, neqToken, 

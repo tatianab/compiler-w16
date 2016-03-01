@@ -13,7 +13,8 @@ public class Parser {
 	 */
 
 	// Data members.
-	public Tokenizer scanner;    // Reads file and breaks it into tokens.
+	public StringTable  table;   // Table of identifiers.
+	public Tokenizer    scanner; // Reads file and breaks it into tokens.
 	public IntermedRepr program; // Intermediate representation of the program in SSA form, after parsing.
 
 	boolean debug;		         // Debugging flag.
@@ -87,6 +88,8 @@ public class Parser {
 	public static int blt     = Instruction.blt;
 	public static int bgt     = Instruction.bgt;
 	public static int ble     = Instruction.ble;
+
+	public static int call    = Instruction.call;
 	/* End operation codes. */
 
 	/* Constructor. */
@@ -94,6 +97,7 @@ public class Parser {
 		this.debug = debug;
 		scanner = new Tokenizer(filename);
 		program = new IntermedRepr(debug);
+		table   = scanner.getTable();
 	}
 
 	/* Return the program in SSA form. */
@@ -162,81 +166,88 @@ public class Parser {
 	 * formalParam = "(" [ident { "," ident }] ")".
 	 * Parameters in function/procedure definitions.
 	 */
-	private void formalParam() {
+	private int formalParam() {
 		expect(openparenToken);
+		int numParams = 0;
 
 		// Find 0 or more identifiers separated by commas.
 		if (!check(closeparenToken)) {
 			ident();
+			numParams++;
 			while (accept(commaToken)) { 
 				ident();
+				numParams++;
 			}
 		}
 
 		expect(closeparenToken);
-
+		return numParams;
 	}
 
 	/* funcDecl - function declaration.
 	 * funcDecl = ("function" | "procedure") ident [formalParam] ";" funcBody ";".
 	 */
 	private void funcDecl() {
-
-
 		if (accept(funcToken) || accept(procToken)) {
-			ident();             // Procedure/function name.
+			int funcId;
+			int numParams = 0;
+			funcId = ident();                // Procedure/function id.
 			if (!check(semiToken)) {
-				formalParam();   // Formal parameters.
+				numParams = formalParam();   // # of formal parameters.
 			}
 			expect(semiToken);
 			funcBody();          // Body of function/procedure.
 			expect(semiToken);
+
+			// Add function/procedure block pointer to string table.
+	 		String funcName = table.getName(funcId);
+	 		Function function = new Function(funcId, funcName, numParams);
+	 		table.declare(function, funcId);
 		} else { 
 			error("Invalid function declaration.");
 	 	}
-
-	 	// Add function/procedure block pointer to string table.
 	}
 
 	/* varDecl - variable declaration.
 	 * varDecl = typeDecl ident { "," ident } ";".
-	 * Not quite sure how to handle this yet.
 	 */
 	private void varDecl() {
-
-		/* Type type = */ typeDecl();   // Type of variable.
-		/* int id = */ ident();
-		// Add variable to symbol table.
+		Value variable = typeDecl();   // Get the variable or array.
+		int id = ident();
+		table.declare(variable, id);
+		if (debug) { System.out.println("Declared variable " + table.getVar(id).shortRepr()); }
 		while (accept(commaToken)) {
-			ident();  // Variable name(s).
-			// Add variable to symbol table.
+		    id = ident();
+			table.declare(variable, id);
+			if (debug) { System.out.println("Declared variable " + table.getVar(id).shortRepr()); }
 		}
 		expect(semiToken);
-
 	}
 
 	/* typeDecl - type declaration.
 	 * typeDecl = "var" | "array" "[" number "]" { "[" number "]" }.
 	 */
-	private void typeDecl() {
-
-		int type = -1;
+	private Value typeDecl() {
+		int dim;
 		if (accept(varToken)) {        // If of variable type.
-			// type = var
+			return new Variable();
 		} else if (accept(arrToken)) { // If of array type.
-			// type = array
+			Array array = new Array();
 			expect(openbracketToken);
-			number();                  // Array dimensions.
+			dim = number().value;            // Array dimensions.
+			array.addDim(dim);
 			expect(closebracketToken);
 			while (accept(openbracketToken)) {
-				number();			   // More array dimensions.
+				dim = number().value;        // More array dimensions.
+			    array.addDim(dim);			   
 				expect(closebracketToken);
 			}
+			array.commitDims();       // Done with array dimensions.
+			return array;
 		} else {
 			error("Invalid type declaration.");
+			return null;
 		}
-
-		// Return structure representing type and dimensions.
 	}
 
 	/* statSequence - sequence of statements.
@@ -244,12 +255,10 @@ public class Parser {
 	 * Mostly pass on work to other functions.
 	 */
 	private Block statSequence() {
-
 		statement();		// First statement.
 		while (accept(semiToken)) {
 			statement();    // More statements.
 		}
-
 		return program.currentBlock(); // Return the last block seen.
 	}
 
@@ -258,7 +267,6 @@ public class Parser {
 	 * For now, we pass on the work to other functions.
 	 */
 	private void statement() {
-
 		if (check(letToken)) {
 			assignment();			// If assigment statement.
 		} else if (check(callToken)) {
@@ -272,7 +280,6 @@ public class Parser {
 		} else {
 			error("Invalid statement.");
 		}
-
 	}
 
 	/* returnStatement.
@@ -395,7 +402,6 @@ public class Parser {
 		compare.dominates(trueBlock);
 		compare.dominates(join);
 
-
 	}
 
 	/* funcCall. 
@@ -408,76 +414,50 @@ public class Parser {
 		expect(callToken);
 
 		// Capture function call details.
-		/* Function func = scanner.getFunction( */ int id = ident(); // );   // Function name.
-		// if (func == null) {
-		// 	error("Function not defined.");
-		// }
+		int id = ident(); 					   // Function id.
+		Function function = table.getFunc(id);
+		int numParams     = function.numParams;
+		Value[] parameters  = new Value[numParams];
+		if (debug) { System.out.println("Function " + function.shortRepr() + " with " + numParams + " params.");}
 
 		// Check for correct # of parameters and store them.
+		int i = 0;
 		if (accept(openparenToken)) {
 			if (!check(closeparenToken)) {
-				expr = expression();         // Parameters.
+				if (i < numParams) {
+					expr = expression();     // First parameter.
+					parameters[i] = expr;
+					i++;
+				}
 				while (accept(commaToken)) {
-					expression();     // More parameters.
+					if (i < numParams) {
+						expr = expression();     // More parameters.
+						parameters[i] = expr;
+						i++;
+					}
 				}
 			}
 			expect(closeparenToken);
 		}
 
-		if (scanner.isBuiltIn(id)) {
-			// Handle built-in function.
-			return generateBuiltInFunc(id, expr);
-		} else {
-			// Handle user-defined function.
-			// program.addBlock("Enter function.");
-			// Set up stack.
-			// Unconditional branch to function.
-			// program.endBlock();
-			// program.addBlock("Exit function.");
-			// Clean up stack?
-			// Link to end of function.
-			// program.endBlock();
-			// program.addBlock("After function.")
-		}
-
-		return null;
-	}
-
-	// Generate code for the given build in function.
-	private Instruction generateBuiltInFunc(int id, Value param) {
-		String funcName = scanner.idToString(id);
-
-		if (funcName.equals("InputNum")) {
-			return program.addInstr(read);
-		} else if (funcName.equals("OutputNum")) {
-			return program.addInstr(write, param);
-		} else if (funcName.equals("OutputNewLine")) {
-			return program.addInstr(writeNL);
-		} else {
-			error("Built in function " + funcName + " not found.");
-		}
-
-		return null;
+		// Add function call to program and return the instruction.
+        return program.addFunctionCall(function, parameters);
 	}
 
 	/* assignment.
 	 * assignment = "let" "<-" expression.
 	 */
 	private void assignment() {
-
 		expect(letToken);
 
 		Variable var = designator(true); // Name of variable.
 		expect(becomesToken);
 		Value expr = expression();	     // Value of variable.
 
-
 		// Create new move instruction for this Variable.
-		// var = scanner.reassign(var);    // Set variable name and instance.
 		Instruction moveInstr = program.addAssignment(var, expr);
-		scanner.updateVar(var);
+		table.reassignVar(var.id, var);
 		if (debug) { System.out.println("Generated instruction " + moveInstr); }
-		// moveInstr.setDefn(var,expr);    // move var expr
 	}
 
 	/* relation.
@@ -546,7 +526,6 @@ public class Parser {
 	/* factor.
 	 * factor = designator | number | "(" expression ")" | funcCall.
 	 * Create instructions to evaluate the factor.
-	 * We may need to return a Value here.
 	 */
 	private Value factor() {
 		Value factor = null;
@@ -574,28 +553,39 @@ public class Parser {
 	 * newVar flag should be false if called from a non-assignment context.
 	 */
 	private Variable designator(boolean newVar) {
-		int id;
+		int id, numIndices;
 
 		id = ident();          			 // Identifier name. Stop here if a variable.
+		numIndices = 0;
 		while (accept(openbracketToken)) {
 			expression(); 	             // (If array) array indices.
 			expect(closebracketToken);
+			numIndices++;
 		}
 
 		// For now, pretend we don't have arrays.
-		if (newVar) {
-			return scanner.newVar(id);
-		} else if (scanner.getVar(id) == null) {
-			error("Uninitialized variable."); 
-		} else {
-			return scanner.getVar(id);
+		Variable var = table.getVar(id);
+
+		// Check for errors.
+		if (var == null) {
+			error("Undeclared variable " + table.getName(id)); 
+		} else if (var.uninit() && !newVar) {
+			error("Uninitialized variable " + table.getName(id)); 
 		}
-		return null;
+
+		// Return the variable.
+		if (newVar) {
+			return new Variable(id, table.getName(id));
+		} else {
+			return var;
+		}
+
+		// Code for arrays...
 	}
 
 	/* number.
 	 * number = digit { digit }
-	 * Returns the integer value of the number.
+	 * Returns a Constant that represents the number.
 	 */
 	private Constant number() {
 		int value = 0;
@@ -649,7 +639,7 @@ public class Parser {
 		}
 		else {
 			error("Expect failed. Saw " + scanner.currentToken() + ", expected "
-			 	  + scanner.tokenToString(token) + ".");
+			 	  + table.symToString(token) + ".");
 		}
 		return result; 
 	}
@@ -676,12 +666,5 @@ public class Parser {
 		scanner.error(message);
 		System.exit(0);
 	}
-
-	// Print out the CFG in vcg format.
-	// Should only be called after parsing is complete.
-	// public void printCFG() {
-	// 	System.out.println(program.cfg());
-	// }
-	
 
 }
