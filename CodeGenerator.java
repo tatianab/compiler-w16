@@ -3,6 +3,7 @@
  * Winter 2016
  * CS 241 - Advanced Compiler Design
  */
+import java.util.ArrayList;
 
 public class CodeGenerator {
 	/* The code generator's responsibility is to emit native programs in DLX format
@@ -39,52 +40,81 @@ public class CodeGenerator {
 		this.byteCode = new ArrayList<Integer>();
 	}
 
-	public generateCode() {
+	public void generateCode() {
 		// Generate some code!
+
+		// Print 42 for now.
+		addInstruction(DLX.ADDI, 3, 0, 42);
+		addInstruction(DLX.WRD, 3);
+		endProgram();
 	}
 
 	public void runGeneratedCode() {
-		if (finalByteCode != null) {
+		try {
 			DLX.load(finalByteCode);
 			DLX.execute();
-		} else {
-			System.out.println("Program not finished. Cannot be run.")
+		} catch (Exception e) {
+			Compiler.error("Program could not be run.");
 		}
 	}
 
 	// Signal the end of the program.
 	public void endProgram() {
 		addInstruction(DLX.RET, 0);
-		byteCode.toArray(new int[] finalByteCode[byteCode.size()]);
+		finalByteCode = new int[byteCode.size()];
+		int i = 0;
+		for (int instr : byteCode) {
+			finalByteCode[i] = instr;
+			i++;
+		}
 	}
 
-	// Add instruction to the progam.
-	public int addInstruction(int op, int a, int b, int c) {
+	// Add instruction to the program.
+	public void addInstruction(int op, int a, int b, int c) {
 		byteCode.add(DLX.assemble(op, a, b, c));
 	}
 
-	public int addInstruction(int op, int a, int c) {
+	public void addInstruction(int op, int a, int c) {
 		byteCode.add(DLX.assemble(op, a, c));
 	}
 
-	public int addInstruction(int op, int c) {
+	public void addInstruction(int op, int c) {
 		byteCode.add(DLX.assemble(op, c));
+	}
+
+	// Deal with function and procedure calls.
+	public void generateFunction() {
+		// Procedure prologue
+		// PSH R31 SP -4 : Return address
+		// PSH FP SP -4  : Old FP
+		// ADD FP R0 -4  : FP = SP
+		// SUBI SP SP n  : Reserve space for locals.
+
+		// Need to deal with globals, locals, parameters etc...
+
+		// Need to store return value at some point.
+
+		// Procedure epilogue
+		// ADD SP 0 FP
+		// POP FP SP 4
+		// POP R31 SP 4+params
+		// RET 0 0 31
 	}
 
 	// Generate native program string.
 	public String byteCodeToString() {
-		result = "";
+		String result = "";
 		for (int instr : byteCode) {
-			result += instr.toString() + "/n";
+			result += Integer.toBinaryString(instr) + "\n";
 		}
 		return result;
 	}
 
 	// Generate assembly program string.
 	public String assemblyToString() {
-		result = "";
+		String result = "";
 		for (int instr : byteCode) {
-			result += DLX.disassemble(instr) + "/n";
+			result += DLX.disassemble(instr);
 		}
 		return result;
 	}

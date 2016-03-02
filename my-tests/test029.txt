@@ -1,6 +1,7 @@
 main
 var q, foo, af, too;
 {
+	let foo <- 0;
 	let q<-foo;
 	if 2 < 3 then            
 		while 4 > 6 do

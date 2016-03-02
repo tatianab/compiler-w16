@@ -2,6 +2,8 @@ main
 procedure foo();
 var a, b, c, d, e, f, g, h;
 {
+	let a <- 0;
+	let b <- 0;
 	let c <- a + b;
 	let d <- c;
 	let e <- d * d;

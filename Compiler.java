@@ -15,20 +15,22 @@ public class Compiler {
 	   			-regAlloc : Allocate registers.
 	   			-assem    : Print assembly code.
 	   			-o        : Print object code.
+	   			-vtoi     : Convert variables to instructions after parsing.
 	   Usage: java Compiler <filename> [-d] [-cfg] [-dt] [-ifg] [-instr] [-O] [-regAlloc] [-assem] [-o]
 	 */
 
 	// Output flags.
-	final boolean debug; // Debugging.
-	final boolean cfg;   // Control flow graph.
-	final boolean dt;    // Dominator tree.
-	final boolean ifg;   // Interference graph.
-	final boolean instr; // SSA instructions.
+	final boolean debug;    // Debugging.
+	final boolean cfg;      // Control flow graph.
+	final boolean dt;       // Dominator tree.
+	final boolean ifg;      // Interference graph.
+	final boolean instr;    // SSA instructions.
 	final boolean optimize; // Optimizations.
 	final boolean regAlloc; // Register allocation.
 	final boolean byteCode; // Byte code.
 	final boolean assembly; // Assembly code.
 	final boolean vtoi;     // Convert vars to instrs after parsing.
+	final boolean run;      // Run compiled code with DLX simulator.
 
 	// Filename data.
 	final String filename;    // The file to compile.
@@ -53,6 +55,7 @@ public class Compiler {
 		boolean byteCode = false;
 		boolean assembly = false;
 		boolean vtoi     = false;
+		boolean run      = false;
 
     	try {
      		filename = args[0];     // Get the filename.
@@ -87,13 +90,16 @@ public class Compiler {
      			if (contains(args, "-vtoi")) {
      				vtoi     = true;
      			}
+     			if (contains(args, "-run")) {
+     				run      = true;
+     			}
      		} 
      	} catch (Exception e) {
-      		System.out.println("Usage: java Compiler <filename> [-d] [-cfg] [-dt] [-ifg] [-instr] [-O] [-o] [-assem] [-vtoi]");
+      		System.out.println("Usage: java Compiler <filename> [-d] [-cfg] [-dt] [-ifg] [-instr] [-O] [-o] [-assem] [-vtoi] [-run]");
     	}
 
     	// Compile the file.
-    	Compiler compiler = new Compiler(filename, debug, cfg, dt, ifg, instr, optimize, regAlloc, byteCode, assembly, vtoi);
+    	Compiler compiler = new Compiler(filename, debug, cfg, dt, ifg, instr, optimize, regAlloc, byteCode, assembly, vtoi, run);
     	compiler.compile();
 		
 	}
@@ -114,13 +120,15 @@ public class Compiler {
 			// RegAllocator allocator = new RegAllocator(program);
 		    // program = allocator.allocate();
 		}
-		if (assembly || byteCode) {
-			// CodeGenerator generator = new CodeGenerator(program);
-		    // generator.generateCode();
+		if (assembly || byteCode || run) {
+			CodeGenerator generator = new CodeGenerator(program);
+		    generator.generateCode();
 		    if (assembly) {
-		    	// System.out.println(generator.assemblyToString());
-		    } else {
-		    	// System.out.println(generator.byteCodeToString());
+		    	System.out.println(generator.assemblyToString());
+		    } else if (byteCode) {
+		    	System.out.println(generator.byteCodeToString());
+		    } else if (run) {
+		    	generator.runGeneratedCode();
 		    }
 		}
 
@@ -142,7 +150,8 @@ public class Compiler {
 
 	// Constructor.
 	public Compiler(String filename, boolean debug, boolean cfg, boolean dt, boolean ifg,
-					boolean instr, boolean optimize, boolean regAlloc, boolean byteCode, boolean assembly, boolean vtoi) {
+					boolean instr, boolean optimize, boolean regAlloc, boolean byteCode, boolean assembly,
+					boolean vtoi, boolean run) {
 		this.filename   = filename;
 		this.filePrefix = getFilePrefix();
 		this.debug    = debug;
@@ -154,6 +163,7 @@ public class Compiler {
 		this.byteCode = byteCode;
 		this.assembly = assembly;
 		this.vtoi     = vtoi;
+		this.run      = run;
 
 		if (ifg || byteCode || assembly) {
 			this.regAlloc = true;

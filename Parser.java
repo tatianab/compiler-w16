@@ -574,17 +574,24 @@ public class Parser {
 	 * designator = ident { "[" expression "]" }.
 	 * Return the integer id corresponding to the identifier found.
 	 * Also need to handle arrays. (Not sure how right now).
-	 * newVar flag should be false if called from a non-assignment context.
+	 * assignment flag should be false if called from a non-assignment context.
 	 */
-	private Variable designator(boolean newVar) {
-		int id, numIndices;
+	private Variable designator(boolean assignment) {
+		boolean array = false; // True if we are working with an array.
+		Value[] indices = null;
+		int id = ident();          		    // Identifier name. Stop here if a variable.
 
-		id = ident();          			 // Identifier name. Stop here if a variable.
-		numIndices = 0;
-		while (accept(openbracketToken)) {
-			expression(); 	             // (If array) array indices.
-			expect(closebracketToken);
-			numIndices++;
+		if (table.getArr(id) != null) {
+			int i  = 0;
+			indices = new Value[table.getArr(id).numDims];
+			while (accept(openbracketToken)) {
+				indices[i] = expression();  // Get array indices.
+				expect(closebracketToken);
+				i++;
+			}
+			if (i > 0) { 
+				error("Arrays not yet implemented.");
+			}
 		}
 
 		// For now, pretend we don't have arrays.
@@ -593,12 +600,12 @@ public class Parser {
 		// Check for errors.
 		if (var == null) {
 			error("Undeclared variable " + table.getName(id)); 
-		} else if (var.uninit() && !newVar) {
+		} else if (var.uninit() && !assignment) {
 			error("Uninitialized variable " + table.getName(id)); 
 		}
 
 		// Return the variable.
-		if (newVar) {
+		if (assignment) {
 			return new Variable(id, table.getName(id));
 		} else {
 			return var;
