@@ -251,11 +251,11 @@ public class Parser {
 		} else if (accept(arrToken)) { // If of array type.
 			Array array = new Array();
 			expect(openbracketToken);
-			dim = number().value;            // Array dimensions.
+			dim = number().getVal();            // Array dimensions.
 			array.addDim(dim);
 			expect(closebracketToken);
 			while (accept(openbracketToken)) {
-				dim = number().value;        // More array dimensions.
+				dim = number().getVal();        // More array dimensions.
 			    array.addDim(dim);			   
 				expect(closebracketToken);
 			}

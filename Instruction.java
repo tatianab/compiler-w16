@@ -36,34 +36,34 @@ public class Instruction extends Value {
 	public int register; // The register that the value of this instruction is assigned to.
 
 	/* Operation codes. */
-	public static int neg     = 1;
-	public static int add     = 2;
-	public static int sub     = 3;
-	public static int mul     = 4;
-	public static int div     = 5;
-	public static int cmp     = 6;
-   
-	public static int adda    = 7;
-	public static int load    = 8;
-	public static int store   = 9;
-	public static int move    = 10;
-	public static int phi     = 11;
-   
-	public static int end     = 12;
-	public static int bra     = 13;
-	
-	public static int read    = 14;
-	public static int write   = 15;
-	public static int writeNL = 16;
-
-	public static int bne     = 20;
-	public static int beq     = 21;
-	public static int bge     = 22;
-	public static int blt     = 23;
-	public static int bgt     = 24;
-	public static int ble     = 25;
-
-	public static int call    = 30;
+	public static final int neg     = 1;
+	public static final int add     = 2;
+	public static final int sub     = 3;
+	public static final int mul     = 4;
+	public static final int div     = 5;
+	public static final int cmp     = 6;
+   				  
+	public static final int adda    = 7;
+	public static final int load    = 8;
+	public static final int store   = 9;
+	public static final int move    = 10;
+	public static final int phi     = 11;
+                  
+	public static final int end     = 12;
+	public static final int bra     = 13;
+	              
+	public static final int read    = 14;
+	public static final int write   = 15;
+	public static final int writeNL = 16;
+                   
+	public static final int bne     = 20;
+	public static final int beq     = 21;
+	public static final int bge     = 22;
+	public static final int blt     = 23;
+	public static final int bgt     = 24;
+	public static final int ble     = 25;
+                  
+	public static final int call    = 30;
 	/* End operation codes. */
 
 	private static String[] ops = new String[]{null, "neg","add","sub","mul","div",
@@ -297,6 +297,12 @@ public class Instruction extends Value {
 				}
 			}
 		}
+	}
+
+	// Get the register assigned to this instruction.
+	@Override
+	public int getReg() {
+		return register;
 	}
 
 	/* Methods related to string representation of the instruction. */

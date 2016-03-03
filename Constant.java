@@ -5,10 +5,24 @@
  */
 public class Constant extends Value {
 	// For now, just a wrapper for an int.
-	int value;
+	private final int value;
 
 	public Constant(int value) {
 		this.value = value;
+	}
+
+	@Override
+	public int getVal() {
+		return value;
+	}
+
+	@Override
+	public int getReg() {
+		if (value == 0) {
+			return 0;
+		} else {
+			return -1;
+		}
 	}
 
 	@Override

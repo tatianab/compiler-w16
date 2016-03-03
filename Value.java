@@ -12,4 +12,15 @@ public class Value {
 	public String shortRepr() {
 		return "Value of some kind.";
 	}
+
+	// This should also be overridden.
+	public int getReg() {
+		return -1;
+	}
+
+	// This too!
+	public int getVal() {
+		Compiler.error("No value exists");
+		return Integer.MIN_VALUE;
+	}
 }
