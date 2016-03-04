@@ -82,6 +82,7 @@ public class Instruction extends Value {
 		this.next     = null;
 		// this.instrsUsed = new Instruction[2];
 		this.uses     = new LinkedList<Instruction>();
+		this.register = -1;
 	}
 
 	public void delete() {
@@ -297,6 +298,10 @@ public class Instruction extends Value {
 				}
 			}
 		}
+	}
+
+	public void assignReg(int reg) {
+		this.register = reg;
 	}
 
 	// Get the register assigned to this instruction.

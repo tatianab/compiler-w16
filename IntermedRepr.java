@@ -353,6 +353,26 @@ public class IntermedRepr {
 
 	/** Methods related to REGISTER ALLOCATION. **/
 
+	/* Assigns first available register to instruction.
+       Once all registers are filled it gives up. */
+    public void dumbRegAlloc() {
+        int FIRST_REG = 2;
+        int LAST_REG  = 27;
+        int nextAvailReg = FIRST_REG;
+        for (Instruction instr : instrs) {
+            instr.assignReg(nextAvailReg);
+            nextAvailReg++;
+            if (nextAvailReg > LAST_REG) {
+                Compiler.error("Not enough registers!");
+            }
+        }
+    }
+
+    // This needs to be fixed.
+    public int getNumGlobals() {
+    	return instrs.size();
+    }
+
 	/* Create interference graph. */
 	public void createInterferenceGraph() {
 		// Loop over all SSA values.

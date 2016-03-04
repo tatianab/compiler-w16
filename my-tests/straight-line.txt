@@ -1,0 +1,14 @@
+main 
+var a,b,c;
+{
+	let a <- 10;
+	let b <- 3;
+	let c <- a * b;
+
+	let b <- 2 + a;
+	let a <- (c / 5);
+
+	call OutputNum(a);
+	call OutputNewLine();
+	call OutputNum(c)
+}.

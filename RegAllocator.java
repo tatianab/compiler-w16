@@ -26,14 +26,14 @@ public class RegAllocator {
 	}
 
 	public IntermedRepr allocateRegisters() {
-		this.interferenceGraph = program.createInterferenceGraph();
-		colorInterferenceGraph();
-		program.elimiatePhi();
+        dumbRegAlloc();
+		// this.interferenceGraph = program.createInterferenceGraph();
+		// colorInterferenceGraph();
+		// program.elimiatePhi();
 		return program;
 	}
 
 	/* Tracking live ranges / interference graph.
-
 	 */
     public class LiveRange {
         public Instruction definition;
@@ -66,9 +66,6 @@ public class RegAllocator {
         return range;
     }
 
-	/* Interference graph coloring. 
-
-	 */
     public class RegisterConf {
         public int registerNumber;
         public Instruction begin;

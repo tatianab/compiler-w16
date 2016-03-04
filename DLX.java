@@ -15,7 +15,6 @@ public class DLX {
 	// emulated memory
 	static final int MemSize = 10000; // bytes in memory (divisible by 4)
 	static int M[] = new int [MemSize/4];
-
     
 	public static void main(String argv[]) {
 	}
