@@ -1,5 +1,5 @@
 main
-var f,g;
+var f,g,n;
 {
 	let n <- 10;
 	let f <- 1;

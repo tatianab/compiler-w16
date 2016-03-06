@@ -3,7 +3,7 @@
  * Winter 2016
  * CS 241 - Advanced Compiler Design
  */
-
+import java.util.ArrayList;
 public class Function extends Value {
 
 	public int id;
@@ -19,17 +19,26 @@ public class Function extends Value {
 	public IntermedRepr program; // The program that contains this function.
 
 	public Instruction returnInstr;
+
+	public ArrayList<Instruction> instrs;
+
 	
 	public Function(int id, String ident) {
 		this.id = id;
 		this.ident = ident;
 		numParams = 0;
+		this.instrs = new ArrayList<Instruction>();
 	}
 
 	public Function(int id, String ident, int numParams) {
 		this.id = id;
 		this.ident = ident;
 		this.numParams = numParams;
+		this.instrs = new ArrayList<Instruction>();
+	}
+
+	public int getNumParams() {
+		return numParams;
 	}
 
 	public void setNumParams(int numParams) {
@@ -77,6 +86,10 @@ public class Function extends Value {
 		}
 	}
 
+	public void addInstr(Instruction instr) {
+		instrs.add(instr);
+	}
+
 	@Override
 	public String shortRepr() {
 		String result = ident + "("; // + numParams + ")";
@@ -93,8 +106,13 @@ public class Function extends Value {
 
 	public static String paramsToString(Value[] params) {
 		String result = "(";
-		for (Value val : params) {
-			result += val.shortRepr();
+		Value val;
+		for (int i = 0; i < params.length - 1; i++) {
+			val     = params[i];
+			result += val.shortRepr() + ", ";
+		}
+		if (params.length != 0) {
+			result += params[params.length - 1].shortRepr();
 		}
 		result += ")";
 		return result;

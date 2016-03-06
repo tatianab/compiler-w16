@@ -38,6 +38,8 @@ public class Optimizer {
 		commonSubexprElim();
 		if (debug) { System.out.println("Copy propagation..."); }
 		copyPropagation();
+		if (debug) { System.out.println("Precomputing constant values..."); }
+		constantPrecompuation();
 		return program;
 	}
 
@@ -85,12 +87,12 @@ public class Optimizer {
 	 * Avoid unnecessary re-computation of values.
 	 */
 	public void commonSubexprElim() {
-		Instruction currentInstr, equivInstr;
+		Instruction equivInstr;
 		// If instruction Y dominates instruction X and Y = X, replace all
 		// occurrences of X with Y and delete X.
-		for (int i = program.instrs.size() - 1; i >= 0; i--) {
-			currentInstr = program.instrs.get(i);
-			if (debug) {System.out.print(currentInstr.op + " ");}
+		// // for (int i = program.instrs.size() - 1; i >= 0; i--) {
+		// 	currentInstr = program.instrs.get(i);
+		for (Instruction currentInstr : program.instrs) {
 			if (deletable(currentInstr.op)) {
 				equivInstr   = currentInstr.equivDominatingInstr();
 				if (equivInstr != null) {
@@ -98,7 +100,6 @@ public class Optimizer {
 						useSite.replace(currentInstr, equivInstr);
 					}
 					currentInstr.delete();
-					if (debug) { System.out.print(" deleted"); }
 				}
 			}
 		}
@@ -114,13 +115,9 @@ public class Optimizer {
 		Value newValue;
 		for (Instruction instr : program.instrs) {
 			if (instr.op == move) {
-				if (debug) {System.out.print(instr + " ");}
 				newValue = instr.arg1;
 				oldInstr = (Instruction) instr.arg2;
-
 				if (oldInstr.op == phi) { continue; }
-
-				if (debug) {System.out.print(oldInstr + " ");}
 				for (Instruction useSite : oldInstr.uses) {
 					if (newValue instanceof Instruction) {
 						useSite.replace(oldInstr, (Instruction) newValue);
@@ -129,7 +126,35 @@ public class Optimizer {
 					}
 				}
 				oldInstr.delete();
-				if (debug) { System.out.print(" deleted \n"); }
+			}
+		}
+	}
+
+	/* Get rid of instructions like add #1 #3 that can be precomputed. */
+	public void constantPrecompuation() {
+		for (Instruction instr : program.instrs) {
+			if (instr.op <= add && instr.op >= div) {
+				Value arg1 = instr.arg1;
+				Value arg2 = instr.arg2;
+				if (instr.arg1 instanceof Constant && instr.arg2 instanceof Constant) {
+					int value = 0;
+					switch(instr.op) {
+						case Instruction.add:
+							value = arg1.getVal() + arg2.getVal();
+						case Instruction.sub:
+							value = arg1.getVal() - arg2.getVal();
+						case Instruction.mul:
+							value = arg1.getVal() * arg2.getVal();
+						case Instruction.div:
+							value = arg1.getVal() / arg2.getVal();
+						default:
+							break;
+					}
+					Constant constant = new Constant(value);
+					for (Instruction useSite : instr.uses) {
+						useSite.replace(instr, constant);
+					}
+				}
 			}
 		}
 	}

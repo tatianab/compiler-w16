@@ -14,6 +14,8 @@ public class Variable extends Value {
 	public Instruction def;              // The instruction that defines this variable.
 	public LinkedList<Instruction> uses; // The instructions that use this variable, but don't re-define it.
 
+
+
 	private static int nextAvailableId = 0;
 
 	public Variable() {

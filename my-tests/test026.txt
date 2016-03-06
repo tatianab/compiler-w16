@@ -3,6 +3,8 @@ var i, j, k, w, z, x, y;
 array[ 8 ] a, b;
 {
 	let i <- 0;
+	let j <- 0;
+	let z <- 0;
 	let x <- a[ i ];
 	let k <- a[ i ];
 	while a[ i ] < b[ j ] do

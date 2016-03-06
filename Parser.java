@@ -232,13 +232,23 @@ public class Parser {
 		Value variable = typeDecl();   // Get the variable or array.
 		int id = ident();
 		table.declare(variable, id);
-		if (debug) { System.out.println("Declared variable " + table.getVar(id).shortRepr()); }
+		if (debug && variable instanceof Variable) { 
+			System.out.println("Declared variable " + table.getVar(id).shortRepr()); 
+		}
 		while (accept(commaToken)) {
 		    id = ident();
 			table.declare(variable, id);
-			if (debug) { System.out.println("Declared variable " + table.getVar(id).shortRepr()); }
+			if (debug && variable instanceof Variable) { 
+				System.out.println("Declared variable " + table.getVar(id).shortRepr()); 
+			}
 		}
 		expect(semiToken);
+
+		if (program.inMainFunction()) {
+			variable.setGlobal();
+		} else {
+			variable.setLocal();
+		}
 	}
 
 	/* typeDecl - type declaration.
@@ -259,7 +269,7 @@ public class Parser {
 			    array.addDim(dim);			   
 				expect(closebracketToken);
 			}
-			array.commitDims();       // Done with array dimensions.
+			array.commitDims();                 // Done with array dimensions.
 			return array;
 		} else {
 			error("Invalid type declaration.");
@@ -304,12 +314,10 @@ public class Parser {
 	 * Function call related. Handle this later.
 	 */
 	private void returnStatement() {
-
 		expect(returnToken);
 		if (!check(semiToken)) {
 			expression();       // Expression to return.
 		}
-
 	}
 
 	/* whileStatement.
@@ -436,6 +444,9 @@ public class Parser {
 		// Capture function call details.
 		int id = ident(); 					   // Function id.
 		Function function = table.getFunc(id);
+		if (function == null) {
+			error("No function " + table.getName(id) + " exists.");
+		}
 		int numParams     = function.numParams;
 		Value[] parameters  = new Value[numParams];
 		if (debug) { System.out.println("Function " + function.shortRepr() + " with " + numParams + " params.");}
@@ -470,14 +481,75 @@ public class Parser {
 	private void assignment() {
 		expect(letToken);
 
-		Variable var = designator(true); // Name of variable.
+		Value var = designator(true);  // Name of variable.
 		expect(becomesToken);
-		Value expr = expression();	     // Value of variable.
+		Value expr = expression();	   // Value of variable.
 
-		// Create new move instruction for this Variable.
-		Instruction moveInstr = program.addAssignment(var, expr);
-		table.reassignVar(var.id, var);
-		if (debug) { System.out.println("Generated instruction " + moveInstr); }
+		if (var instanceof Variable) {
+			// Create new move instruction for this Variable.
+			Instruction moveInstr = program.addAssignment((Variable) var, expr);
+			table.reassignVar(((Variable) var).id, (Variable) var);
+			if (debug) { System.out.println("Generated move instruction " + moveInstr); }
+		} else if (var instanceof Array) {
+			// Create an array store instruction for this array.
+			Instruction arrayInstr = program.addArrayInstr(Instruction.arrayStore, (Array) var, ((Array) var).currentIndices, expr);
+			if (debug) { System.out.println("Generated array instruction " + arrayInstr); }
+		}
+	}
+
+    /* designator.
+	 * designator = ident { "[" expression "]" }.
+	 * Return the Array or Variable corresponding to the identifier found.
+	 * assignment flag should be false if called from a non-assignment context.
+	 */
+	private Value designator(boolean assignment) {
+		Value[] indices = null;
+		int id = ident();          		    // Identifier name. Stop here if a variable.
+
+		if (table.getArr(id) != null) {
+			int i  = 0;
+			indices = new Value[table.getArr(id).numDims];
+			while (accept(openbracketToken)) {
+				indices[i] = expression();  // Get array indices.
+				expect(closebracketToken);
+				i++;
+			}
+			if (i > 0) {
+				Array array = table.getArr(id);
+				if (array == null) {
+					error("Undeclared array " + table.getName(id));
+					return null;
+				} else if (assignment) {
+					array.setCurrentIndices(indices);
+					return array;
+				} else {
+					return program.addArrayInstr(Instruction.arrayLoad, array, indices);
+				}
+			}
+		}
+
+		// For now, pretend we don't have arrays.
+		Variable var = table.getVar(id);
+
+		// Check for errors and return the variable.
+		if (var == null) {
+			error("Undeclared variable " + table.getName(id)); 
+		} else if (assignment) {
+			Variable newVar = new Variable(id, table.getName(id));
+			if (var.isGlobal() || (var.isLocal() && program.inMainFunction())) {
+				newVar.setGlobal();
+			} else {
+				newVar.setLocal();
+			}
+			return newVar;
+		} else if (var.uninit() && (program.inMainFunction() || var.isLocal()) ) {
+			error("Uninitialized variable " + table.getName(id)); 
+		} else {
+			return var;
+		}
+
+		// Code for arrays...
+		return null;
 	}
 
 	/* relation.
@@ -509,16 +581,24 @@ public class Parser {
 	private Value expression() {
 		Value expr, next;
 
-		expr = term();        
+		// Check for unary minus.
+		if (accept(minusToken)) {
+			next = term();   
+			expr = program.addInstr(neg, next);
+			if (debug) { System.out.println("Generated neg instruction " + expr); }
+		} else {
+			expr = term();
+		}
+
 		while (check(plusToken) || check(minusToken) ) {
 			if (accept(plusToken)) {
 				next = term();   
 				expr = program.addInstr(add, expr, next);
-				if (debug) { System.out.println("Generated instruction " + expr); }
+				if (debug) { System.out.println("Generated add instruction " + expr); }
 			} else if (accept(minusToken)) {
 				next = term();   
 				expr = program.addInstr(sub, expr, next);
-				if (debug) { System.out.println("Generated instruction " + expr); }
+				if (debug) { System.out.println("Generated sub instruction " + expr); }
 			}
 		}
 
@@ -537,11 +617,11 @@ public class Parser {
 			if (accept(timesToken)) {
 				next = factor();
 				term = program.addInstr(mul, term, next);
-				if (debug) { System.out.println("Generated instruction " + term); }
+				if (debug) { System.out.println("Generated mul instruction " + term); }
 			} else if (accept(divToken)) {
 				next = factor();
 				term = program.addInstr(div, term, next);
-				if (debug) { System.out.println("Generated instruction " + term); }
+				if (debug) { System.out.println("Generated div instruction " + term); }
 			}
 		}
 		return term;
@@ -568,50 +648,6 @@ public class Parser {
 		}
 
 		return factor;
-	}
-
-	/* designator.
-	 * designator = ident { "[" expression "]" }.
-	 * Return the integer id corresponding to the identifier found.
-	 * Also need to handle arrays. (Not sure how right now).
-	 * assignment flag should be false if called from a non-assignment context.
-	 */
-	private Variable designator(boolean assignment) {
-		boolean array = false; // True if we are working with an array.
-		Value[] indices = null;
-		int id = ident();          		    // Identifier name. Stop here if a variable.
-
-		if (table.getArr(id) != null) {
-			int i  = 0;
-			indices = new Value[table.getArr(id).numDims];
-			while (accept(openbracketToken)) {
-				indices[i] = expression();  // Get array indices.
-				expect(closebracketToken);
-				i++;
-			}
-			if (i > 0) { 
-				error("Arrays not yet implemented.");
-			}
-		}
-
-		// For now, pretend we don't have arrays.
-		Variable var = table.getVar(id);
-
-		// Check for errors.
-		if (var == null) {
-			error("Undeclared variable " + table.getName(id)); 
-		} else if (var.uninit() && !assignment) {
-			error("Uninitialized variable " + table.getName(id)); 
-		}
-
-		// Return the variable.
-		if (assignment) {
-			return new Variable(id, table.getName(id));
-		} else {
-			return var;
-		}
-
-		// Code for arrays...
 	}
 
 	/* number.

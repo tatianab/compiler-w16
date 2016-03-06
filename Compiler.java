@@ -6,7 +6,7 @@
 
 public class Compiler {
 	/* Class representing the entire compiler.
-	   Options: -d        : Print debugging output
+	   Options: -d        : Print debugging output.
 	   			-cfg      : Print control flow graph (in VCG format).
 	   			-dt       : Print dominator tree.
 	   			-ifg      : Print interference graph (in VCG format). 
@@ -16,11 +16,15 @@ public class Compiler {
 	   			-assem    : Print assembly code.
 	   			-o        : Print object code.
 	   			-vtoi     : Convert variables to instructions after parsing.
+	   			-run      : Run the program and display its output (if any).
+	   			-mem 	  : Print out the state of memory and registers after execution.
+	   			-all      : Do optimizations, register allocation and code generation.
 	   Usage: java Compiler <filename> [-d] [-cfg] [-dt] [-ifg] [-instr] [-O] [-regAlloc] [-assem] [-o]
+	   								   [-vtoi] [-run] [-mem] [-all]
 	 */
 
 	// Output flags.
-	final boolean debug;    // Debugging.
+	static boolean debug;   // Debugging.
 	final boolean cfg;      // Control flow graph.
 	final boolean dt;       // Dominator tree.
 	final boolean ifg;      // Interference graph.
@@ -127,6 +131,8 @@ public class Compiler {
 			program = optimizer.optimize();
 		}
 		if (regAlloc) {
+			if (debug) { System.out.println("Cleaning up deleted instructions..."); }
+			program.clean();
 			if (debug) { System.out.println("Dumbly allocating registers..."); }
 			program.dumbRegAlloc();
 			// RegAllocator allocator = new RegAllocator(program);
@@ -220,6 +226,11 @@ public class Compiler {
 	public static void error(String message) {
 		System.out.println("ERROR: " + message);
 		System.exit(0);
+	}
+
+	// Warning does not kill program.
+	public static void warning(String message) {
+		System.out.println("WARNING: " + message);
 	}
 
 }

@@ -26,11 +26,15 @@ public class IntermedRepr {
 
 	public InterferenceGraph ifg;          // Interference graph.
 
+	public static final Function MAIN = new Function(-1, "MAIN");
+
 	// Function compilation.
 	public Function currentFunction;
 
-	public ArrayList<Block> blocks;       // Block array.
-	public ArrayList<Instruction> instrs; // Instruction array.
+	public ArrayList<Block> blocks;           // All of the blocks in the program.
+	public ArrayList<Instruction> instrs;     // All instructions in the program.
+	public ArrayList<Instruction> mainInstrs; // Just the instructions in the main program.
+	public ArrayList<Function> functions;     // All compiled user-defined functions.
 
 	// Constructor.
 	public IntermedRepr(boolean debug) {
@@ -41,13 +45,18 @@ public class IntermedRepr {
 		instrs        = new ArrayList<Instruction>();
 		currentBlocks = new Stack<Block>();
         currentRepresentation = this;
-
-        currentFunction = null;
+        functions     = new ArrayList<Function>();
+        currentFunction = MAIN;
+        mainInstrs    = new ArrayList<Instruction>();
 	}
 
 	public Block begin() {
 		Block block = addBlock("Program begins.");
 		return block;
+	}
+
+	public boolean inMainFunction() {
+		return (currentFunction == MAIN);
 	}
 
 	// Begin compiling a function.
@@ -63,7 +72,8 @@ public class IntermedRepr {
 		Block exit = addBlock("Exit function " + currentFunction.shortRepr());
 		currentFunction.end(exit);
 		endBlock();
-		this.currentFunction = null;
+		functions.add(currentFunction);
+		currentFunction = MAIN;
 	}
 
 	// Return the current block.
@@ -118,12 +128,22 @@ public class IntermedRepr {
         try {
             Instruction instr = new Instruction(nextOpenInstr);
             nextOpenInstr++;
-            instrs.add(instr);              // Add instruction to list of instructions.
+            addToInstructionList(instr); // Add instruction to list of instructions.
             return instr;
         } catch (Exception e) {
             error("Possible null pointer in createInstr.");
             return null;
         }
+    }
+
+    public void addToInstructionList(Instruction instr) {
+    	if (currentFunction == MAIN) {
+    		mainInstrs.add(instr);
+    	} else {
+    		currentFunction.addInstr(instr);
+    	}
+
+    	instrs.add(instr);
     }
 
 	// Add a new instruction to the current block.
@@ -157,16 +177,33 @@ public class IntermedRepr {
 		Block current = currentBlock(); 
 		if (current != null) {
 			currentBlock().addInstr(instr); // Add instruction to current block.
-			instrs.add(instr);              // Add instruction to list of instructions.
+			addToInstructionList(instr);    // Add instruction to list of instructions.
 		} else {
 			if (debug) { System.out.println("Instruction could not be added to current block."); }
 		}
 	}
 
+	// Get an array of all of the instructions (including those in functions)
+	// in this program.
+
 	// Add function call instruction.
 	public Instruction addFunctionCall(Function function, Value[] params) {
 		Instruction instr = addInstr();
 		function.generateCall(instr, params);
+		return instr;
+	}
+
+	public Instruction addArrayInstr(int op, Array array, Value[] indices, Value expr) {
+		Instruction instr = addInstr(op, array, expr);
+		instr.params = indices;
+		// Add indices to usedAt
+		return instr;
+	}
+
+	public Instruction addArrayInstr(int op, Array array, Value[] indices) {
+		Instruction instr = addInstr(op, array);
+		instr.params = indices;
+		// Add indices to usedAt
 		return instr;
 	}
 
@@ -346,9 +383,21 @@ public class IntermedRepr {
 		}
 	}
 
-	// Get rid of any deleted instructions or blocks.
+	// Get rid of any deleted instructions.
+	// TODO: get rid of deleted
 	public void clean() {
-		// TODO.
+		Instruction instr;
+		int i = 0;
+		while (i < instrs.size()) {
+			instr = instrs.get(i);
+			if (debug) { System.out.println("Testing " + instr); }
+			if (instr.deleted()) {
+				instrs.remove(instr);
+			} else {
+				i++;
+			}
+		}
+
 	}
 
 	/** Methods related to REGISTER ALLOCATION. **/

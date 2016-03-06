@@ -5,8 +5,24 @@
  */
 
 public class Value {
-	// Basically do nothing for now.
 	// Represents an SSA value.
+	private boolean global;
+
+	public void setGlobal() {
+		global = true;
+	}
+
+	public void setLocal() {
+		global = false;
+	}
+
+	public boolean isGlobal() {
+		return global;
+	}
+
+	public boolean isLocal() {
+		return !global;
+	}
 	
 	// This should be overridden.
 	public String shortRepr() {

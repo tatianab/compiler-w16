@@ -15,7 +15,7 @@ public class Instruction extends Value {
 	public int op;            // Operation code.
 	public Value arg1;  	  // First argument, or only argument.
 	public Value arg2;  	  // Second argument.
-	public Value[] params;    // For call instructions only.
+	public Value[] params;    // For call and array instructions only.
 
 	public Instruction prev;  // Previous instruction, or null if first in block.
 	public Instruction next;  // Next instruction, or null if end of block.
@@ -64,12 +64,16 @@ public class Instruction extends Value {
 	public static final int ble     = 25;
                   
 	public static final int call    = 30;
+
+	public static final int arrayStore = 35;
+	public static final int arrayLoad  = 36;
 	/* End operation codes. */
 
 	private static String[] ops = new String[]{null, "neg","add","sub","mul","div",
 												"cmp","adda","load","store","move","phi","end","bra",
 												"read","write","writeNL", null, null, null,
-												"bne","beq","bge","blt","bgt","ble", null, null, null, null, "call"};
+												"bne","beq","bge","blt","bgt","ble", null, null, null, null,
+												"call", null, null, null, null, "arrayStore", "arrayLoad"};
 	/* End operation codes. */
 
 	/* Constructor. */
@@ -86,6 +90,20 @@ public class Instruction extends Value {
 	}
 
 	public void delete() {
+		if (Compiler.debug) { System.out.println("Deleting instruction " + this); }
+		if (this.prev == null && this.next == null) { 
+			block.begin = null;
+			block.end   = null;
+		} else if (this.prev == null) {
+			block.begin = this.next;
+			this.next.prev = null;
+		} else if (this.next == null) {
+			block.end = this.prev;
+			this.prev.next = null;
+		} else {
+			this.next.prev = this.prev;
+			this.prev.next = this.next;
+		}
 		this.deleted = true;
 	}
 
@@ -266,6 +284,15 @@ public class Instruction extends Value {
 				arg2 = ((Variable) arg2).def;
 			}
 		}
+		if (params != null) {
+			Value param;
+			for (int i = 0; i < params.length; i++) {
+				param = params[i];
+				if (param instanceof Variable) {
+					params[i] = ((Variable) param).def;
+				}
+			}
+		}
 		if (varsUsed != null) {
 			if (instrsUsed == null) {
 				instrsUsed = new Instruction[2];
@@ -308,6 +335,17 @@ public class Instruction extends Value {
 	@Override
 	public int getReg() {
 		return register;
+	}
+
+	// Get the function associated with this instruction.
+	// Only for call instructions.
+	public Function getFunction() {
+		if (op == call && arg1 instanceof Function) {
+			return (Function) arg1;
+		} else {
+			Compiler.warning("No function associated with " + this);
+			return null;
+		}
 	}
 
 	/* Methods related to string representation of the instruction. */
@@ -370,6 +408,10 @@ public class Instruction extends Value {
 			return id + " : call " + arg1.shortRepr() + " on input " + Function.paramsToString(params);
 		} else if (op == phi) {
 			return id + " : PHI " + varDefd.shortRepr() + " := " + arg1.shortRepr() + " " + arg2.shortRepr();
+		} else if (op == arrayStore) {
+			return id + " : " + ops[op] + " " + arg1.shortRepr() + " " + arg2.shortRepr() + " " + Array.indicesToString(params);
+		} else if (op == arrayLoad) {
+			return id + " : " + ops[op] + " " + arg1.shortRepr() + " " + Array.indicesToString(params);
 		} else if (arg1 != null && arg2 != null) {
 			return id + " : " + ops[op] + " " + arg1.shortRepr() 
 				   + " " + arg2.shortRepr();

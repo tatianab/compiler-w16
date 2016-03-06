@@ -22,30 +22,46 @@ public class CodeGenerator {
 
 	 */
 	IntermedRepr       program;
-	ArrayList<Integer> byteCode;
-	int[]              finalByteCode;
+	ArrayList<DlxOp>   dlxOps; // The DLX instructions we have generated so far.
+	int[]              byteCode;
 	boolean            debug;
+
+	int nextDlxPos;
+	Instruction currentInstruction;
+	Block       currentBlock;
+
+	// TODO: associate assembly instructions with containing block and function.
 
 	public static final int ZERO     = 0;  // R0 always stores the value 0.
 	public static final int SCRATCH  = 1;  // R1 is the scratch register to hold intermediate values.
+	public static final int SCRATCH2 = 2;  // R2 is the second scratch register.
 	public static final int FP       = 29; // Frame pointer is R29.
 	public static final int SP       = 28; // Stack pointer is R28.
 	public static final int GLOBALS  = 30; // R30 stores a pointer to global vars.
 	public static final int RET_ADDR = 31; // R31 is used to store the return address of subroutines. 
 
+	public static final int BYTES_IN_WORD = 4;
+
 	public CodeGenerator(IntermedRepr program, boolean debug) {
 		this.program  = program;
-		this.byteCode = new ArrayList<Integer>();
+		this.dlxOps   = new ArrayList<DlxOp>();
 		this.debug    = debug;
+		this.nextDlxPos = 0;
 	}
 
 	public void generateCode() {
 		// Generate some code!
 		setUpMemory();
-		ArrayList<Instruction> instrs = program.instrs; // This should be changed to whatever the interface ends up being.
+		// This should be changed to whatever the interface ends up being.
+		ArrayList<Instruction> instrs = program.instrs; 
 		for (Instruction instr : instrs) {
+			currentInstruction = instr;
+			if (instr.prev == null) {
+				currentBlock = instr.block;
+			}
 			addInstruction(instr);
 		}
+		endProgram();
 		// // Print 42 for now.
 		// addInstruction(DLX.ADDI, 3, 0, 42);
 		// addInstruction(DLX.WRD, 3);
@@ -54,7 +70,7 @@ public class CodeGenerator {
 
 	public void runGeneratedCode() {
 		try {
-			DLX.load(finalByteCode);
+			DLX.load(byteCode);
 			DLX.execute();
 			System.out.println();
 		} catch (Exception e) {
@@ -67,58 +83,150 @@ public class CodeGenerator {
 	// the main function.
 	public void setUpMemory() {
 		// Allocate space for global variables.
-		addInstruction(DLX.ADDI, GLOBALS, ZERO, (DLX.MemSize / 4) - 4);
+		addInstruction(DLX.ADDI, GLOBALS, ZERO, (DLX.MemSize / BYTES_IN_WORD) - BYTES_IN_WORD);
 		// Set up stack pointer and frame pointer.
-		addInstruction(DLX.SUBI, SP, GLOBALS, program.getNumGlobals() * 4);
+		addInstruction(DLX.SUBI, SP, GLOBALS, program.getNumGlobals() * BYTES_IN_WORD);
 		addInstruction(DLX.ADDI, FP, SP, 0); // Set SP == FP.
 	}
 
 	// Signal the end of the program.
 	public void endProgram() {
-		addInstruction(DLX.RET, 0);
-		finalByteCode = new int[byteCode.size()];
+		fixBranches();
+		byteCode = new int[dlxOps.size()];
 		int i = 0;
-		for (int instr : byteCode) {
-			finalByteCode[i] = instr;
+		for (DlxOp instr : dlxOps) {
+			byteCode[i] = getNativeInstr(instr);
 			i++;
 		}
 	}
 
-	public class DlxOp {
-		int op;
-		Integer a;
-		Integer b;
-		Integer c;
-		boolean fixUp;
+	public void fixBranches() {
+		for (DlxOp dlxOp : dlxOps) {
+			if (dlxOp.branch != null) {
+				if (dlxOp.branch.dlxPos != null) {
+					dlxOp.setOffset(dlxOp.branch.dlxPos - dlxOp.pos);
+				} else {
+					dlxOp.setOffset(0);
+					Compiler.warning("No offset available for block " + 
+						dlxOp.branch.shortRepr());
+				}
+			}
+		}
+	}
 
-		// We need a way to branch to the proper place.
+	public class DlxOp {
+		public int op;
+		public int pos; // Where in the final program this instr will live.
+		public Integer arg1;
+		public Integer arg2;
+		public Integer arg3;
+		public Block branch;
+
+		// Auxillary info for debugging.
+		public Instruction instr; // The corresponding SSA instr.
+		public Block       block; // If this is the beginning of a block.
+
+		public DlxOp(int op, Integer arg1, Integer arg2, Integer arg3) {
+			this.op     = op;
+			this.arg1   = arg1;
+			this.arg2   = arg2;
+			this.arg3   = arg3;
+			this.branch = null;
+			this.pos    = nextDlxPos;
+			nextDlxPos++;
+			this.instr  = currentInstruction;
+			if (currentBlock != null) {
+				this.block = currentBlock;
+				currentBlock = null;
+			} else {
+				this.block = null;
+			}
+		}
+
+		// This instruction will need to be fixed once it is known where
+		// the block to jump to lives.
+		public DlxOp(int op, Integer compare, Block branch) {
+			this.op = op;
+			this.arg1   = compare;
+			this.arg2   = null;
+			this.arg3   = null;
+			this.branch = branch;
+			this.pos    = nextDlxPos;
+			nextDlxPos++;
+			this.instr  = currentInstruction;
+			if (currentBlock != null) {
+				this.block = currentBlock;
+				currentBlock = null;
+			} else {
+				this.block = null;
+			}
+		}
+
+		public void setOffset(int offset) {
+			if (this.arg1 == null) {
+				this.arg1 = offset;
+			} else {
+				this.arg2 = offset;
+			}
+		}
+
+		@Override
+		public String toString() {
+			return DLX.mnemo[op] + " " + arg1 + " " + arg2 + " " + arg3;
+		}
 	}
 
 	// Add instruction to the program.
 	public void addInstruction(int op, int a, int b, int c) {
-		byteCode.add(DLX.assemble(op, a, b, c));
+		dlxOps.add(new DlxOp(op, a, b, c));
 	}
 
 	public void addInstruction(int op, int a, int c) {
-		byteCode.add(DLX.assemble(op, a, c));
+		dlxOps.add(new DlxOp(op, a, c, null));
 	}
 
 	public void addInstruction(int op, int c) {
-		byteCode.add(DLX.assemble(op, c));
+		dlxOps.add(new DlxOp(op, c, null, null));
 	}
 
 	public void addInstruction(int op) {
-		byteCode.add(DLX.assemble(op));
+		dlxOps.add(new DlxOp(op, null, null, null));
+	}
+
+	public int getNativeInstr(DlxOp instr) {
+		if (debug) { System.out.println("Generating native code for " + instr + "(" + instr.instr + ")"); }
+		int op = instr.op;
+		Integer arg1, arg2, arg3;
+		arg1 = instr.arg1;
+		arg2 = instr.arg2;
+		arg3 = instr.arg3;
+
+		if (arg1 == null) {
+			return DLX.assemble(op);
+		} else if (arg2 == null) {
+			return DLX.assemble(op, arg1);
+		} else if (arg3 == null) {
+			return DLX.assemble(op, arg1, arg2);
+		} else {
+			return DLX.assemble(op, arg1, arg2, arg3);
+		}
 	}
 
 	public void addInstruction(Instruction instr) {
 		if (debug) { System.out.println("Translating instruction " + instr); }
-		switch(instr.op) {
+		// If the instruction is the first in its block, the position
+		// of this instruction will mark the beginning of the block's code.
+		int op = instr.op;
+
+		if (instr.prev == null) {
+			instr.block.dlxPos = nextDlxPos;
+		}
+		switch(op) {
 			case Instruction.phi:
-				Compiler.error("No phis allowed!");
+				Compiler.warning("No phis allowed!");
 				return;
 			case Instruction.end:
-				endProgram();
+				addInstruction(DLX.RET, 0);
 				return;
 			case Instruction.call:
 				generateFunction(instr);
@@ -127,8 +235,16 @@ public class CodeGenerator {
 				break;
 		}
 
-		if (generateComputation(instr) || generateBranch(instr) || generateLoadStore(instr) || generateIO(instr)) {
-			// We compiled the given instruction.
+		if (op >= Instruction.neg && op <= Instruction.adda) {
+			generateComputation(instr);
+		} else if (op >= Instruction.load && op <= Instruction.move) {
+			generateLoadStore(instr);
+		} else if (op == Instruction.bra || (op >= Instruction.bne && op <= Instruction.ble)) {
+			generateBranch(instr);
+		} else if (op >= Instruction.read && op <= Instruction.writeNL) {
+			generateIO(instr);
+		} else if (op == Instruction.arrayStore || op == Instruction.arrayLoad) {
+			generateArrayOp(instr);
 		} else {
 			Compiler.error("Invalid instruction " + instr);
 		}
@@ -197,10 +313,15 @@ public class CodeGenerator {
 		return true;
 	}
 
+	public void addInstruction(int op, int a, Block branch) {
+		dlxOps.add(new DlxOp(op, a, branch));
+	}
+
 	public boolean generateBranch(Instruction instr) {
 		int dlxOp;
 		Value compare = instr.arg1;
-		Value jumpTo  = instr.arg2;
+		int compareReg = compare.getReg();
+		Block jumpTo  = (Block) instr.arg2;
 
 		switch (instr.op) {
 			case Instruction.bne:
@@ -222,22 +343,21 @@ public class CodeGenerator {
 				dlxOp = DLX.BLE;
 				break;
 			case Instruction.bra:
-				dlxOp = DLX.RET; // ?
-				compare = null;
-				jumpTo = instr.arg1;
+				dlxOp = DLX.BEQ; // Unconditional branch.
+				compare = (Value) null;
+				compareReg = ZERO;
+				jumpTo = (Block) instr.arg1;
 				break;
 			default:
 				return false;
 		}
 
-		if (compare != null) {
-			if (compare instanceof Constant) {
 
-			} else {
-
-			}
+		if (compare instanceof Constant) {
+				addInstruction(DLX.ADDI, SCRATCH, ZERO, compare.getVal());
+				addInstruction(dlxOp, SCRATCH, jumpTo);
 		} else {
-			// Unconditional branch
+				addInstruction(dlxOp, compareReg, jumpTo);
 		}
 		return true;
 
@@ -245,7 +365,6 @@ public class CodeGenerator {
 
 	public boolean generateLoadStore(Instruction instr) {
 		// This currently only works for move instructions.
-		// And it has a bug of some kind
 		int dlxOp;
 		int dstReg = instr.getReg();
 		int srcReg = -1;
@@ -272,6 +391,10 @@ public class CodeGenerator {
 		}
 		addInstruction(DLX.ADD, dstReg, ZERO, srcReg);
 		return true;
+	}
+
+	public void generateArrayOp(Instruction instr) {
+		// TODO
 	}
 
 	public boolean generateIO(Instruction instr) {
@@ -305,36 +428,28 @@ public class CodeGenerator {
 	}
 	// Deal with function and procedure calls.
 	public void generateFunction(Instruction instr) {
-		// // Function function = instr.getFunction();
-		// int n = 0;      // Needs to be set to the amount of space needed for locals.
-		// int params = function.getNumParams() * OFFSET; // Space for params.
+		Function function = instr.getFunction();
+		int n = 0;      // Needs to be set to the amount of space needed for locals.
+		int params = function.getNumParams() * BYTES_IN_WORD; // Space for params.
 
-		// // Procedure prologue
-		// // PSH R31 SP -4 : Return address
-		// addInstruction(DLX.PSH, 31, SP, -4);
-		// // PSH FP SP -4  : Old FP
-		// addInstruction(DLX.PSH, FP, SP, -4);
-		// // ADD FP R0 -4  : FP = SP
-		// addInstruction(DLX.ADD, FP, 0, -4);
-		// // SUBI SP SP n  : Reserve space for locals.
-		// addInstruction(DLX.SUBI, SP, SP, n);
+		// Procedure prologue
+		addInstruction(DLX.PSH, RET_ADDR, SP, - BYTES_IN_WORD); // Store return address.
+		addInstruction(DLX.PSH, FP, SP, - BYTES_IN_WORD);       // Store old frame pointer.
+		addInstruction(DLX.SUBI, FP, ZERO, BYTES_IN_WORD);      // Set FP = SP.
+		addInstruction(DLX.SUBI, SP, SP, n);                    // Reserve space for local vars.
 
-		// // Function call (store RP in R31)
+		// Function call (store RP in R31)
 		// addInstruction(DLX.JSR, function.firstInstructionAddr());
 
-		// // Need to deal with globals, locals, parameters etc...
+		// Need to deal with globals, locals, parameters etc...
 
-		// // Need to store return value at some point.
+		// Need to store return value at some point.
 
-		// // Procedure epilogue
-		// // ADD SP 0 FP
-		// addInstruction(DLX.ADD, SP, 0, FP);
-		// // POP FP SP 4
-		// addInstruction(DLX.POP, FP, SP, 4);
-		// // POP R31 SP 4+params
-		// addInstruction(DLX.POP, 31, SP, 4 + params);
-		// // RET 0 0 31
-		// addInstruction(DLX.RET, 0, 0, 31);
+		// Procedure epilogue
+		addInstruction(DLX.ADD, SP, ZERO, FP);       		           // Set SP = FP.
+		addInstruction(DLX.POP, FP, SP, BYTES_IN_WORD);                // Restore frame pointer.
+		addInstruction(DLX.POP, RET_ADDR, SP, BYTES_IN_WORD + params); // Restore return address.
+		addInstruction(DLX.RET, RET_ADDR);							   // Jump to return address.
 	}
 
 	// Generate native program string.
@@ -351,24 +466,35 @@ public class CodeGenerator {
 	public String assemblyToString() {
 		String result = "";
 		int i = 0;
+		int j = 0;
 		for (int instr : byteCode) {
-			result += i + " : " + DLX.disassemble(instr);
-			i += 4;
+			if (dlxOps.get(j).block != null) {
+				result += "\nBlock " + dlxOps.get(j).block.shortRepr() + ":\n";
+			}
+			result +=  String.format("%0$-20s", i + " : " + DLX.disassemble(instr));
+			//result +=  i + " : " + DLX.disassemble(instr);
+			if (dlxOps.get(j).instr != null) {
+				result += " // " + dlxOps.get(j).instr + "\n";
+			} else {
+				result += "\n";
+			}
+			i += BYTES_IN_WORD;
+			j++;
 		}
 		return result;
 	}
 
 	public String memoryToString() {
-		return memoryToString(DLX.MemSize / 4);
+		return memoryToString(DLX.MemSize / BYTES_IN_WORD);
 	}
 
 	public String memoryToString(int truncate) {
 		String result = "Memory \n";
-		if (truncate > (DLX.MemSize / 4)) { truncate = (DLX.MemSize / 4); }
-		for (int i = 0; i < finalByteCode.length; i++) {
-			result += (i * 4) + " : " + DLX.disassemble(DLX.M[i]);
+		if (truncate > (DLX.MemSize / BYTES_IN_WORD)) { truncate = (DLX.MemSize / BYTES_IN_WORD); }
+		for (int i = 0; i < byteCode.length; i++) {
+			result += (i * BYTES_IN_WORD) + " : " + DLX.disassemble(DLX.M[i]);
 		}
-		for (int i = finalByteCode.length * 4; i < truncate; i += 4) {
+		for (int i = byteCode.length * BYTES_IN_WORD; i < truncate; i += BYTES_IN_WORD) {
 			result += i + " : " + DLX.M[i];
 			if (i == DLX.R[GLOBALS]) {
 				result += " // Begin global variables";

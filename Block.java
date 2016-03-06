@@ -32,6 +32,8 @@ public class Block extends Value {
 
     public boolean visited;     // For use in topological sorting.
 
+    public Integer dlxPos;      // The index where this block begins in the dlx code.
+
     // Dominator relationships.
     public ArrayList<Block> dominees;  // The blocks that this block dominates.
     public Block            dominator; // Dominator of this block.
@@ -44,6 +46,7 @@ public class Block extends Value {
         createdValue = new HashMap<String, Variable>();
         dominees     = new ArrayList<Block>();
         this.visited = false;
+        dlxPos = null;
 	}
 
 	public Block(int id, String description) {
@@ -53,6 +56,7 @@ public class Block extends Value {
         createdValue = new HashMap<String, Variable>();
         dominees     = new ArrayList<Block>();
         this.visited = false;
+        dlxPos = null;
 	}
 
 	// Signify the end of a basic block.

@@ -380,16 +380,16 @@ public class DLX {
 		switch (op) {
 			
 			case WRL:
-				return line += "\n";
+				return line;// += "\n";
 			case BSR:
 			case RET:
 			case JSR:
-				return line += c + "\n";
+				return line += c;// + "\n";
 			case RDI:
-				return line += a + "\n";
+				return line += a;// + "\n";
 			case WRD:
 			case WRH:
-				return line += b + "\n";
+				return line += b;// + "\n";
 			case CHKI:
 			case BEQ:
 			case BNE:
@@ -398,7 +398,7 @@ public class DLX {
 			case BLE:
 			case BGT:
 			case CHK:
-				return line += a + " " + c + "\n";
+				return line += a;// + " " + c + "\n";
 			case ADDI:
 			case SUBI:
 			case MULI:
@@ -429,9 +429,9 @@ public class DLX {
 			case ASH:
 			case LDX:
 			case STX:
-				return line += a + " " + b + " " + c + "\n";
+				return line += a + " " + b + " " + c;// + "\n";
 			default:
-				return line += "\n";
+				return line;// += "\n";
 			}
 	}
 	

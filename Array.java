@@ -11,6 +11,8 @@ public class Array extends Value {
 	int numDims; // Number of dimensions.
 	int[] dims;  // Dimensions.
 
+	Value[] currentIndices;
+
 	ArrayList<Integer> collectDims; // Stores dimensions before we know how many dimensions there are.
 
 	// Constructor
@@ -32,6 +34,31 @@ public class Array extends Value {
 		}
 		numDims = i;
 		collectDims = null;
+	}
+
+	public void setCurrentIndices(Value[] indices) {
+		if (indices.length == dims.length) {
+			currentIndices = indices;
+		} else {
+			Compiler.error("Array indices and dimensions mismatch");
+		}
+	}
+
+	public static String indicesToString(Value[] indices) {
+		String result = "";
+		for (Value index : indices) {
+			result += "[" + index.shortRepr() + "]";
+		}
+		return result;
+	}
+
+	@Override
+	public String shortRepr() {
+		String result = ident;
+		for (int i : dims) {
+			result += "[" + i+ "]";
+		}
+		return result;
 	}
 
 }

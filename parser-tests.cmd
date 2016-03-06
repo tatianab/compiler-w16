@@ -13,7 +13,7 @@ set x=1
    echo.                                    >> result.out 2>&1 
    echo ---------------------------------   >> result.out 2>&1   
    echo Running test0%padded%...            >> result.out 2>&1
-   java Compiler my-tests/test0%padded%.txt >> result.out 2>&1
+   java Compiler my-tests/test0%padded%.txt -all >> result.out 2>&1
    echo ---------------------------------   >> result.out 2>&1
    
 
