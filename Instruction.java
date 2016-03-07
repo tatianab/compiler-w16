@@ -70,37 +70,6 @@ public class Instruction extends Value {
 
 	public static final int arrayStore = 35;
 	public static final int arrayLoad  = 36;
-=======
-	public static int neg     = 1;
-	public static int add     = 2;
-	public static int sub     = 3;
-	public static int mul     = 4;
-	public static int div     = 5;
-	public static int cmp     = 6;
-   
-	public static int adda    = 7;
-	public static int load    = 8;
-	public static int store   = 9;
-	public static int move    = 10;
-	public static int phi     = 11;
-   
-	public static int end     = 12;
-	public static int bra     = 13;
-	
-	public static int read    = 14;
-	public static int write   = 15;
-	public static int writeNL = 16;
-
-	public static int bne     = 20;
-	public static int beq     = 21;
-	public static int bge     = 22;
-	public static int blt     = 23;
-	public static int bgt     = 24;
-	public static int ble     = 25;
-
-	public static int call    = 30;
-
->>>>>>> Stashed changes
 	/* End operation codes. */
 
 	private static String[] ops = new String[]{null, "neg","add","sub","mul","div",
