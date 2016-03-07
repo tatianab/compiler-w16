@@ -17,9 +17,18 @@ public class RegAllocator {
 	 */
     
     public static int numberOfRegister = 8;
+    public static int numberOfReverse = 5;
+    //One for return address
+    //One for stack pointer
+    //One for frame pointer
+    //One for heap pointer
+    //One for memory address calculation
     
 	IntermedRepr program;
 	InterferenceGraph interferenceGraph;
+
+    public RegAllocator() {
+    }
 
 	public RegAllocator(IntermedRepr program) {
 		this.program = program;
@@ -53,14 +62,14 @@ public class RegAllocator {
         for (Block block: program.blocks) {
             if (range.definition == null) {
                 //Not found definition, look for the instruction
-                Instruction def = block.instructionsWithDefVariable(value);
+                Instruction def = null;// = block.instructionsWithDefVariable(value);
                 if (def != null) {
                     range.setDefinition(def);
                 }
             }
             if (range.definition != null) {
-                ArrayList<Instruction> usages = block.instructionsWithUsageOfVariable(value);
-                range.addUsage(usages);
+                //ArrayList<Instruction> usages;// = block.instructionsWithUsageOfVariable(value);
+                //range.addUsage(usages);
             }
         }
         return range;
@@ -91,123 +100,145 @@ public class RegAllocator {
         public memoryPosition reserveArray(int count) {
             int size = 32;
             int beginAddr = dataTail - size;
-            memoryPosition pos = new memoryPosition;
+            memoryPosition pos = new memoryPosition();
             pos.address = beginAddr;
             pos.size = size;
             pos.count = 1;
             return pos;
         }
 
-        public HashMap<instructionValue, memoryPosition> preserve;
+        public HashMap<InstructionSchedule.InstructionValue, memoryPosition> preserve;
 
         memorySpace() {
-            preserve = new HashMap<instructionValue, memoryPosition>();
+            preserve = new HashMap<InstructionSchedule.InstructionValue, memoryPosition>();
         }
 
-        public void store(instructionValue value, memoryPosition position) {
+        public void store(InstructionSchedule.InstructionValue value, memoryPosition position) {
             preserve.put(value, position);
         }
 
         public memoryPosition reserve() {
             int size = 32;
             int beginAddr = dataHead + size;
-            memoryPosition pos = new memoryPosition;
+            memoryPosition pos = new memoryPosition();
             pos.address = beginAddr;
             pos.size = size;
             pos.count = 1;
             return pos;
         }
-        public void release(memoryPosition) {
+        public void release(memoryPosition pos) {
             //Doing nothing
         }
-    }
 
-    public class instructionValue {
-        Instruction basedInstr;
-        //Usage count means how many instructions use this value
-        int usageCount;
-        //Reference count means how many times the instruction being used as an argument
-        int referenceCount;
-        //Usage count means how many instructions use this value
-        int upcomingUsageCount;
-        //Reference count means how many times the instruction being used as an argument
-        int upcomingReferenceCount;
-
-        public void instructionCalled(Instruction instr) {
-            boolean use = false;
-            if (instr.arg1 == basedInstr) {
-                use = true;
-                referenceCount--;
-                upcomingReferenceCount--;
-            }
-            if (instr.arg2 == basedInstr) {
-                use = true;
-                referenceCount--;
-                upcomingReferenceCount--;
-            }
-            if (use) {
-                usageCount--;
-                upcomingUsageCount--;
-            }
+        //Load and save of the value
+        public InstructionSchedule.outputInstruction load(int regNo, memoryPosition position) {
+            InstructionSchedule c = new InstructionSchedule();
+            InstructionSchedule.outputInstruction loadInstr = c.new outputInstruction();
+            loadInstr.op = Instruction.load;
+            loadInstr.arg1 = numberOfRegister-2;
+            loadInstr.constant2 = position.address;
+            loadInstr.outputReg = regNo;
+            return loadInstr;
         }
-        public void instructionAddedToBuffer(Instruction instr) {
-            boolean use = false;
-            if (instr.arg1 == basedInstr) {
-                use = true;
-                upcomingReferenceCount++;
-            }
-            if (instr.arg2 == basedInstr) {
-                use = true;
-                upcomingReferenceCount++;
-            }
-            if (use) {
-                upcomingUsageCount++;
-            }
-        }
-        public boolean stillNeeded() {
-            return referenceCount>0;
-        }
-        public boolean flushable() {
-            return upcomingReferenceCount == 0;
+        public InstructionSchedule.outputInstruction save(int regNo, memoryPosition position) {
+            InstructionSchedule c = new InstructionSchedule();
+            InstructionSchedule.outputInstruction storeInstr = c.new outputInstruction();
+            storeInstr.op = Instruction.store;
+            storeInstr.arg1 = numberOfRegister-2;
+            storeInstr.constant2 = position.address;
+            storeInstr.outputReg = regNo;
+            return storeInstr;
         }
     }
 
     public class Register {
-        public instructionValue currentValue;
-        public memoryPosition backendPosition;
+        public final int registerID;
+        public InstructionSchedule.InstructionValue currentValue;
+        public memorySpace.memoryPosition backendPosition;
         private memorySpace memSpace;
-        Register(memSpace) {
+        Register(int regID, memorySpace memSpace) {
+            registerID = regID;
             this.memSpace = memSpace;
         }
-        public void updateValue(memoryPosition valueMem) {
+        public void updateValue(memorySpace.memoryPosition valueMem) {
             preserveMemory();
             backendPosition = valueMem;
         }
-        public void updateValue(instructionValue instr) {
+        public void updateValue(InstructionSchedule.InstructionValue instr) {
             //Store the instruction dependency
             preserveMemory();
             currentValue = instr;
             backendPosition = null;
         }
-        public preserveMemory() {
+        public InstructionSchedule.outputInstruction preserveMemory() {
             //4 case: 
             //Memory being used? 
             //value still needed? 
             if (currentValue.stillNeeded() ) {
                 if (backendPosition == null)
-                    backendPosition = memSpace.reserve
+                    backendPosition = memSpace.reserve();
                 memSpace.store(currentValue, backendPosition);
             } else if (backendPosition != null) {
                 memSpace.release(backendPosition);
             }
+            InstructionSchedule.outputInstruction storeInstr = null;
+            if (memSpace != null) {
+                storeInstr = memSpace.save(registerID, backendPosition);
+            }
+            return storeInstr;
+        }
+        public int releaseRate() {
+            return currentValue.score();
         }
     }
 
     public class registerContext {
         public Register registers[];
-        public ArrayList<instructionValue> availableContents;
+        public ArrayList<InstructionSchedule.InstructionValue> availableContents;
         registerContext() {
-            registers = new Register[numberOfRegisterAvailable];
+            registers = new Register[numberOfRegister];
+            for (int i = 1; i < numberOfRegister-numberOfReverse; i++) {
+                registers[i] = new Register(i, null);
+            }
+        }
+        registerContext(registerContext copy) {
+            registers = new Register[numberOfRegister];
+            for(int i = 1; i < numberOfRegister; i++) {
+                registers[i] = copy.registers[i];
+            }
+        }
+        boolean hasSpace() {
+            return emptyRegister() > 0;
+        }
+        int emptyRegister() {
+            for (int i = 1; i < numberOfRegister-numberOfReverse; i++) {
+                if (registers[i] == null)
+                    return i;
+            }
+            return -1;
+        }
+        ArrayList<Integer> registerToFlushTo() {
+            //If there is no space anymore, flush the register to the memory in the following order: 
+            //1. All register that won't be used in the current block
+            //2. All register that has a high write amplification: more register will be used in this block to store the result before the register is released (Any instruction with a score higher than 1)
+            Integer firstChoice = -1;       Integer secondChoice = -1;
+            Integer firstChoiceRate = -1;   Integer secondChoiceRate = -1;
+            for (int i = 1; i < numberOfRegister-numberOfReverse; i++) {
+                Register reg = registers[i];
+                if (reg.releaseRate() < firstChoiceRate) {
+                    if (reg.releaseRate() > secondChoiceRate) {
+                        secondChoice = i;
+                        secondChoiceRate = reg.releaseRate();
+                    }
+                } else  {
+                    firstChoice = i;
+                    firstChoiceRate = reg.releaseRate();
+                }
+            }
+            ArrayList<Integer> list = new ArrayList<Integer>();
+            list.add(firstChoice);
+            list.add(secondChoice);
+            return list;
         }
     }
 
@@ -219,38 +250,13 @@ public class RegAllocator {
             dependencyNode(registerContext ctx, Instruction instr) {
                 this.instr = instr;
                 dependCount = 0;
-                if (Instruction.getClass().isInstance(instr.arg1) && ) 
-                    dependCount++;
+                //if (Instruction.getClass().isInstance(instr.arg1) && ) 
+                    //dependCount++;
             }
         }
         public ArrayList<Instruction> opening;
-        public ArrayList
-        public void addInstruction
-    }
-    
-    public ArrayList<VariableAllocation> allocation() {
-        int numberOfRegisterAvailable = numberOfRegister-2;
-        memorySpace memSpace = new memorySpace;
-        Variable registers[] = new Register[numberOfRegisterAvailable];
-        for (int i = 0; i < numberOfRegisterAvailable; i++)
-            registers[i] = null;
-        //TODO: pick the variable that is last to use in the upcoming instructions (first use first priority), for all variables
-        //Schedule method: get all the upcoming instuctions in the block, add dependency, add at much instruction as possible. When a variable free up, import another
-        while (true) {
-
-        }
-    }
-
-    public class AssemblyBlock {
-        public ArrayList<Instruction> instructions;
-    }
-
-    public AssemblyBlock allocateBlock(Block block, registerContext context) {
-        Block pointer = block.begin;
-
-        while (true) {
-            if (availableInstructions)
-        }
+        //public ArrayList
+        //public void addInstruction
     }
 
 	/* Elimination of phi instructions (replace with move instructions).
