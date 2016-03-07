@@ -38,7 +38,6 @@ public class Instruction extends Value {
 	public InstructionState state;
 
 	/* Operation codes. */
-<<<<<<< Updated upstream
 	public static final int neg     = 1;
 	public static final int add     = 2;
 	public static final int sub     = 3;

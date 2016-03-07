@@ -142,6 +142,12 @@ public class InstructionSchedule {
 			int score = 100000;	Instruction ref;
 			for (Instruction instr : instrs) {
 				//if (score > ref.)
+				int currentScore = instr.state.remainingAvailableChildSize;
+				if (instr.loaded() == false && score > currentScore) {
+					//Not loaded, and current instruction has fewer usage -> load first
+					ref = instr;
+				}
+
 			}
 			return ref;
 		}
@@ -171,8 +177,6 @@ public class InstructionSchedule {
 				currentInstr = currentInstr.next;
 			}
 
-			//Load buffer: the elements that should be scheduled to load
-			ArrayList<RegAllocator.memorySpace.memoryPosition> loadRegBuffer = new ArrayList<RegAllocator.memorySpace.memoryPosition>();
 			//Load buffer: the elements that should be scheduled to load
 			ArrayList<outputInstruction> loadInstrBuffer = new ArrayList<outputInstruction>();
 			//Save buffer: the elements that should be scheduled to load
