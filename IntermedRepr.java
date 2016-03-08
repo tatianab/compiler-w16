@@ -329,33 +329,6 @@ public class IntermedRepr {
 
 	/** Methods related to OPTIMIZATION. **/
 
-	// // Topologically sort blocks based on dominator
-	// // relationships. 
-	// public ArrayList<Block> topoSort() {
-	// 	ArrayList<Block> sortedBlocks = new ArrayList<Block>();
-
-	// 	// Set all visited flags to false.
-	// 	for (Block current : blocks) {
-	// 		current.visited = false;
-	// 	}
-
-	// 	// Visit every block.
-	// 	for (Block current : blocks) {
-	// 		visit(current, sortedBlocks);
-	// 	}
-
-	// 	blocks = sortedBlocks;
-	// }
-
-	// // Helper for topological sort.
-	// public void visit(Block block, ArrayList<Block> sortedBlocks) {
-	// 	block.visited = true;
-	// 	for (Block dominee : block.dominees) {
-	// 		visit(dominee);
-	// 	}
-	// 	sortedBlocks.pushFront(current);
-	// }
-
 	public void setInstrDominators() {
 		for (Instruction instr : instrs) {
 			if (!instr.visited) {
@@ -405,17 +378,91 @@ public class IntermedRepr {
 	/* Assigns first available register to instruction.
        Once all registers are filled it gives up. */
     public void dumbRegAlloc() {
-        int FIRST_REG = 2;
+        int FIRST_REG = 3;
         int LAST_REG  = 27;
         int nextAvailReg = FIRST_REG;
         for (Instruction instr : instrs) {
-            instr.assignReg(nextAvailReg);
-            nextAvailReg++;
-            if (nextAvailReg > LAST_REG) {
-                Compiler.error("Not enough registers!");
+        	if (instr.op != phi) {
+            	instr.assignReg(nextAvailReg);
+            	nextAvailReg++;
+            	if (nextAvailReg > LAST_REG) {
+                	Compiler.error("Not enough registers!");
+            	}
             }
         }
     }
+
+    public void eliminatePhi() {
+    	ArrayList<Instruction> oldInstrs = new ArrayList<Instruction>(instrs);
+    	for (Instruction instr : oldInstrs) {
+    		if (instr.op == phi) {
+    			replacePhi(instr);
+    		}
+    	}
+    }
+
+    public void replacePhi(Instruction instr) {
+    	Instruction moveInstr, arg1, arg2;
+    	arg1 = (Instruction) instr.arg1;
+    	arg2 = (Instruction) instr.arg2;
+    	if (arg1 != null) {
+    		moveInstr = createInstr();
+    		moveInstr.setOp(move);
+			moveInstr.setArgs(arg1, instr);
+    		arg1.block.addToEnd(moveInstr);
+    	}
+    	if (arg2 != null) {
+    		moveInstr = createInstr();
+    		moveInstr.setOp(move);
+			moveInstr.setArgs(arg2, instr);
+    		arg2.block.addToEnd(moveInstr);
+    	}
+    	instrs.remove(instr);
+    	instr.delete();
+    }
+
+    // Topologically sort blocks and instructions based on dominator
+	// relationships. 
+	public void topoSort() {
+		ArrayList<Block> sortedBlocks = new ArrayList<Block>();
+
+		// Set all visited flags to false.
+		for (Block current : blocks) {
+			current.visited = false;
+		}
+
+		// Visit every block.
+		for (Block current : blocks) {
+			visit(current, sortedBlocks);
+		}
+
+		blocks = sortedBlocks;
+
+		ArrayList<Instruction> sortedInstrs = new ArrayList<Instruction>();
+		Instruction instr;
+		for (Block current : blocks) {
+			instr = current.begin;
+			if (instr != null) {
+				while (instr != current.end) {
+					sortedInstrs.add(instr);
+					instr = instr.next;
+				}
+				sortedInstrs.add(instr);
+			}
+			
+		}
+		
+		instrs = sortedInstrs;
+	}
+
+	// Helper for topological sort.
+	public void visit(Block block, ArrayList<Block> sortedBlocks) {
+		block.visited = true;
+		for (Block dominee : block.dominees) {
+			visit(dominee, sortedBlocks);
+		}
+		sortedBlocks.add(0, block);
+	}
 
     // This needs to be fixed.
     public int getNumGlobals() {

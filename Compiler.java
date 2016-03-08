@@ -135,6 +135,10 @@ public class Compiler {
 			program.clean();
 			if (debug) { System.out.println("Dumbly allocating registers..."); }
 			program.dumbRegAlloc();
+			if (debug) { System.out.println("Removing phi functions..."); }
+			program.eliminatePhi();
+			if (debug) { System.out.println("Scheduling instructions..."); }
+			program.topoSort();
 			// RegAllocator allocator = new RegAllocator(program);
 		 	//    program = allocator.allocate();
 		}

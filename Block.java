@@ -64,6 +64,11 @@ public class Block extends Value {
 		end = current;
 	}
 
+	public void addToEnd(Instruction instr) {
+		addInstr(instr);
+		end = current;
+	}
+
 	// Add an instruction to the block and update current.
 	public void addInstr(Instruction instr) {
 		if (begin == null) {
