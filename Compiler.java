@@ -130,17 +130,16 @@ public class Compiler {
 		if (optimize || all) {
 			program = optimizer.optimize();
 		}
+		InstructionSchedule schedule;
 		if (regAlloc) {
 			if (debug) { System.out.println("Cleaning up deleted instructions..."); }
 			program.clean();
 			if (debug) { System.out.println("Dumbly allocating registers..."); }
-			program.dumbRegAlloc();
-			if (debug) { System.out.println("Removing phi functions..."); }
-			program.eliminatePhi();
-			if (debug) { System.out.println("Scheduling instructions..."); }
-			program.topoSort();
-			// RegAllocator allocator = new RegAllocator(program);
+			//program.dumbRegAlloc();
+			RegAllocator allocator = new RegAllocator(program);
 		 	//    program = allocator.allocate();
+			schedule = allocator.allocateRegisters();
+			if (debug) { System.out.println("Register-ed instructions:\n"+schedule); }
 		}
 		if (assembly || byteCode || run || all) {
 			if (debug) { System.out.println("Generating native code..."); }

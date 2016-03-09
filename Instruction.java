@@ -71,7 +71,7 @@ public class Instruction extends Value {
 	public static final int arrayLoad  = 36;
 	/* End operation codes. */
 
-	private static String[] ops = new String[]{null, "neg","add","sub","mul","div",
+	public static String[] ops = new String[]{null, "neg","add","sub","mul","div",
 												"cmp","adda","load","store","move","phi","end","bra",
 												"read","write","writeNL", null, null, null,
 												"bne","beq","bge","blt","bgt","ble", null, null, null, null,

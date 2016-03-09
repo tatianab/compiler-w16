@@ -34,13 +34,23 @@ public class RegAllocator {
 		this.program = program;
 	}
 
-	public IntermedRepr allocateRegisters() {
-        dumbRegAlloc();
+	public InstructionSchedule allocateRegisters() {
+        //Set up states
+        createStates();
+        // dumbRegAlloc();
 		// this.interferenceGraph = program.createInterferenceGraph();
 		// colorInterferenceGraph();
 		// program.elimiatePhi();
-		return program;
+        InstructionSchedule schedule = new InstructionSchedule(program);
+		return schedule;
 	}
+
+    public void createStates() {
+        for (Instruction instr : program.instrs) {
+            instr.state = new InstructionState(instr);
+
+        }
+    }
 
 	/* Tracking live ranges / interference graph.
 	 */
@@ -107,14 +117,14 @@ public class RegAllocator {
             return pos;
         }
 
-        public HashMap<InstructionSchedule.InstructionValue, memoryPosition> preserve;
+        public HashMap<memoryPosition, InstructionSchedule.InstructionValue> preserve;
 
         memorySpace() {
-            preserve = new HashMap<InstructionSchedule.InstructionValue, memoryPosition>();
+            preserve = new HashMap<memoryPosition, InstructionSchedule.InstructionValue>();
         }
 
         public void store(InstructionSchedule.InstructionValue value, memoryPosition position) {
-            preserve.put(value, position);
+            preserve.put(position, value);
         }
 
         public memoryPosition reserve() {
@@ -127,11 +137,23 @@ public class RegAllocator {
             return pos;
         }
         public void release(memoryPosition pos) {
-            //Doing nothing
+            //Relase from the pool, that's it. The position will not be reused for debug purpose
+            preserve.remove(pos);
+            //The position will be reused once the stack is set back to frame
+            //Assuming infinite (or very large memory space)
         }
 
         //Load and save of the value
-        public InstructionSchedule.outputInstruction load(int regNo, memoryPosition position) {
+        public InstructionSchedule.outputInstruction load(Register reg, memoryPosition position) {
+            int regNo = reg.registerID;
+            InstructionSchedule.InstructionValue val = preserve.get(position);
+            //Update the value to the register
+            reg.updateValue(val);
+
+            //Update the instruction
+            val.basedInstr.state.storage.currentRegister = reg;
+
+            //Generate corresponding instructions
             InstructionSchedule c = new InstructionSchedule();
             InstructionSchedule.outputInstruction loadInstr = c.new outputInstruction();
             loadInstr.op = Instruction.load;
@@ -159,21 +181,34 @@ public class RegAllocator {
         Register(int regID, memorySpace memSpace) {
             registerID = regID;
             this.memSpace = memSpace;
+
         }
-        public void updateValue(memorySpace.memoryPosition valueMem) {
-            preserveMemory();
+        public boolean isAvailable() {
+            return currentValue == null || currentValue.usageCount == 0;
+        }
+        public InstructionSchedule.outputInstruction updateValue(memorySpace.memoryPosition valueMem) {
+            InstructionSchedule.outputInstruction release = preserveMemory();
             backendPosition = valueMem;
+            return release;
         }
-        public void updateValue(InstructionSchedule.InstructionValue instr) {
+        public InstructionSchedule.outputInstruction updateValue(InstructionSchedule.InstructionValue instr) {
             //Store the instruction dependency
-            preserveMemory();
+            InstructionSchedule.outputInstruction release = preserveMemory();
             currentValue = instr;
             backendPosition = null;
+            //Update the instruction value record
+            instr.basedInstr.state.storage.currentRegister = this;
+            System.out.println("Update register: "+registerID+" with value "+currentValue);
+            return release;
         }
         public InstructionSchedule.outputInstruction preserveMemory() {
             //4 case: 
             //Memory being used? 
             //value still needed? 
+            if (currentValue == null) {
+                //No instruction, so do nothing 
+                return null;
+            }
             if (currentValue.stillNeeded() ) {
                 if (backendPosition == null)
                     backendPosition = memSpace.reserve();
@@ -190,6 +225,10 @@ public class RegAllocator {
         public int releaseRate() {
             return currentValue.score();
         }
+        @Override public String toString() {
+            String result = registerID + ": " + currentValue + "\n";
+            return result;
+        }
     }
 
     public class registerContext {
@@ -197,7 +236,7 @@ public class RegAllocator {
         public ArrayList<InstructionSchedule.InstructionValue> availableContents;
         registerContext() {
             registers = new Register[numberOfRegister];
-            for (int i = 1; i < numberOfRegister-numberOfReverse; i++) {
+            for (int i = 0; i < numberOfRegister; i++) {
                 registers[i] = new Register(i, null);
             }
         }
@@ -212,7 +251,7 @@ public class RegAllocator {
         }
         int emptyRegister() {
             for (int i = 1; i < numberOfRegister-numberOfReverse; i++) {
-                if (registers[i] == null)
+                if (registers[i].isAvailable())
                     return i;
             }
             return -1;
@@ -239,6 +278,14 @@ public class RegAllocator {
             list.add(firstChoice);
             list.add(secondChoice);
             return list;
+        }
+        @Override public String toString() {
+            String result = "\n";
+            for (int i = 0; i < numberOfRegister; i++) {
+                Register reg = registers[i];
+                result += reg;
+            }
+            return result;
         }
     }
 

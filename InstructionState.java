@@ -2,14 +2,28 @@ public class InstructionState{
 	public Instruction instr;
 	public int unresolveArgument = 0;
 	public float remainingAvailableChildSize = 0;
+	public InstructionSchedule.InstructionValue valueRepr = null;
+	InstructionState(Instruction _instr) {
+		instr = _instr;
+		if (instr.instrsUsed != null) {
+			unresolveArgument = instr.instrsUsed.length;
+			for (Instruction child: _instr.uses) {
+				for (Instruction child_Arg: child.instrsUsed) {
+					if (child_Arg == _instr)
+						remainingAvailableChildSize += 0.5;
+				}
+			}
+		}
+		storage = new storageState();
+	}
 	public class storageState {
-		public RegAllocator.Register currentRegister;
-		public RegAllocator.memorySpace.memoryPosition backstore;
+		public RegAllocator.Register currentRegister = null;
+		public RegAllocator.memorySpace.memoryPosition backstore = null;
 		public boolean loaded() { return currentRegister!=null; }
-		public InstructionSchedule.outputInstruction load(int regNo, RegAllocator.memorySpace space) {
+		public InstructionSchedule.outputInstruction load(RegAllocator.Register reg, RegAllocator.memorySpace space) {
 			if (loaded()) return null;
 			else {
-				return space.load(regNo, backstore);
+				return space.load(reg, backstore);
 			}
 		}
 	}
@@ -19,28 +33,51 @@ public class InstructionState{
 		Value a1 = instr.arg1;
 		Instruction instrA = null;
 		if (a1 instanceof Instruction) {
-			instrA = a1;
+			instrA = (Instruction)a1;
 		}
-		Instruction instrB;
-		if (instr.op != move) {
+		Instruction instrB = null;
+		if (instr.op != Instruction.move) {
 			Value a2 = instr.arg2;
 			if (a2 instanceof Instruction) {
-				instrB = a2;
+				instrB = (Instruction)a2;
 			}
 		} else {
-			instrB = null;
 			if (instrA == null) {
-				//Move a contant into register, do it now
-				return 0;
+				//Move a constant into register, do it at the last minute
+				//As the constant will jsut occupy one register, while freeing non
+				return 100000000;
 			} else {
-				return instrA.remainingAvailableChildSize;
+				return instrA.state.remainingAvailableChildSize;
 			}
 		}
-		if (a2 == null) {
-			return instrA.remainingAvailableChildSize;
+		if (instrB == null) {
+			return instrA.state.remainingAvailableChildSize;
 		}
-		float min = Math.min(instrA.remainingAvailableChildSize, instrB.remainingAvailableChildSize);
-		float mul = instrA.remainingAvailableChildSize * instrB.remainingAvailableChildSize;
+		float min = Math.min(instrA.state.remainingAvailableChildSize, instrB.state.remainingAvailableChildSize);
+		float mul = instrA.state.remainingAvailableChildSize * instrB.state.remainingAvailableChildSize;
 		return Math.min(min, mul);
+	}
+	public void scheduled() {
+		if (instr.arg1 instanceof Instruction) {
+			//Argument 1 is an instruction
+			((Instruction)instr.arg1).state.remainingAvailableChildSize -= 0.5;
+			((Instruction)instr.arg1).state.valueRepr.usageCount -= 1;
+			((Instruction)instr.arg1).state.valueRepr.referenceCount -= 1;
+			((Instruction)instr.arg1).state.valueRepr.upcomingUsageCount -= 1;
+			((Instruction)instr.arg1).state.valueRepr.upcomingReferenceCount -= 1;
+		}
+		if (instr.arg2 instanceof Instruction) {
+			//Argument 1 is an instruction
+			((Instruction)instr.arg2).state.remainingAvailableChildSize -= 0.5;
+			((Instruction)instr.arg2).state.valueRepr.usageCount -= 1;
+			((Instruction)instr.arg2).state.valueRepr.referenceCount -= 1;
+			((Instruction)instr.arg2).state.valueRepr.upcomingUsageCount -= 1;
+			((Instruction)instr.arg2).state.valueRepr.upcomingReferenceCount -= 1;
+		}
+		if (instr.arg1 == instr.arg2) {
+			((Instruction)instr.arg2).state.valueRepr.referenceCount += 1;
+			((Instruction)instr.arg2).state.valueRepr.upcomingReferenceCount += 1;
+
+		}
 	}
 }
