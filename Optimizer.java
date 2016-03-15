@@ -58,7 +58,7 @@ public class Optimizer {
 			current = workList.pop();
 			if (!current.visited) {
 				current.visited = true;
-				if (deletable(current.op)) {
+				if (deletable(current)) {
 					if (current.uses == null || current.uses.size() == 0) { 
 						current.delete();
 					}
@@ -77,8 +77,10 @@ public class Optimizer {
 
 	/* True if it is OK to delete an instruction of this type.
 	 */
-	public boolean deletable(int op) {
-		if (op >= write || op == phi || op == end) {
+	public boolean deletable(Instruction instr) {
+		if (instr.op >= write || instr.op == phi || instr.op == end) {
+			return false;
+		} else if (instr.op == move && instr.arg1 instanceof Constant && instr.usedInPhi()) {
 			return false;
 		} else { return true; }
 	}
@@ -93,7 +95,7 @@ public class Optimizer {
 		// // for (int i = program.instrs.size() - 1; i >= 0; i--) {
 		// 	currentInstr = program.instrs.get(i);
 		for (Instruction currentInstr : program.instrs) {
-			if (deletable(currentInstr.op)) {
+			if (deletable(currentInstr)) {
 				equivInstr   = currentInstr.equivDominatingInstr();
 				if (equivInstr != null) {
 					for (Instruction useSite : currentInstr.uses) {
@@ -115,17 +117,22 @@ public class Optimizer {
 		Value newValue;
 		for (Instruction instr : program.instrs) {
 			if (instr.op == move) {
-				newValue = instr.arg1;
-				oldInstr = (Instruction) instr.arg2;
-				if (oldInstr.op == phi) { continue; }
-				for (Instruction useSite : oldInstr.uses) {
-					if (newValue instanceof Instruction) {
-						useSite.replace(oldInstr, (Instruction) newValue);
-					} else if (newValue instanceof Constant) {
-						useSite.replace(oldInstr, (Constant) newValue);
+				if (debug) {System.out.println("CP: " + instr);} 
+				if (instr.usedInPhi() && instr.arg1 instanceof Constant) {
+					if (debug) {System.out.println("Don't delete me: " + instr);} 
+				} else {
+					newValue = instr.arg1;
+					oldInstr = (Instruction) instr.arg2;
+					if (oldInstr.op == phi) { continue; }
+					for (Instruction useSite : oldInstr.uses) {
+						if (newValue instanceof Instruction) {
+							useSite.replace(oldInstr, (Instruction) newValue);
+						} else if (newValue instanceof Constant) {
+							useSite.replace(oldInstr, (Constant) newValue);
+						}
 					}
+					oldInstr.delete();
 				}
-				oldInstr.delete();
 			}
 		}
 	}
@@ -136,7 +143,7 @@ public class Optimizer {
 			if (instr.op <= add && instr.op >= div) {
 				Value arg1 = instr.arg1;
 				Value arg2 = instr.arg2;
-				if (instr.arg1 instanceof Constant && instr.arg2 instanceof Constant) {
+				if (instr.arg1 instanceof Constant && instr.arg2 instanceof Constant && !instr.usedInPhi()) {
 					int value = 0;
 					switch(instr.op) {
 						case Instruction.add:

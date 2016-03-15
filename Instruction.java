@@ -31,7 +31,7 @@ public class Instruction extends Value {
 										// same op code as this instruction.
 
 	public Instruction[] instrsUsed; // The instructions used by this one.
-	HashSet<Instruction> uses;    // The instructions that use the result of this instruction.
+	HashSet<Instruction> uses;       // The instructions that use the result of this instruction.
 
 	public int register; // The register that the value of this instruction is assigned to.
 
@@ -386,6 +386,15 @@ public class Instruction extends Value {
 		if (newValue instanceof Instruction) {
 			((Instruction)newValue).uses.add(this);
 		}
+	}
+
+	public boolean usedInPhi() {
+		for (Instruction usedIn : uses) {
+			if (usedIn.op == phi) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public void assignReg(int reg) {
