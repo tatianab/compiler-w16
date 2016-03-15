@@ -1,0 +1,23 @@
+main
+var a, b, c, d;
+{
+	let b <- 0;
+	let a <- call InputNum( );
+	let c <- 0;
+	
+	call OutputNum( a );
+	call OutputNewLine( );
+	
+	while b > c do
+		let d <- call InputNum( );
+		
+		let c <- c + 1;
+		
+		call OutputNum( d );
+		call OutputNewLine( );
+		
+		let b <- b + 1
+	od
+}
+.
+ 

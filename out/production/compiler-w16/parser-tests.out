@@ -1,0 +1,157 @@
+Testing...
+
+
+---------------------------------
+Running test001...
+---------------------------------
+
+---------------------------------
+Running test002...
+---------------------------------
+
+---------------------------------
+Running test003...
+---------------------------------
+
+---------------------------------
+Running test004...
+---------------------------------
+
+---------------------------------
+Running test005...
+---------------------------------
+
+---------------------------------
+Running test006...
+---------------------------------
+
+---------------------------------
+Running test007...
+ERROR: (In Block7: If join block., begin = 16 : PHI a_16 := a_9 a_14) No current instruction set.
+---------------------------------
+
+---------------------------------
+Running test008...
+---------------------------------
+
+---------------------------------
+Running test009...
+ERROR: (In Block8: If join block., begin = 16 : PHI a_16 := a_6 a_10) No current instruction set.
+---------------------------------
+
+---------------------------------
+Running test010...
+---------------------------------
+
+---------------------------------
+Running test011...
+---------------------------------
+
+---------------------------------
+Running test012...
+ERROR: (In Block4: If join block., begin = 13 : PHI a_13 := a_11 a_8) No current instruction set.
+---------------------------------
+
+---------------------------------
+Running test013...
+ERROR: (In Block9: If join block., begin = 24 : PHI a_24 := a_11 a_21) No current instruction set.
+---------------------------------
+
+---------------------------------
+Running test014...
+
+ERROR: Uninitialized variable b
+Last ident: do, last val = 1, current symbol = 42.
+---------------------------------
+
+---------------------------------
+Running test015...
+
+ERROR: Uninitialized variable too
+Last ident: ;, last val = 3, current symbol = 70.
+---------------------------------
+
+---------------------------------
+Running test016...
+---------------------------------
+
+---------------------------------
+Running test017...
+---------------------------------
+
+---------------------------------
+Running test018...
+
+ERROR: Uninitialized variable a
+Last ident: +, last val = 0, current symbol = 11.
+---------------------------------
+
+---------------------------------
+Running test019...
+
+ERROR: Uninitialized variable a
+Last ident: ;, last val = 0, current symbol = 70.
+---------------------------------
+
+---------------------------------
+Running test020...
+---------------------------------
+
+---------------------------------
+Running test021...
+---------------------------------
+
+---------------------------------
+Running test022...
+---------------------------------
+
+---------------------------------
+Running test023...
+ERROR: (In Block6: If join block., begin = 21 : PHI d_21 := d_20 d_17) No current instruction set.
+---------------------------------
+
+---------------------------------
+Running test024...
+ERROR: (In Block18: If join block., begin = 58 : PHI e_58 := e_53 e_42) No current instruction set.
+---------------------------------
+
+---------------------------------
+Running test025...
+
+ERROR: Uninitialized variable b
+Last ident: +, last val = 0, current symbol = 11.
+---------------------------------
+
+---------------------------------
+Running test026...
+---------------------------------
+
+---------------------------------
+Running test027...
+---------------------------------
+
+---------------------------------
+Running test028...
+
+ERROR: Uninitialized variable b
+Last ident: ;, last val = 0, current symbol = 70.
+---------------------------------
+
+---------------------------------
+Running test029...
+
+ERROR: Uninitialized variable foo
+Last ident: ;, last val = 0, current symbol = 70.
+---------------------------------
+
+---------------------------------
+Running test030...
+ERROR: (In Block9: If join block., begin = 18 : PHI a_18 := a_0 a_9) No current instruction set.
+---------------------------------
+
+---------------------------------
+Running test031...
+
+ERROR: Uninitialized variable b
+Last ident: >, last val = 0, current symbol = 25.
+---------------------------------

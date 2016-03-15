@@ -1,0 +1,16 @@
+main
+    var par, q;
+    {
+	let par <- 3;
+	let q <- 1;
+        while 3 < par do
+            if 2 < 3 then
+                let q <- par+q
+            fi;
+            while 4 >= q do
+                let q <- par - q
+            od;
+            let par <- q-3
+        od
+    }
+.

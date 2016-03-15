@@ -6,7 +6,11 @@ public class InstructionState{
 	InstructionState(Instruction _instr) {
 		instr = _instr;
 		if (instr.instrsUsed != null) {
-			unresolveArgument = instr.instrsUsed.length;
+			for (int i = 0; i < 2; i++) {
+				if (instr.instrsUsed[i] != null && (i == 0 || (_instr.op != Instruction.move && _instr.op != Instruction.write))) {
+					unresolveArgument++;
+				}
+			}
 			for (Instruction child: _instr.uses) {
 				for (Instruction child_Arg: child.instrsUsed) {
 					if (child_Arg == _instr)
@@ -66,7 +70,7 @@ public class InstructionState{
 			((Instruction)instr.arg1).state.valueRepr.upcomingUsageCount -= 1;
 			((Instruction)instr.arg1).state.valueRepr.upcomingReferenceCount -= 1;
 		}
-		if (instr.arg2 instanceof Instruction) {
+		if (instr.arg2 instanceof Instruction && instr.op != Instruction.move) {
 			//Argument 1 is an instruction
 			((Instruction)instr.arg2).state.remainingAvailableChildSize -= 0.5;
 			((Instruction)instr.arg2).state.valueRepr.usageCount -= 1;

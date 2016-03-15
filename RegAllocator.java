@@ -15,8 +15,212 @@ public class RegAllocator {
 	   - Eliminates phi instructions and inserts move instructions.
 	   - Displays the final result using VCG.
 	 */
-    
-    public static int numberOfRegister = 8;
+
+    public class phiRequest {
+        Instruction value1, value2;
+        InstructionSchedule.InstructionValue actualStmt;
+    }
+
+    public class phiMergerResult {
+        registerContext resultContext;
+        ArrayList<InstructionSchedule.outputInstruction> edge1;
+        ArrayList<InstructionSchedule.outputInstruction> edge2;
+    }
+
+    //While style merge
+    public static void phiPassover(Block senderBlock, ArrayList<phiRequest> requests) {
+        //Just update all the elements into the same thing
+        //Update the value of the register to the phi functions, and drop all the variable that is no longer needed
+        for (phiRequest request : requests) {
+            
+            Instruction instr1 = request.value1;
+            Instruction instr2 = request.value2;
+            System.out.println("Request Value: "+request.actualStmt.basedInstr);
+            if (instr1.block.id <= senderBlock.id) {
+                //It is from sender block 1 side
+                //Just move the value
+                if (instr1.state.storage.currentRegister != null) {
+                    //There is a register, so update it
+                    int regID = instr1.state.storage.currentRegister.registerID;
+                    senderBlock.schedule.context.registers[regID].phiValue(request.actualStmt);
+                    request.actualStmt.basedInstr.state.storage.currentRegister = instr1.state.storage.currentRegister;
+                }
+                if (instr1.state.storage.backstore != null) {
+                    //There is a memory position, so update it
+                    instr1.state.storage.backstore.value = request.actualStmt.basedInstr;
+                    request.actualStmt.basedInstr.state.storage.backstore = instr1.state.storage.backstore;
+                }
+            } else {
+                //It is from sender block 2 side
+                //Just move the value
+                if (instr2.state.storage.currentRegister != null) {
+                    //There is a register, so update it
+                    int regID = instr2.state.storage.currentRegister.registerID;
+                    senderBlock.schedule.context.registers[regID].phiValue(request.actualStmt);
+                    request.actualStmt.basedInstr.state.storage.currentRegister = instr2.state.storage.currentRegister;
+                }
+                if (instr2.state.storage.backstore != null) {
+                    //There is a position, so update it
+                    instr2.state.storage.backstore.value = request.actualStmt.basedInstr;
+                    request.actualStmt.basedInstr.state.storage.backstore = instr2.state.storage.backstore;
+                }
+            }
+            //Phi has been handle, so just release
+            for (Instruction child: request.actualStmt.basedInstr.uses) {
+                //A depended value is calculated->add it back
+                child.state.unresolveArgument--;
+            }
+        }
+    }
+
+    static phiRequest requestForValue(ArrayList<phiRequest>requests, InstructionSchedule.InstructionValue value) {
+        for (phiRequest request:requests) {
+            if (request.value1 == value.basedInstr || request.value2 == value.basedInstr || request.actualStmt == value)
+                return request;
+        }
+        return null;
+    }
+
+    static int regIDForValue(registerContext ctx, InstructionSchedule.InstructionValue value) {
+        for (Register reg:ctx.registers) {
+            if (reg.currentValue == value)
+                return reg.registerID;
+        }
+        return -1;
+    }
+
+    //a2: inner
+    //b: join
+    //requests: phi
+    //Only edge 1 will has instruction, result context would be the same
+    public static phiMergerResult phiTransform(registerContext a2, registerContext b, ArrayList<phiRequest> requests) {
+        //For while loop
+        //We have to transform register context a2 back into b, with 100% correctness
+        InstructionSchedule insch = new InstructionSchedule();
+
+        RegAllocator r = new RegAllocator();
+        phiMergerResult merger = r.new phiMergerResult();
+        merger.edge1 = new ArrayList<InstructionSchedule.outputInstruction>();
+
+        for (Register reg:a2.registers) {
+            if (reg.currentValue != null && b.registers[reg.registerID].currentValue != null) {
+                phiRequest req = requestForValue(requests, reg.currentValue);
+                //Transform back to phi
+                reg.currentValue = req.actualStmt;
+            }
+        }
+
+        for (Register reg:b.registers) {
+            int actualID = regIDForValue(a2, reg.currentValue);
+            //If a2 contains the value, aID > 0
+            //If aID is not the register ID in reg->need to swap
+            if (reg.currentValue != null && actualID > 0 && reg.registerID != actualID) {
+                //Need to move to actual ID
+                ArrayList<InstructionSchedule.outputInstruction> ois = a2.swapRegister(actualID, reg.registerID);
+                merger.edge1.addAll(ois);
+            }
+        }
+
+        for (Register reg: b.registers) {
+            //Load value that is not there
+            if (reg.currentValue != null && a2.registers[reg.registerID].currentValue != reg.currentValue) {
+                //The inner loop has the higher block id
+                phiRequest request = requestForValue(requests, reg.currentValue);
+                Instruction instrVal = (request.value1.block.id > request.value2.block.id)?request.value1:request.value2;
+                InstructionSchedule.outputInstruction oi = a2.registers[reg.registerID].updateValue(instrVal.state.valueRepr);
+                merger.edge1.add(oi);
+            }
+        }
+        merger.resultContext = a2;
+        return merger;
+    }
+
+    //If style merge
+    public static phiMergerResult phiMerger(registerContext a1, registerContext a2, ArrayList<phiRequest> requests) {
+        InstructionSchedule insch = new InstructionSchedule();
+
+        RegAllocator r = new RegAllocator();
+        phiMergerResult merger = r.new phiMergerResult();
+        registerContext mergedCtx = r.new registerContext(a1.space);
+
+        ArrayList<InstructionSchedule.outputInstruction> edge1Instr = new ArrayList<InstructionSchedule.outputInstruction>();
+        ArrayList<InstructionSchedule.outputInstruction> edge2Instr = new ArrayList<InstructionSchedule.outputInstruction>();
+
+        for (phiRequest request : requests) {
+            //Handle case
+            Instruction instr1 = request.value1;
+            Instruction instr2 = request.value2;
+            Register reg1 = instr1.state.storage.currentRegister;
+            Register reg2 = instr2.state.storage.currentRegister;
+            if (reg1 != null && reg2 != null) {
+                //Both values are loaded in the register
+                if (reg1.registerID == reg2.registerID) {
+                    //If the two values are loaded in the same register, just register to the returning context
+                    if (mergedCtx.registers[reg1.registerID].isAvailable()) {
+                        mergedCtx.registers[reg1.registerID].updateValue(request.actualStmt);
+                    } else {
+                        //No space, so reallocate
+                        int regID = mergedCtx.emptyRegister();
+                        mergedCtx.registers[regID].updateValue(request.actualStmt);
+                        InstructionSchedule.outputInstruction instr = insch.new outputInstruction();
+                        instr.op = Instruction.move;
+                        instr.arg1 = reg1.registerID;
+                        instr.outputReg = regID;
+                        edge1Instr.add(instr);
+                        edge2Instr.add(instr);
+                    }
+                } else {
+                    if (mergedCtx.registers[reg1.registerID].isAvailable()) {
+                        //Test if register 1 is available
+                        InstructionSchedule.outputInstruction instr = insch.new outputInstruction();
+                        instr.op = Instruction.move;
+                        instr.arg1 = reg2.registerID;
+                        instr.outputReg = reg1.registerID;
+                        edge2Instr.add(instr);
+                        mergedCtx.registers[reg1.registerID].updateValue(request.actualStmt);
+                    } else if (mergedCtx.registers[reg2.registerID].isAvailable()) {
+                        //If not, try register 2
+                        InstructionSchedule.outputInstruction instr = insch.new outputInstruction();
+                        instr.op = Instruction.move;
+                        instr.arg1 = reg1.registerID;
+                        instr.outputReg = reg2.registerID;
+                        edge1Instr.add(instr);
+                        mergedCtx.registers[reg2.registerID].updateValue(request.actualStmt);
+                    } else {
+                        //If not, allocate a space
+                        //No space, so reallocate
+                        int regID = mergedCtx.emptyRegister();
+                        mergedCtx.registers[regID].updateValue(request.actualStmt);
+                        InstructionSchedule.outputInstruction instr = insch.new outputInstruction();
+                        instr.op = Instruction.move;
+                        instr.arg1 = reg1.registerID;
+                        instr.outputReg = regID;
+                        edge1Instr.add(instr);
+                        edge2Instr.add(instr);
+                    }
+                }
+            } else if (reg1 == null && reg2 == null) {
+                //Both value are loaded in the memory, so assert the memory address is the 
+                assert(instr1.state.storage.backstore.address == instr2.state.storage.backstore.address);
+            } else {
+                //One in, one's not
+                //So just store
+                if (reg1 != null) {
+                    //It is not store from register 1
+                    //So just store
+                    //TODO
+                }
+            }
+            //Phi has been handle, so just release
+            for (Instruction child: request.actualStmt.basedInstr.uses) {
+                //A depended value is calculated->add it back
+                child.state.unresolveArgument--;
+            }
+        }
+        return merger;
+    }
+
+    public static int numberOfRegister = 9;
     public static int numberOfReverse = 5;
     //One for return address
     //One for stack pointer
@@ -128,8 +332,9 @@ public class RegAllocator {
         }
 
         public memoryPosition reserve() {
-            int size = 32;
-            int beginAddr = dataHead + size;
+            int size = 4;
+            int beginAddr = dataHead;
+            dataHead += size;
             memoryPosition pos = new memoryPosition();
             pos.address = beginAddr;
             pos.size = size;
@@ -169,6 +374,7 @@ public class RegAllocator {
             storeInstr.arg1 = numberOfRegister-2;
             storeInstr.constant2 = position.address;
             storeInstr.outputReg = regNo;
+
             return storeInstr;
         }
     }
@@ -183,8 +389,24 @@ public class RegAllocator {
             this.memSpace = memSpace;
 
         }
+        Register(Register copy) {
+            registerID = copy.registerID;
+            this.memSpace = copy.memSpace;
+            this.currentValue = copy.currentValue;
+            backendPosition = copy.backendPosition;
+        }
         public boolean isAvailable() {
             return currentValue == null || currentValue.usageCount == 0;
+        }
+        public InstructionSchedule.outputInstruction phiValue(InstructionSchedule.InstructionValue instr) {
+            //Store the instruction dependency
+            InstructionSchedule.outputInstruction release = null;
+            currentValue = instr;
+            backendPosition = null;
+            //Update the instruction value record
+            instr.basedInstr.state.storage.currentRegister = this;
+            System.out.println("Update register: "+registerID+" with value "+currentValue);
+            return release;
         }
         public InstructionSchedule.outputInstruction updateValue(memorySpace.memoryPosition valueMem) {
             InstructionSchedule.outputInstruction release = preserveMemory();
@@ -217,34 +439,74 @@ public class RegAllocator {
                 memSpace.release(backendPosition);
             }
             InstructionSchedule.outputInstruction storeInstr = null;
-            if (memSpace != null) {
+            if (backendPosition != null) {
                 storeInstr = memSpace.save(registerID, backendPosition);
             }
+            Instruction instr = currentValue.basedInstr;
+            instr.state.storage.backstore = backendPosition;
+            instr.state.storage.currentRegister = null;
+            //After preserve, it's nothing
+            currentValue = null;
             return storeInstr;
         }
         public int releaseRate() {
             return currentValue.score();
         }
         @Override public String toString() {
-            String result = registerID + ": " + currentValue + "\n";
-            return result;
+            String result = registerID + ": ";
+            if (currentValue != null) result += currentValue.basedInstr;
+            else result += "null";
+            return result+"\n";
         }
     }
 
     public class registerContext {
         public Register registers[];
-        public ArrayList<InstructionSchedule.InstructionValue> availableContents;
-        registerContext() {
+        public memorySpace space;
+        registerContext(memorySpace _space) {
+            space = _space;
             registers = new Register[numberOfRegister];
             for (int i = 0; i < numberOfRegister; i++) {
-                registers[i] = new Register(i, null);
+                registers[i] = new Register(i, space);
             }
         }
         registerContext(registerContext copy) {
             registers = new Register[numberOfRegister];
-            for(int i = 1; i < numberOfRegister; i++) {
-                registers[i] = copy.registers[i];
+            for(int i = 0; i < numberOfRegister; i++) {
+                registers[i] = new Register(copy.registers[i]);
             }
+        }
+        ArrayList<InstructionSchedule.outputInstruction> swapRegister(int regA, int regB) {
+            ArrayList<InstructionSchedule.outputInstruction>tmp = new ArrayList();
+            InstructionSchedule is = new InstructionSchedule();
+            if (registers[regB].isAvailable()) {
+                //The register is free
+                InstructionSchedule.outputInstruction instr = is.new outputInstruction();
+                instr.op = Instruction.move;
+                instr.arg1 = regA;
+                instr.outputReg = regB;
+                tmp.add(instr);
+            } else {
+                //Get the first reverse register
+                int swapReg = numberOfRegister-numberOfReverse;
+                //The register is not free, so swap
+                InstructionSchedule.outputInstruction instr1 = is.new outputInstruction();
+                instr1.op = Instruction.move;
+                instr1.arg1 = regA;
+                instr1.outputReg = swapReg;
+                tmp.add(instr1);
+                InstructionSchedule.outputInstruction instr2 = is.new outputInstruction();
+                instr2.op = Instruction.move;
+                instr2.arg1 = regB;
+                instr2.outputReg = regA;
+                tmp.add(instr2);
+                InstructionSchedule.outputInstruction instr3 = is.new outputInstruction();
+                instr3.op = Instruction.move;
+                instr3.arg1 = swapReg;
+                instr3.outputReg = regB;
+                tmp.add(instr3);
+            }
+            return tmp;
         }
         boolean hasSpace() {
             return emptyRegister() > 0;
@@ -270,6 +532,9 @@ public class RegAllocator {
                         secondChoiceRate = reg.releaseRate();
                     }
                 } else  {
+                    secondChoice = firstChoice;
+                    secondChoiceRate = firstChoiceRate;
+
                     firstChoice = i;
                     firstChoiceRate = reg.releaseRate();
                 }
@@ -277,10 +542,11 @@ public class RegAllocator {
             ArrayList<Integer> list = new ArrayList<Integer>();
             list.add(firstChoice);
             list.add(secondChoice);
+                System.out.println("Release: "+list);
             return list;
         }
         @Override public String toString() {
-            String result = "\n";
+            String result = "Reg: \n";
             for (int i = 0; i < numberOfRegister; i++) {
                 Register reg = registers[i];
                 result += reg;

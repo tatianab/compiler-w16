@@ -37,6 +37,9 @@ public class Block extends Value {
     // Dominator relationships.
     public ArrayList<Block> dominees;  // The blocks that this block dominates.
     public Block            dominator; // Dominator of this block.
+
+    public InstructionSchedule.ScheduledBlock schedule;
+    public int dependent = -1;
     
 	// Constructors for a block.
 	public Block(int id) {

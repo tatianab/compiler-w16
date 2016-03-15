@@ -77,6 +77,7 @@ public class InstructionSchedule {
 		public int arg1, arg2;
 		public int constant1;
 		public int constant2;
+		public Block jumpBlock;
 		outputInstruction() {
 			op = -1;
 			outputReg = -1;
@@ -109,6 +110,9 @@ public class InstructionSchedule {
 				} else if (instr.arg2 instanceof Constant) {
 					Constant c = (Constant)instr.arg2;
 					constant2 = c.getVal();
+				} else if (instr.arg2 instanceof Block) {
+					Block b = (Block)instr.arg2;
+					jumpBlock = b;
 				}
 
 			}
@@ -142,6 +146,7 @@ public class InstructionSchedule {
 		public ArrayList<outputInstruction> instructions = new ArrayList<outputInstruction>();
 		public ArrayList<Instruction> directDependent;
 		public Block referenceBlock;
+		public RegAllocator.registerContext context;
 
 		@Override
 		public String toString() {
@@ -150,14 +155,31 @@ public class InstructionSchedule {
 			for (outputInstruction oi : instructions) {
 				output += oi+"\n";
 			}
+			//Next
+			if (next1 != null) {
+				output += "Next 1: \n";
+				output += next1 + "\n";
+			}
+			//Next
+			if (next2 != null) {
+				output += "Next 2: \n";
+				output += next2 + "\n";
+			}
 			return output;
 		}
 
 		public Instruction pickInstr(ArrayList<Instruction> instrs) {
 			int score = -1;
 			Instruction instr = null;
+			Instruction branch = null;
 			for (Instruction currentInstr : instrs) {
 				int currentScore = 0;
+				if (instructionWouldReturn(currentInstr) == false)
+					currentScore = 1;
+				if (currentInstr.op == Instruction.bra || (currentInstr.op >= Instruction.bne && currentInstr.op <= Instruction.ble) ) {
+					//Make sure branch is the last to go
+					currentScore = -1;
+				}
 				if (score == -1 || score > currentScore) {
 					//There is a better instruction
 					score = currentScore;
@@ -167,16 +189,37 @@ public class InstructionSchedule {
 			return instr;
 		}
 
+		private boolean instructionWouldReturn(Instruction instr) {
+			switch (instr.op) {
+				case Instruction.write:
+				case Instruction.store:
+				case Instruction.writeNL:
+				case Instruction.arrayStore:
+					return false;
+				default:
+					if (instr.op == Instruction.bra || (instr.op >= Instruction.bne && instr.op <= Instruction.ble) ) return false;
+					return true;
+			}
+		}
+
 		public outputInstruction scheduleInstruction(Instruction instr, RegAllocator.registerContext context) {
 			//Get register, set the value to the register
-			int nextRegID = context.emptyRegister();
-			RegAllocator.Register nextReg =  context.registers[nextRegID];
-			System.out.println("Instruction: "+instr+" Register ID: "+nextRegID);
-			//The register is empty, so just write the value
+			System.out.println(instr);
+			int nextRegID = -1;
+
 			InstructionValue value = new InstructionValue(instr, referenceBlock);
+			System.out.print("Instr: "+instr+"\n");
 			instr.state.valueRepr = value;
-			outputInstruction release = nextReg.updateValue(value);
-			assert(release == null);//Should be null, meaning no overwriting the variable
+
+			if (instructionWouldReturn(instr)) {
+				nextRegID = context.emptyRegister();
+				RegAllocator.Register nextReg =  context.registers[nextRegID];
+				System.out.println("Instruction: "+instr+" Register ID: "+nextRegID);
+				//The register is empty, so just write the value
+				outputInstruction release = nextReg.updateValue(value);
+				assert(release == null);//Should be null, meaning no overwriting the variable
+				
+			}
 			outputInstruction oi = new outputInstruction(instr, nextRegID);
 			//Tell the instrcution depended on that it's releasing
 			instr.state.scheduled();
@@ -197,6 +240,29 @@ public class InstructionSchedule {
 		private Instruction pickNextCache(ArrayList<Instruction> instrs) {
 			/* TODO */
 			//Loop for all variable
+			for (Instruction instr: instrs) {
+				//First loop, get an instruction that require one object
+				int dependCount = 0;	Instruction depend = null;
+				for (Instruction parent : instr.instrsUsed) {
+					System.out.println("Parent Instr: "+parent);
+					if (parent != null && parent.state.storage.currentRegister == null) {
+						dependCount++;
+						depend = parent;
+					}
+				}
+				if (dependCount == 1) {
+					//Only one more arguemnt need, so just load it
+					return depend;
+				}
+			}
+			//Need to load more than one, so just load one randomly
+			for (Instruction instr: instrs) {
+				for (Instruction parent : instr.instrsUsed) {
+					if (parent.state.storage.currentRegister == null) {
+						return parent;
+					}
+				}
+			}
 			float score = 100000;	Instruction ref = null;
 			for (Instruction instr : instrs) {
 				//if (score > ref.)
@@ -209,14 +275,26 @@ public class InstructionSchedule {
 			return ref;
 		}
 
+		public boolean needSpace(ArrayList<Instruction> instrs) {
+			for (Instruction instr : instrs) {
+				if (instructionWouldReturn(instr) == false)
+					return false;
+			}
+			return true;
+		}
+
+		public RegAllocator.registerContext afterPhiCtx;
+
 		ScheduledBlock(RegAllocator.registerContext previousContext, Block inputBlock, RegAllocator.memorySpace space) {
+
+			inputBlock.schedule = this;
 
 			instructions = new ArrayList<InstructionSchedule.outputInstruction>();
 
 			referenceBlock = inputBlock;
 			//Current Context
 			RegAllocator rc = new RegAllocator();
-			RegAllocator.registerContext context = rc.new registerContext();
+			context = rc.new registerContext(previousContext);
 
 			//Unprocess block: not scheduled instructions
 			ArrayList<Instruction> unprocessBlock = new ArrayList<Instruction>();
@@ -227,32 +305,60 @@ public class InstructionSchedule {
 
 			ArrayList<Instruction> dependencyList = new ArrayList<Instruction>();
 
-			ArrayList<Instruction> phiInstructions = new ArrayList<Instruction>();
+			ArrayList<RegAllocator.phiRequest> phiInstructions = new ArrayList<RegAllocator.phiRequest>();
 			boolean endOfBlock = false;
+
+			Instruction branch = null;
 
 			//Get all the instructions in the block into unprocess
 			Instruction currentInstr = inputBlock.begin;
 			while (currentInstr != null) {
 				if (currentInstr.op != Instruction.end && currentInstr.op != Instruction.phi) {
-					unprocessBlock.add(currentInstr);
-					if (currentInstr.instrsUsed != null)
-						for (Instruction instr : currentInstr.instrsUsed)
-							dependencyList.add(instr);
+					if (currentInstr.op == Instruction.bra || (currentInstr.op >= Instruction.bne && currentInstr.op <= Instruction.ble)) {
+						branch = currentInstr;
+					} else {
+						unprocessBlock.add(currentInstr);
+						if (currentInstr.instrsUsed != null)
+							for (Instruction instr : currentInstr.instrsUsed)
+								if (instr != null) dependencyList.add(instr);
+					}
 				} else if (currentInstr.op == Instruction.phi) {
-					phiInstructions.add(currentInstr);
+					RegAllocator.phiRequest req = rc.new phiRequest();
+					req.value1 = ((Instruction)currentInstr.arg1);
+					req.value2 = ((Instruction)currentInstr.arg2);
+					req.actualStmt = new InstructionValue(currentInstr, inputBlock);
+					currentInstr.state.valueRepr = req.actualStmt;
+
+					phiInstructions.add(req);
 				} else {
 					//Remaining: end instruction
 					endOfBlock = true;
 				}
 				currentInstr = currentInstr.next;
 			}
-
-			//Load buffer: the elements that should be scheduled to load
-			ArrayList<outputInstruction> loadInstrBuffer = new ArrayList<outputInstruction>();
-			//Save buffer: the elements that should be scheduled to load
-			ArrayList<outputInstruction> saveInstrBuffer = new ArrayList<outputInstruction>();
-			//Instruction Buffer: the instruction that could carried out immediately
-			ArrayList<outputInstruction> instrBuffer = new ArrayList<outputInstruction>();
+			boolean ifJoin = true;
+			if (phiInstructions.size() > 0) {
+				//There is phi instruction
+				//Check phi status
+				//There should have two input
+				System.out.println("PHI");
+				ifJoin = (inputBlock.id > inputBlock.in1.id) && (inputBlock.id > inputBlock.in2.id);
+				if (ifJoin) {
+					RegAllocator.phiMergerResult result = RegAllocator.phiMerger(inputBlock.in1.schedule.context, inputBlock.in2.schedule.context, phiInstructions);
+					//TODO: Do something to the blocks
+				} else {
+					if (inputBlock.in1.schedule != null && inputBlock.in2.schedule != null) {
+						//Both input block is scheduled, so just patch the remain
+					} else {
+						//Only one input block is done, so just do a passover
+						System.out.println("Patching");
+						RegAllocator.phiPassover(inputBlock, phiInstructions);
+					}
+				}
+				//Phi-ed
+				System.out.println(context);
+			}
+			afterPhiCtx= rc.new registerContext(context);
 
 			//Newly Calculated: Calculated value that has not been used to add more instruction into the system
 			ArrayList<Instruction> newlyCalculated = new ArrayList<Instruction>();
@@ -260,19 +366,29 @@ public class InstructionSchedule {
 			//As long as there is instruction un-scheduled
 			while (unprocessBlock.size() > 0) {
 
+				//Load buffer: the elements that should be scheduled to load
+				ArrayList<outputInstruction> loadInstrBuffer = new ArrayList<outputInstruction>();
+				//Save buffer: the elements that should be scheduled to load
+				ArrayList<outputInstruction> saveInstrBuffer = new ArrayList<outputInstruction>();
+				//Instruction Buffer: the instruction that could carried out immediately
+				ArrayList<outputInstruction> instrBuffer = new ArrayList<outputInstruction>();
+
 				for (Instruction child: unprocessBlock) {
+					System.out.print("child: "+child+" "+child.state.unresolveArgument+"\n");
 					if (child.state.unresolveArgument == 0) {
 						//If the instruction is available to schedule, it promopt to available
 						boolean cached = true;
 						if (child.instrsUsed != null)
 							for (Instruction parent: child.instrsUsed) {
-								if (!parent.state.storage.loaded())
+								if (parent != null && !parent.state.storage.loaded())
 									cached = false;
 							}
 						if (cached) {
 							availableInstruction.remove(child);
+							cachedInstruction.remove(child);
 							cachedInstruction.add(child);
 						} else {
+							availableInstruction.remove(child);
 							availableInstruction.add(child);
 							cachedInstruction.remove(child);
 						}
@@ -280,15 +396,20 @@ public class InstructionSchedule {
 					}
 				}
 
-				System.out.print("# of unscheduled instruction: "+unprocessBlock.size()+"\n");
-				System.out.print("# of cached instruction: "+cachedInstruction.size()+"\n");
+				System.out.println("# of unscheduled instruction: "+unprocessBlock.size()+"\n"+unprocessBlock);
+				System.out.println("# of cached instruction: "+cachedInstruction.size());
+				System.out.println("Scheduled: "+instructions);
 
-				while (previousContext.hasSpace() && cachedInstruction.size() > 0) {
+				boolean allInstrNeedSpace = needSpace(cachedInstruction);
+
+				while (context.hasSpace() && cachedInstruction.size() > 0) {
 					//As long as there is instruction available:
 					//If there is space in the register, use it to do the instruction that has the largest impact:
 					//Free up more register (last hold out data) (Using the heuristic)
 					//If there is still space, reverse two for move instruction, which will dynamically schedule N instructions later than the last load instruction
 					Instruction instr = pickInstr(cachedInstruction);
+
+				
 					outputInstruction oi = scheduleInstruction(instr, context);
 					//Transform it to register based instruction
 					//"Solidify" it
@@ -296,7 +417,12 @@ public class InstructionSchedule {
 					newlyCalculated.add(instr);
 					unprocessBlock.remove(instr);
 					cachedInstruction.remove(instr);
-					cachedInstruction.addAll(instr.uses);
+					for (Instruction _instr : instr.uses) {
+						if (_instr.op != Instruction.phi && _instr.block == inputBlock) {
+							cachedInstruction.remove(_instr);
+							cachedInstruction.add(_instr);
+						}
+					}
 
 					System.out.print("Schedule instruction: "+instr+"\n");
 					System.out.print("Register Context: " + context + "\n");
@@ -304,7 +430,7 @@ public class InstructionSchedule {
 
 				for (Instruction processed: newlyCalculated) {
 					for (Instruction child: processed.uses) {
-						//A depended value is calculated->
+						//A depended value is calculated->add it back
 						child.state.unresolveArgument--;	
 					}
 				}
@@ -313,11 +439,12 @@ public class InstructionSchedule {
 				//See which problem it is
 				if (unprocessBlock.size() > 0) {
 					//If there is futhur unrelease stuff, load and unload stuff
-					if (previousContext.hasSpace() == false) {
-						System.out.print(previousContext + "\n");
+					if (context.hasSpace() == false) {
+						System.out.print(context + "\n");
 						//If there is no space, flush
 						ArrayList<Integer> nextFlush = context.registerToFlushTo();
-						for (Integer i : nextFlush) {
+						if (nextFlush.get(0) > 0) {
+							int i = nextFlush.get(0);
 							RegAllocator.Register r = context.registers[i];
 							//Set the instruction back to storage
 							Instruction storageInstr = r.currentValue.basedInstr;
@@ -340,20 +467,24 @@ public class InstructionSchedule {
 						//No instruction, pull
 						//Choose the stored variable with the lowest usage rate -> reduce the chance of requiring more register, and free up quickly
 						//Then add the instruction from the available pool
-						Instruction instr = pickNextCache(dependencyList);
-						outputInstruction oi = instr.state.storage.load(r, space);
+						Instruction instr = pickNextCache(availableInstruction);
+						if (instr != null) {
+							outputInstruction oi = instr.state.storage.load(r, space);
 
-						for (Instruction child : instr.uses) {
-							if (availableInstruction.contains(child)) {
-								//If the value is in cached, move from cached to available
-								cachedInstruction.add(child);
-								availableInstruction.remove(child);
+							for (Instruction child : instr.uses) {
+								if (availableInstruction.contains(child)) {
+									//If the value is in cached, move from cached to available
+									cachedInstruction.remove(child);
+									cachedInstruction.add(child);
+									availableInstruction.remove(child);
+								}
+							}
+
+							if (oi != null) {
+								loadInstrBuffer.add(oi);
 							}
 						}
-
-						if (oi != null) {
-							loadInstrBuffer.add(oi);
-						}
+						
 					}
 				}
 
@@ -373,14 +504,60 @@ public class InstructionSchedule {
 					+ "Total: " + instructions.size() + "\n");
 			}
 
+			if (branch != null) {
+				//There is branch statement, so do the branch
+				if (branch.instrsUsed != null) {
+					//It use instruction, because it's branch so it must have only one
+					Instruction depend = branch.instrsUsed[0];
+					if (depend != null && depend.state.storage.loaded() == false) {
+						//It dependes on instruction, make sure it would be loaded if it's not
+						//Use memory reverse register to do it
+						int swapReg = RegAllocator.numberOfRegister-RegAllocator.numberOfReverse;
+						RegAllocator.Register reg = context.registers[swapReg];
+						outputInstruction load = reg.updateValue(depend.state.valueRepr);
+						instructions.add(load);
+					}
+				}
+				//It's ready, so load it
+				outputInstruction oi = scheduleInstruction(branch, context);
+				instructions.add(oi);
+			}
+
 			//Get the set of the instructions dependent
 			//This is used to for the previous block to have component scheduled
-			if (inputBlock.in1 != null) {
-				next1 = new ScheduledBlock(context, inputBlock.in1, space);
+			if (inputBlock.fallThrough != null && inputBlock.fallThrough.dependent < 0) {
+				//Init the counter
+				inputBlock.fallThrough.dependent = 0;
+				if (inputBlock.fallThrough.in1 != null && inputBlock.fallThrough.id > inputBlock.fallThrough.in1.id)
+					inputBlock.fallThrough.dependent++;
+				if (inputBlock.fallThrough.in2 != null && inputBlock.fallThrough.id > inputBlock.fallThrough.in2.id)
+					inputBlock.fallThrough.dependent++;
+			}
+			if (inputBlock.branch != null && inputBlock.branch.dependent < 0) {
+				//Init the counter
+				inputBlock.branch.dependent = 0;
+				if (inputBlock.branch.in1 != null && inputBlock.branch.id > inputBlock.branch.in1.id)
+					inputBlock.branch.dependent++;
+				if (inputBlock.branch.in2 != null && inputBlock.branch.id > inputBlock.branch.in2.id)
+					inputBlock.branch.dependent++;
+			}
+			if (inputBlock.fallThrough != null) {
+				if (inputBlock.fallThrough.id > inputBlock.id)
+					inputBlock.fallThrough.dependent--;
+				if (inputBlock.fallThrough.dependent == 0 && inputBlock.fallThrough.schedule == null)
+					next1 = new ScheduledBlock(context, inputBlock.fallThrough, space);
+				if (phiInstructions.size() > 0 && !ifJoin) {
+					//Has phi, not if join->while join
+					RegAllocator.phiMergerResult result = RegAllocator.phiTransform(next1.context, afterPhiCtx, phiInstructions);
+					next1.insertPhiTransfer(result.edge1);
+				}
 			} else next1 = null;
 
-			if (inputBlock.in2 != null) {
-				next2 = new ScheduledBlock(context, inputBlock.in2, space);
+			if (inputBlock.branch != null) {
+				if (inputBlock.branch.id > inputBlock.id)
+					inputBlock.branch.dependent--;
+				if (inputBlock.branch.dependent == 0 && inputBlock.branch.schedule == null)
+					next2 = new ScheduledBlock(context, inputBlock.branch, space);
 			} else next2 = null;
 
 			if (endOfBlock) {
@@ -391,7 +568,19 @@ public class InstructionSchedule {
 			}
 			System.out.print("Total: " + instructions.size() + "\n");
 		}
+
+		public void insertPhiTransfer(ArrayList<outputInstruction> ois) {
+			outputInstruction lastOI = instructions.get(instructions.size() - 1);
+			if (lastOI.op == Instruction.bra || (lastOI.op >= Instruction.bne && lastOI.op <= Instruction.ble)) {
+				//It is branch
+				instructions.remove(lastOI);
+			} else lastOI = null;
+			instructions.addAll(ois);
+			if (lastOI != null)
+				instructions.add(lastOI);
+		}
 	}
+
 	public ScheduledBlock mainBlock;
 
 	InstructionSchedule() {
@@ -399,16 +588,19 @@ public class InstructionSchedule {
 	}
 
 	InstructionSchedule(IntermedRepr repr) {
-
+		for (Instruction instr : repr.instrs) {
+			instr.varsToInstrs();
+		}
 		//Just init the first block, it will bring the main
 		//Init first register set
 		RegAllocator rac = new RegAllocator();
-		RegAllocator.registerContext regCtx = rac.new registerContext();
 		//Init memory set
 		RegAllocator.memorySpace space = rac.new memorySpace();
+		RegAllocator.registerContext regCtx = rac.new registerContext(space);
 
 		mainBlock = new ScheduledBlock(regCtx, repr.firstBlock, space);
-		System.out.print("Main: " + mainBlock.instructions.size() + "\n");	
+		System.out.print("Main Size: " + mainBlock.instructions.size() + "\n");	
+		System.out.print(this);	
 	}
 	@Override
 	public String toString() {

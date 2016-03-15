@@ -4,7 +4,7 @@
  * CS 241 - Advanced Compiler Design
  */
 
-import java.util.LinkedList;
+import java.util.HashSet;
 
 public class Variable extends Value {
 	public String ident;                 // Variable identifier - original name in program.
@@ -12,12 +12,12 @@ public class Variable extends Value {
 	public int id;                       // Variable's id in the string table. Won't be unique.
 	public int uid;                      // Variable's unique id.
 	public Instruction def;              // The instruction that defines this variable.
-	public LinkedList<Instruction> uses; // The instructions that use this variable, but don't re-define it.
+	public HashSet<Instruction> uses; // The instructions that use this variable, but don't re-define it.
 
 	private static int nextAvailableId = 0;
 
 	public Variable() {
-		this.uses = new LinkedList<Instruction>();
+		this.uses = new HashSet<Instruction>();
 
 		this.uid = nextAvailableId;
 		nextAvailableId++;
@@ -25,7 +25,7 @@ public class Variable extends Value {
 
 	public Variable(int id) {
 		this.id = id;
-		this.uses = new LinkedList<Instruction>();
+		this.uses = new HashSet<Instruction>();
 
 		this.uid = nextAvailableId;
 		nextAvailableId++;
@@ -33,7 +33,7 @@ public class Variable extends Value {
 
 	public Variable(int id, String ident) {
 		this.id = id;
-		this.uses = new LinkedList<Instruction>();
+		this.uses = new HashSet<Instruction>();
 		this.ident = ident;
 
 		this.uid = nextAvailableId;
@@ -44,7 +44,7 @@ public class Variable extends Value {
 		this.id       = id;
 		this.ident    = ident;
 		this.instance = instance;
-		this.uses     = new LinkedList<Instruction>();
+		this.uses     = new HashSet<Instruction>();
 
 		this.uid = nextAvailableId;
 		nextAvailableId++;
@@ -62,7 +62,7 @@ public class Variable extends Value {
 
 	// Set the next instruction that uses this variable.
 	public void usedIn(Instruction use) {
-		this.uses.push(use);
+		this.uses.add(use);
 	}
 
 	// This variable is declared but uninitialized if the

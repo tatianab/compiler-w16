@@ -1,0 +1,17 @@
+main
+var i,j,k;
+{
+	let i <- 1;
+	let j <- 1;
+	let k <- 0;
+	while k < 100 do
+		if j < 20 then
+			let j <- 1;
+			let k <- k + 1
+		else
+			let j <- k;
+			let k <- k + 2
+		fi
+	od;
+    call OutputNum(j)
+}.

@@ -4,7 +4,7 @@
  * CS 241 - Advanced Compiler Design
  */
 
-import java.util.LinkedList;
+import java.util.HashSet;
 
 public class Instruction extends Value {
 	// Class representing an instruction in intermediate form.
@@ -31,7 +31,7 @@ public class Instruction extends Value {
 										// same op code as this instruction.
 
 	public Instruction[] instrsUsed; // The instructions used by this one.
-	LinkedList<Instruction> uses;    // The instructions that use the result of this instruction.
+	HashSet<Instruction> uses;    // The instructions that use the result of this instruction.
 
 	public int register; // The register that the value of this instruction is assigned to.
 
@@ -87,11 +87,17 @@ public class Instruction extends Value {
 		this.prev     = null;
 		this.next     = null;
 		// this.instrsUsed = new Instruction[2];
-		this.uses     = new LinkedList<Instruction>();
+		this.uses     = new HashSet<Instruction>();
 		this.register = -1;
 	}
 
 	public void delete() {
+		if (instrsUsed != null)
+			for (int i = 0; i < 2; i++) {
+				if (instrsUsed[i] != null) {
+					instrsUsed[i].uses.remove(this);
+				}
+			}
 		if (Compiler.debug) { System.out.println("Deleting instruction " + this); }
 		if (this.prev == null && this.next == null) { 
 			block.begin = null;
@@ -181,11 +187,47 @@ public class Instruction extends Value {
 	}
     
     public void updateArg(Value original, Value updated) {
+		if (updated instanceof Variable && varsUsed != null && varsUsed[0] == original)
+			varsUsed[0] = (Variable)updated;
+
+		if (updated instanceof Variable && varsUsed != null && varsUsed[1] == original)
+			varsUsed[1] = (Variable)updated;
+
         if (this.arg1 == original) {
             this.arg1 = updated;
+            if (updated instanceof Instruction) {
+            	((Instruction)updated).uses.add(this);
+            } else if (updated instanceof Variable) {
+				((Variable)updated).uses.add(this);
+				((Variable)updated).def.uses.add(this);
+            }
+            if (original instanceof Instruction) {
+            	((Instruction)original).uses.remove(this);
+            } else if (original instanceof Variable) {
+				((Variable)original).uses.remove(this);
+				((Variable)original).def.uses.remove(this);
+            }
         }
         if (this.arg2 == original && op != move) {
             this.arg2 = updated;
+            if (updated instanceof Instruction) {
+            	((Instruction)updated).uses.add(this);
+            } else if (updated instanceof Variable) {
+				((Variable)updated).uses.add(this);
+            	((Variable)updated).def.uses.add(this);
+            }
+            if (original instanceof Instruction) {
+            	((Instruction)original).uses.remove(this);
+            } else if (original instanceof Variable) {
+				((Variable)original).uses.remove(this);
+				((Variable)original).def.uses.remove(this);
+            }
+        }
+        if (instrsUsed != null) {
+        	if (instrsUsed.length >= 1 && instrsUsed[0] == original)
+        		instrsUsed[0] = (Instruction)updated;
+        	if (instrsUsed.length >= 2 && instrsUsed[1] == original)
+        		instrsUsed[1] = (Instruction)updated;
         }
     }
 
@@ -305,6 +347,13 @@ public class Instruction extends Value {
 				}
 			}
 		}
+		//Sanity proof
+		if (instrsUsed != null) {
+			if (instrsUsed.length >= 1 && instrsUsed[0] != null)
+				instrsUsed[0].uses.add(this);
+			if (instrsUsed.length >= 2 && instrsUsed[1] != null)
+				instrsUsed[1].uses.add(this);
+		}
 	}
 
 	// Replace all instances of oldInstr seen by this instruction
@@ -326,6 +375,16 @@ public class Instruction extends Value {
 					instrsUsed[i] = (Instruction) newValue;
 				}
 			}
+		} else if (instrsUsed != null) {
+			for (int i = 0; i < 2; i++) {
+				if (instrsUsed[i] == oldInstr) {
+					instrsUsed[i] = null;
+				}
+			}
+		}
+		((Instruction)oldInstr).uses.remove(this);
+		if (newValue instanceof Instruction) {
+			((Instruction)newValue).uses.add(this);
 		}
 	}
 
