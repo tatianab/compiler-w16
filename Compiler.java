@@ -139,11 +139,13 @@ public class Compiler {
 			RegAllocator allocator = new RegAllocator(program);
 		 	//    program = allocator.allocate();
 			schedule = allocator.allocateRegisters();
-			if (debug) { System.out.println("Register-ed instructions:\n"+schedule); }
+			if (debug) { System.out.println("Allocated registers:\n" + schedule); }
+		} else {
+			schedule = null;
 		}
 		if (assembly || byteCode || run || all) {
 			if (debug) { System.out.println("Generating native code..."); }
-			CodeGenerator generator = new CodeGenerator(program, debug);
+			CodeGenerator generator = new CodeGenerator(program, schedule, debug);
 		    generator.generateCode();
 		    if (assembly) {
 		    	System.out.println(generator.assemblyToString());

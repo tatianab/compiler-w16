@@ -21,10 +21,11 @@ public class CodeGenerator {
 	   End of program signaled by RET 0.
 
 	 */
-	IntermedRepr       program;
-	ArrayList<DlxOp>   dlxOps; // The DLX instructions we have generated so far.
-	int[]              byteCode;
-	boolean            debug;
+	IntermedRepr        program;
+	InstructionSchedule schedule; // The instructions to translate.
+	ArrayList<DlxOp>    dlxOps;   // The DLX instructions we have generated so far.
+	int[]               byteCode;
+	boolean             debug;
 
 	int nextDlxPos;
 	Instruction currentInstruction;
@@ -42,8 +43,9 @@ public class CodeGenerator {
 
 	public static final int BYTES_IN_WORD = 4;
 
-	public CodeGenerator(IntermedRepr program, boolean debug) {
+	public CodeGenerator(IntermedRepr program, InstructionSchedule schedule, boolean debug) {
 		this.program  = program;
+		this.schedule = schedule;
 		this.dlxOps   = new ArrayList<DlxOp>();
 		this.debug    = debug;
 		this.nextDlxPos = 0;
