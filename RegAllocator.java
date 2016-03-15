@@ -476,6 +476,26 @@ public class RegAllocator {
                 registers[i] = new Register(copy.registers[i]);
             }
         }
+        //One for return address
+        //One for stack pointer
+        //One for frame pointer
+        //One for heap pointer
+        //One for memory address calculation
+        public Register memoryOpRegister() {
+            return registers[numberOfRegister-numberOfReverse];
+        }
+        public Register heapPtrRegister() {
+            return registers[numberOfRegister-numberOfReverse+1];
+        }
+        public Register framePtrRegister() {
+            return registers[numberOfRegister-numberOfReverse+2];
+        }
+        public Register stackPtrRegister() {
+            return registers[numberOfRegister-numberOfReverse+3];
+        }
+        public Register returnAddrRegister() {
+            return registers[numberOfRegister-numberOfReverse+4];
+        }
         ArrayList<InstructionSchedule.outputInstruction> swapRegister(int regA, int regB) {
             ArrayList<InstructionSchedule.outputInstruction>tmp = new ArrayList();
             InstructionSchedule is = new InstructionSchedule();
