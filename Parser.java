@@ -13,135 +13,73 @@ public class Parser {
 	   intermediate representation of the progam in SSA form.
 	 */
 
-	// Data members.
+	// Data.
 	public StringTable  table;   // Table of identifiers.
 	public Tokenizer    scanner; // Reads file and breaks it into tokens.
-	public IntermedRepr program; // Intermediate representation of the program in SSA form, after parsing.
+	public IntermedRepr program; // Intermediate representation of the program 
+								 // in SSA form, after parsing.
 
-	boolean debug;		         // Debugging flag.
+	// Parsing state.
+	private int nextOpenInstr;  // Next available instruction ID.
+	private int nextOpenBlock;  // Next available block ID.
 
-	/* Token values. */
-	private static final int errorToken 	   = 0;
-	private static final int timesToken 	   = 1;
-	private static final int divToken   	   = 2;
-	private static final int plusToken  	   = 11;
-	private static final int minusToken 	   = 12;
-	private static final int eqlToken		   = 20;
-	private static final int neqToken		   = 21;
-	private static final int lssToken		   = 22;
-	private static final int geqToken		   = 23;
-	private static final int leqToken		   = 24;
-	private static final int gtrToken		   = 25;
-	private static final int periodToken       = 30;
-	private static final int commaToken		   = 31;
-	private static final int openbracketToken  = 32;
-	private static final int closebracketToken = 34;
-	private static final int closeparenToken   = 35;
-	private static final int becomesToken      = 40;
-	private static final int thenToken		   = 41;
-	private static final int doToken           = 42;
-	private static final int openparenToken	   = 50;          
-	private static final int number		       = 60;
-	private static final int ident		       = 61;
-	private static final int semiToken		   = 70;       
-	private static final int endToken		   = 80;       
-	private static final int odToken		   = 81;       
-	private static final int fiToken		   = 82;       
-	private static final int elseToken		   = 90;       
-	private static final int letToken		   = 100;    
-	private static final int callToken		   = 101;   
-	private static final int ifToken		   = 102;   
-	private static final int whileToken		   = 103;   
-	private static final int returnToken	   = 104; 
-	private static final int varToken		   = 110;   
-	private static final int arrToken		   = 111;   
-	private static final int funcToken		   = 112;   
-	private static final int procToken		   = 113;     
-	private static final int beginToken		   = 150;   
-	private static final int mainToken		   = 200;   
-	private static final int eofToken		   = 255;   
-	/* End token values. */  
+	public ControlFlowGraph cfg;     // The control flow graph for the function we are currently parsing.
+	public Function currentFunction; // The function we are currently compiling.
+									 // Null if we are currently compiling the main program.
 
-	/* Operation codes for intermediate representation. */
-	public static int neg     = Instruction.neg;
-	public static int add     = Instruction.add;
-	public static int sub     = Instruction.sub;
-	public static int mul     = Instruction.mul;
-	public static int div     = Instruction.div;
-	public static int cmp     = Instruction.cmp;
-
-	public static int adda    = Instruction.adda;
-	public static int load    = Instruction.load;
-	public static int store   = Instruction.store;
-	public static int move    = Instruction.move;
-	public static int phi     = Instruction.phi;
-
-	public static int end     = Instruction.end;
-
-	public static int read    = Instruction.read;
-	public static int write   = Instruction.write;
-	public static int writeNL = Instruction.writeNL;
-
-	public static int bra     = Instruction.bra;
-	public static int bne     = Instruction.bne;
-	public static int beq     = Instruction.beq;
-	public static int bge     = Instruction.bge;
-	public static int blt     = Instruction.blt;
-	public static int bgt     = Instruction.bgt;
-	public static int ble     = Instruction.ble;
-
-	public static int call    = Instruction.call;
-	/* End operation codes. */
-
+	
 	/* Constructor. */
-	Parser(String filename, boolean debug) {
-		this.debug = debug;
+	Parser(String filename) {
 		scanner = new Tokenizer(filename);
-		program = new IntermedRepr(debug);
+		program = new IntermedRepr(Compiler.debug);
 		table   = scanner.getTable();
+
+		nextOpenInstr = 0;
+		nextOpenBlock = 0;
+		cfg     = program.cfg; // The main CFG to start.
 	}
 
 	/* Return the program in SSA form. */
 	public IntermedRepr parse() {
-		if (debug) { System.out.println("Parsing program..."); }
+		if (Compiler.debug) { System.out.println("Parsing program..."); }
 		computation();   // Parse the program recursively.
 		return program;
 	}
 
 	/* Recursive descent methods. */
 
-	/* Computation, i.e., program.
+	/* Computation.
 	 * computation = "main" { varDecl } { funcDecl } "{" statSequence "}" "." .
 	 * Parses a PL241 program and converts it into SSA form.
 	 */
 	private void computation() {
-
 		expect(mainToken);
 
 		// Variable declarations.
 		while (check(arrToken) || check(varToken)) {
 			varDecl();
 		}
+
 		// Function declarations.
 		while (check(procToken) || check(funcToken)) {
 			funcDecl();
 		}
 		
 		expect(beginToken);
-		// Signal beginning of program.
-		program.begin();
-		statSequence(); // The program.
-
+		program.begin(); // Signal beginning of main program.
+		statSequence();  // Parse the main program.
 		expect(endToken);    
 		expect(periodToken);
 		expect(eofToken);
-		// Signal end of program.
-		program.end();
+		program.end();   // Signal end of main program.
 
 	}
 
 	/* funcBody - function body.
 	 * funcBody = { varDecl } "{" [statSequence] "}".
+	 * Takes in a function descriptor, and parses the local variables
+	 * and code in the function. The function descriptor is modified
+	 * to store this information.
 	 */
 	private void funcBody(Function function) {
 
@@ -170,14 +108,16 @@ public class Parser {
 
 	/* formalParam - formal parameter.
 	 * formalParam = "(" [ident { "," ident }] ")".
-	 * Parameters in function/procedure definitions.
+	 * Captures formal parameters of a function and adds them to the given
+	 * function descriptor in place.
 	 */
 	private void formalParam(Function function) {
 		expect(openparenToken);
 		int id;
 		ArrayList<String> formalParams = new ArrayList<String>();
 
-		if (debug) { System.out.println("Capturing formal parameters of " + function.shortRepr()); }
+		if (Compiler.debug) { System.out.println("Capturing formal parameters of " + 
+			                  function.shortRepr()); }
 
 		// Find 0 or more formal parameters separated by commas.
 		if (!check(closeparenToken)) {
@@ -193,13 +133,15 @@ public class Parser {
 
 		function.setFormalParams(formalParams.toArray(new String[formalParams.size()]));
 
-		if (debug) { System.out.println("Formal parameters: " + function.shortRepr()); }
+		if (Compiler.debug) { System.out.println("Formal parameters: " +
+			         function.shortRepr()); }
 
 		expect(closeparenToken);
 	}
 
 	/* funcDecl - function declaration.
 	 * funcDecl = ("function" | "procedure") ident [formalParam] ";" funcBody ";".
+	 * Capture function description and add it to the table of identifiers.
 	 */
 	private void funcDecl() {
 		if (accept(funcToken) || accept(procToken)) {
@@ -232,13 +174,13 @@ public class Parser {
 		Value variable = typeDecl();   // Get the variable or array.
 		int id = ident();
 		table.declare(variable, id);
-		if (debug && variable instanceof Variable) { 
+		if (Compiler.debug && variable instanceof Variable) { 
 			System.out.println("Declared variable " + table.getVar(id).shortRepr()); 
 		}
 		while (accept(commaToken)) {
 		    id = ident();
 			table.declare(variable, id);
-			if (debug && variable instanceof Variable) { 
+			if (Compiler.debug && variable instanceof Variable) { 
 				System.out.println("Declared variable " + table.getVar(id).shortRepr()); 
 			}
 		}
@@ -328,7 +270,7 @@ public class Parser {
 	private void whileStatement() {
 		Block previous, join, whileBlock, endWhileBlock, follow;
 
-		if (debug) { System.out.println("Parsing while block."); }
+		if (Compiler.debug) { System.out.println("Parsing while block."); }
 
 		expect(whileToken);
 		previous = program.currentBlock(); // Grab previous block.
@@ -373,7 +315,7 @@ public class Parser {
 		Block previous, compare, trueBlock, falseBlock, 
 			  endTrueBlock, endFalseBlock, join;
 
-		if (debug) { System.out.println("Parsing if statement."); }
+		if (Compiler.debug) { System.out.println("Parsing if statement."); }
 
 		expect(ifToken);
 		previous = program.currentBlock();   // Grab the previous block.
@@ -449,7 +391,7 @@ public class Parser {
 		}
 		int numParams     = function.numParams;
 		Value[] parameters  = new Value[numParams];
-		if (debug) { System.out.println("Function " + function.shortRepr() + " with " + numParams + " params.");}
+		if (Compiler.debug) { System.out.println("Function " + function.shortRepr() + " with " + numParams + " params.");}
 
 		// Check for correct # of parameters and store them.
 		int i = 0;
@@ -489,11 +431,11 @@ public class Parser {
 			// Create new move instruction for this Variable.
 			Instruction moveInstr = program.addAssignment((Variable) var, expr);
 			table.reassignVar(((Variable) var).id, (Variable) var);
-			if (debug) { System.out.println("Generated move instruction " + moveInstr); }
+			if (Compiler.debug) { System.out.println("Generated move instruction " + moveInstr); }
 		} else if (var instanceof Array) {
 			// Create an array store instruction for this array.
 			Instruction arrayInstr = program.addArrayInstr(Instruction.arrayStore, (Array) var, ((Array) var).currentIndices, expr);
-			if (debug) { System.out.println("Generated array instruction " + arrayInstr); }
+			if (Compiler.debug) { System.out.println("Generated array instruction " + arrayInstr); }
 		}
 	}
 
@@ -585,7 +527,7 @@ public class Parser {
 		if (accept(minusToken)) {
 			next = term();   
 			expr = program.addInstr(neg, next);
-			if (debug) { System.out.println("Generated neg instruction " + expr); }
+			if (Compiler.debug) { System.out.println("Generated neg instruction " + expr); }
 		} else {
 			expr = term();
 		}
@@ -594,11 +536,11 @@ public class Parser {
 			if (accept(plusToken)) {
 				next = term();   
 				expr = program.addInstr(add, expr, next);
-				if (debug) { System.out.println("Generated add instruction " + expr); }
+				if (Compiler.debug) { System.out.println("Generated add instruction " + expr); }
 			} else if (accept(minusToken)) {
 				next = term();   
 				expr = program.addInstr(sub, expr, next);
-				if (debug) { System.out.println("Generated sub instruction " + expr); }
+				if (Compiler.debug) { System.out.println("Generated sub instruction " + expr); }
 			}
 		}
 
@@ -617,11 +559,11 @@ public class Parser {
 			if (accept(timesToken)) {
 				next = factor();
 				term = program.addInstr(mul, term, next);
-				if (debug) { System.out.println("Generated mul instruction " + term); }
+				if (Compiler.debug) { System.out.println("Generated mul instruction " + term); }
 			} else if (accept(divToken)) {
 				next = factor();
 				term = program.addInstr(div, term, next);
-				if (debug) { System.out.println("Generated div instruction " + term); }
+				if (Compiler.debug) { System.out.println("Generated div instruction " + term); }
 			}
 		}
 		return term;
@@ -733,5 +675,78 @@ public class Parser {
 		scanner.error(message);
 		System.exit(0);
 	}
+
+	/* Token values. */
+	private static final int errorToken 	   = 0;
+	private static final int timesToken 	   = 1;
+	private static final int divToken   	   = 2;
+	private static final int plusToken  	   = 11;
+	private static final int minusToken 	   = 12;
+	private static final int eqlToken		   = 20;
+	private static final int neqToken		   = 21;
+	private static final int lssToken		   = 22;
+	private static final int geqToken		   = 23;
+	private static final int leqToken		   = 24;
+	private static final int gtrToken		   = 25;
+	private static final int periodToken       = 30;
+	private static final int commaToken		   = 31;
+	private static final int openbracketToken  = 32;
+	private static final int closebracketToken = 34;
+	private static final int closeparenToken   = 35;
+	private static final int becomesToken      = 40;
+	private static final int thenToken		   = 41;
+	private static final int doToken           = 42;
+	private static final int openparenToken	   = 50;          
+	private static final int number		       = 60;
+	private static final int ident		       = 61;
+	private static final int semiToken		   = 70;       
+	private static final int endToken		   = 80;       
+	private static final int odToken		   = 81;       
+	private static final int fiToken		   = 82;       
+	private static final int elseToken		   = 90;       
+	private static final int letToken		   = 100;    
+	private static final int callToken		   = 101;   
+	private static final int ifToken		   = 102;   
+	private static final int whileToken		   = 103;   
+	private static final int returnToken	   = 104; 
+	private static final int varToken		   = 110;   
+	private static final int arrToken		   = 111;   
+	private static final int funcToken		   = 112;   
+	private static final int procToken		   = 113;     
+	private static final int beginToken		   = 150;   
+	private static final int mainToken		   = 200;   
+	private static final int eofToken		   = 255;   
+	/* End token values. */  
+
+	/* Operation codes for intermediate representation. */
+	public static int neg     = Instruction.neg;
+	public static int add     = Instruction.add;
+	public static int sub     = Instruction.sub;
+	public static int mul     = Instruction.mul;
+	public static int div     = Instruction.div;
+	public static int cmp     = Instruction.cmp;
+
+	public static int adda    = Instruction.adda;
+	public static int load    = Instruction.load;
+	public static int store   = Instruction.store;
+	public static int move    = Instruction.move;
+	public static int phi     = Instruction.phi;
+
+	public static int end     = Instruction.end;
+
+	public static int read    = Instruction.read;
+	public static int write   = Instruction.write;
+	public static int writeNL = Instruction.writeNL;
+
+	public static int bra     = Instruction.bra;
+	public static int bne     = Instruction.bne;
+	public static int beq     = Instruction.beq;
+	public static int bge     = Instruction.bge;
+	public static int blt     = Instruction.blt;
+	public static int bgt     = Instruction.bgt;
+	public static int ble     = Instruction.ble;
+
+	public static int call    = Instruction.call;
+	/* End operation codes. */
 
 }

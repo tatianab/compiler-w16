@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.ArrayList;
 
-public class Block extends Value {
+public class Block {
 	// Class representing a basic block in the control flow graph.
 
 	public Instruction begin;   // First instruction in block.
@@ -21,6 +21,9 @@ public class Block extends Value {
 
 	public Block in1;
 	public Block in2;   	    // If a join block.
+
+	private boolean join;       // True if this block is a join block.
+	private ArrayList<PhiInstruction> phiInstrs; // Phi instructions in this block.
 
 	public Block fallThrough;   // Fall through block, (i.e., true branch).
 	public Block branch;        // Explicit branch block, 
@@ -301,6 +304,32 @@ public class Block extends Value {
 	}
 
 	/* End methods related to dominance. */
+
+	/* Methods related to phi functions. */
+
+	// Insert a phi function.
+	// Adapted from Brandis-Mossenbock.
+	public void insertPhi(int branch, Variable var, Instruction oldInstr, Instruction newInstr) {
+		PhiInstruction phi = getPhiInstruction(var);
+		if (phi == null) {
+			// add phi  / v_old
+			if (this.join) {
+				// rename all mentions of oldInstr in the loop to be the new phi instr
+			}
+		} 
+		phi.replace(branch, newInstr);
+	}
+
+	// Commit a phi function.
+	// Adapted from Brandis-Mossenbock.
+	public void commitPhi() {
+		for (PhiInstruction phi : phiInstructions) {
+			val = phi;
+			phi.var.setCurrentValue(val);
+			insertPhi(i, var, val, phi.aux);
+		}
+
+	}
 
 	/* Methods related to string representation (in VCG form). */
 

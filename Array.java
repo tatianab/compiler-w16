@@ -5,7 +5,7 @@
  */
 import java.util.ArrayList;
 
-public class Array extends Value {
+public class Array {
 	int id;
 	String ident;
 	int numDims; // Number of dimensions.

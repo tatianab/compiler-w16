@@ -3,7 +3,7 @@
  * Winter 2016
  * CS 241 - Advanced Compiler Design
  */
-public class Constant extends Value {
+public class Constant extends Instruction {
 	// For now, just a wrapper for an int.
 	private final int value;
 

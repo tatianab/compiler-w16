@@ -4,7 +4,7 @@
  * CS 241 - Advanced Compiler Design
  */
 import java.util.ArrayList;
-public class Function extends Value {
+public class Function {
 
 	public int id;
 	public String ident;
@@ -14,14 +14,12 @@ public class Function extends Value {
 
 	public boolean builtIn;
 
-	public Block enter;
-	public Block exit;
+	public ControlFlowGraph cfg;
 	public IntermedRepr program; // The program that contains this function.
 
-	public Instruction returnInstr;
+	public Instruction returnInstr; // ?
 
-	public ArrayList<Instruction> instrs;
-
+	// public ArrayList<Instruction> instrs;
 	
 	public Function(int id, String ident) {
 		this.id = id;

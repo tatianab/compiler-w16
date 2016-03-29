@@ -6,84 +6,50 @@
 
 import java.util.HashSet;
 
-public class Instruction extends Value {
+public class Instruction {
 	// Class representing an instruction in intermediate form.
+
+	public int op;            // Operation code.
+	public int numArgs;       // Number of arguments expected by this operation.
+	// public Value arg1;  	  // First argument, or only argument.
+	// public Value arg2;  	  // Second argument.
+    public Instruction arg1;  // First argument, or only argument.
+	public Instruction arg2;  // Second argument.
+	// public Value[] params;    // For call and array instructions only.
+
+	public int id;            // This instruction's ID number. Represents time of
+							  // creation rather than position in program.
+
+	private Instruction prev;  // Previous instruction, or null if first in block.
+	private Instruction next;  // Next instruction, or null if end of block.
+
+	public Block block;       // The block where this instruction lives.
+	public Block branch;      // The block to branch to, if this is a branching instruction.
 
 	private boolean deleted;  // True if this instruction has been deleted.
 	public boolean visited;   // Used for searching algorithms.
 
-	public int op;            // Operation code.
-	public Value arg1;  	  // First argument, or only argument.
-	public Value arg2;  	  // Second argument.
-	public Value[] params;    // For call and array instructions only.
-
-	public Instruction prev;  // Previous instruction, or null if first in block.
-	public Instruction next;  // Next instruction, or null if end of block.
-
-	public Block block;       // The block where this instruction lives.
-	public int id;            // This instruction's ID number. Represents time of
-							  // creation rather than position in program.
-
-	public Variable[] varsUsed; // Variables used in this instruction, up to two.
-	public Variable   varDefd;  // Variables defined in this instruction, up to 1.
-
-	public Instruction sameOpDominator; // The most immediate dominating instruction with the
-										// same op code as this instruction.
+	// public Variable[] varsUsed; // Variables used in this instruction, up to two.
+	// public Variable   varDefd;  // Variables defined in this instruction, up to 1.
 
 	public Instruction[] instrsUsed; // The instructions used by this one.
 	HashSet<Instruction> uses;       // The instructions that use the result of this instruction.
+
+	public Instruction sameOpDominator; // The most immediate dominating instruction with the
+										// same op code as this instruction.
 
 	public int register; // The register that the value of this instruction is assigned to.
 
 	public InstructionState state;
 
-	/* Operation codes. */
-	public static final int neg     = 1;
-	public static final int add     = 2;
-	public static final int sub     = 3;
-	public static final int mul     = 4;
-	public static final int div     = 5;
-	public static final int cmp     = 6;
-   				  
-	public static final int adda    = 7;
-	public static final int load    = 8;
-	public static final int store   = 9;
-	public static final int move    = 10;
-	public static final int phi     = 11;
-                  
-	public static final int end     = 12;
-	public static final int bra     = 13;
-	              
-	public static final int read    = 14;
-	public static final int write   = 15;
-	public static final int writeNL = 16;
-                   
-	public static final int bne     = 20;
-	public static final int beq     = 21;
-	public static final int bge     = 22;
-	public static final int blt     = 23;
-	public static final int bgt     = 24;
-	public static final int ble     = 25;
-                  
-	public static final int call    = 30;
-
-	public static final int arrayStore = 35;
-	public static final int arrayLoad  = 36;
-	/* End operation codes. */
-
-	public static String[] ops = new String[]{null, "neg","add","sub","mul","div",
-												"cmp","adda","load","store","move","phi","end","bra",
-												"read","write","writeNL", null, null, null,
-												"bne","beq","bge","blt","bgt","ble", null, null, null, null,
-												"call", null, null, null, null, "arrayStore", "arrayLoad"};
 	/* End operation codes. */
 
 	/* Constructor. */
 	public Instruction(int id) {
 		this.id = id;
 		this.block    = null;
-		this.varDefd  = null;
-		this.varsUsed = null;
+		// this.varDefd  = null;
+		// this.varsUsed = null;
 		this.prev     = null;
 		this.next     = null;
 		// this.instrsUsed = new Instruction[2];
@@ -474,21 +440,21 @@ public class Instruction extends Value {
 	public String toString() {
 		if (deleted) {
 			return id + " deleted.";
-		} else if (op == call) {
-			return id + " : call " + arg1.shortRepr() + " on input " + Function.paramsToString(params);
-		} else if (op == phi) {
-			return id + " : PHI " + varDefd.shortRepr() + " := " + arg1.shortRepr() + " " + arg2.shortRepr();
+		// } else if (op == call) {
+		// 	return id + " : call " + arg1.shortRepr() + " on input " + Function.paramsToString(params);
+		// } else if (op == phi) {
+		// 	return id + " : PHI " + varDefd.shortRepr() + " := " + arg1.shortRepr() + " " + arg2.shortRepr();
 		} else if (op == arrayStore) {
 			return id + " : " + ops[op] + " " + arg1.shortRepr() + " " + arg2.shortRepr() + " " + Array.indicesToString(params);
 		} else if (op == arrayLoad) {
 			return id + " : " + ops[op] + " " + arg1.shortRepr() + " " + Array.indicesToString(params);
-		} else if (arg1 != null && arg2 != null) {
+		} else if (numArgs == 2) {
 			return id + " : " + ops[op] + " " + arg1.shortRepr() 
 				   + " " + arg2.shortRepr();
-		} else if (arg1 != null) {
-			return id + " : " + ops[op] + " " + arg1.shortRepr();
+		} else if (numArgs == 1) {
+			return id + " : " + SSA.opToString(op) + " " + arg1.shortRepr();
 		} else {
-			return id + " : " + ops[op];
+			return id + " : " + SSA.opToString(op);
 		}
 	}
 
