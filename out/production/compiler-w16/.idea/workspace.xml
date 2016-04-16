@@ -2,14 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d7a861de-cca6-4af2-a799-fe56525dd417" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Instruction.java" afterPath="$PROJECT_DIR$/Instruction.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/InstructionSchedule.java" afterPath="$PROJECT_DIR$/InstructionSchedule.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Optimizer.java" afterPath="$PROJECT_DIR$/Optimizer.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/RegAllocator.java" afterPath="$PROJECT_DIR$/RegAllocator.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/StringTable.java" afterPath="$PROJECT_DIR$/StringTable.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/compiler-w16/.gitignore" afterPath="$PROJECT_DIR$/out/production/compiler-w16/.gitignore" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/compiler-w16/.idea/workspace.xml" afterPath="$PROJECT_DIR$/out/production/compiler-w16/.idea/workspace.xml" />
     </list>
     <ignored path="compiler-w16.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -35,33 +30,13 @@
         <entry file="file://$PROJECT_DIR$/InstructionSchedule.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="577" column="36" selection-start-line="577" selection-start-column="36" selection-end-line="577" selection-end-column="36" />
+              <caret line="603" column="36" selection-start-line="603" selection-start-column="36" selection-end-line="603" selection-end-column="36" />
               <folding>
                 <element signature="class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
                 <element signature="method#InstructionValue#1;class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
-                <element signature="method#instructionCalled#0;class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
-                <element signature="method#instructionAddedToBuffer#0;class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
-                <element signature="class#outputInstruction#0;class#InstructionSchedule#0" expanded="false" />
-                <element signature="method#outputInstruction#0;class#outputInstruction#0;class#InstructionSchedule#0" expanded="false" />
-                <element signature="method#outputInstruction#1;class#outputInstruction#0;class#InstructionSchedule#0" expanded="false" />
-                <element signature="method#toString#0;class#outputInstruction#0;class#InstructionSchedule#0" expanded="false" />
-                <element signature="method#pickInstr#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-                <element signature="method#instructionWouldReturn#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-                <element signature="method#scheduleInstruction#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-                <element signature="method#instructionDependOnInstr#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-                <element signature="method#pickNextCache#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-                <element signature="method#needSpace#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-                <element signature="e#10430#10456#0" expanded="false" />
-                <element signature="e#13261#13305#0" expanded="false" />
-                <element signature="e#13759#13803#0" expanded="false" />
-                <element signature="e#14621#14679#0" expanded="false" />
-                <element signature="e#15804#15826#0" expanded="false" />
-                <element signature="e#16584#16641#0" expanded="false" />
-                <element signature="e#17591#17661#0" expanded="false" />
-                <element signature="e#18093#18136#0" expanded="false" />
                 <element signature="method#InstructionSchedule#0;class#InstructionSchedule#0" expanded="false" />
                 <element signature="method#InstructionSchedule#1;class#InstructionSchedule#0" expanded="false" />
-                <element signature="e#20852#20903#0" expanded="false" />
+                <element signature="e#21418#21469#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -103,7 +78,7 @@
         <entry file="file://$PROJECT_DIR$/RegAllocator.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="222" column="0" selection-start-line="222" selection-start-column="0" selection-end-line="222" selection-end-column="0" />
+              <caret line="244" column="0" selection-start-line="244" selection-start-column="0" selection-end-line="244" selection-end-column="0" />
               <folding>
                 <element signature="class#phiRequest#0;class#RegAllocator#0" expanded="false" />
                 <element signature="class#phiMergerResult#0;class#RegAllocator#0" expanded="false" />
@@ -115,45 +90,25 @@
                 <element signature="method#regIDForValue#0;class#RegAllocator#0" expanded="false" />
                 <element signature="e#4388#4404#0" expanded="false" />
                 <element signature="e#5187#5222#0" expanded="false" />
-                <element signature="e#9453#9479#0" expanded="false" />
-                <element signature="e#11088#11112#0" expanded="false" />
-                <element signature="method#RegAllocator#0;class#RegAllocator#0" expanded="false" />
-                <element signature="e#11520#11538#0" expanded="false" />
-                <element signature="method#createStates#0;class#RegAllocator#0" expanded="false" />
-                <element signature="class#LiveRange#0;class#RegAllocator#0" expanded="false" />
-                <element signature="method#variableLiveRange#0;class#RegAllocator#0" expanded="false" />
-                <element signature="e#12885#12967#0" expanded="false" />
-                <element signature="class#RegisterConf#0;class#RegAllocator#0" expanded="false" />
-                <element signature="class#VariableAllocation#0;class#RegAllocator#0" expanded="false" />
-                <element signature="class#memoryPosition#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-                <element signature="method#reserveArray#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-                <element signature="method#store#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-                <element signature="method#reserve#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-                <element signature="method#release#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-                <element signature="e#14907#14972#0" expanded="false" />
-                <element signature="method#load#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-                <element signature="method#save#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-                <element signature="class#Register#0;class#RegAllocator#0" expanded="false" />
-                <element signature="method#Register#0;class#Register#0;class#RegAllocator#0" expanded="false" />
-                <element signature="method#Register#1;class#Register#0;class#RegAllocator#0" expanded="false" />
                 <element signature="method#phiValue#0;class#Register#0;class#RegAllocator#0" expanded="false" />
+                <element signature="class#Register#0;class#RegAllocator#0" expanded="false" />
                 <element signature="method#updateValue#0;class#Register#0;class#RegAllocator#0" expanded="false" />
                 <element signature="method#updateValue#1;class#Register#0;class#RegAllocator#0" expanded="false" />
                 <element signature="method#preserveMemory#0;class#Register#0;class#RegAllocator#0" expanded="false" />
-                <element signature="e#18553#18563#0" expanded="false" />
+                <element signature="e#20178#20188#0" expanded="false" />
                 <element signature="method#toString#0;class#Register#0;class#RegAllocator#0" expanded="false" />
                 <element signature="method#registerContext#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
                 <element signature="method#registerContext#1;class#registerContext#0;class#RegAllocator#0" expanded="false" />
                 <element signature="method#swapRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
                 <element signature="method#emptyRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
                 <element signature="method#registerToFlushTo#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
-                <element signature="e#23233#23322#0" expanded="false" />
+                <element signature="e#24858#24947#0" expanded="false" />
                 <element signature="method#toString#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
                 <element signature="class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
                 <element signature="class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
                 <element signature="method#dependencyNode#0;class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
-                <element signature="e#25220#25277#0" expanded="false" />
-                <element signature="e#25394#25412#0" expanded="false" />
+                <element signature="e#26845#26902#0" expanded="false" />
+                <element signature="e#27019#27037#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -162,7 +117,7 @@
       <file leaf-file-name="Block.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Block.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.01939394">
+            <state vertical-scroll-proportion="0.030303031">
               <caret line="137" column="52" selection-start-line="137" selection-start-column="41" selection-end-line="137" selection-end-column="52" />
               <folding />
             </state>
@@ -271,8 +226,6 @@
     </navigator>
     <panes>
       <pane id="PackagesPane" />
-      <pane id="Scratches" />
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -293,6 +246,8 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scope" />
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -559,7 +514,7 @@
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
       <option name="MAIN_CLASS_NAME" value="Compiler" />
       <option name="VM_PARAMETERS" value="" />
-      <option name="PROGRAM_PARAMETERS" value="my-tests/while-if.txt -regAlloc -O" />
+      <option name="PROGRAM_PARAMETERS" value="my-tests/test007.txt -all -d" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
@@ -600,7 +555,7 @@
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32942554" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.14444445" sideWeight="0.49589685" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.14444445" sideWeight="0.49589685" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -631,7 +586,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/RegAllocator.java</url>
-          <line>222</line>
+          <line>244</line>
           <properties />
           <option name="timeStamp" value="73" />
         </line-breakpoint>
@@ -725,45 +680,25 @@
             <element signature="method#regIDForValue#0;class#RegAllocator#0" expanded="false" />
             <element signature="e#4388#4404#0" expanded="false" />
             <element signature="e#5187#5222#0" expanded="false" />
-            <element signature="e#9453#9479#0" expanded="false" />
-            <element signature="e#11088#11112#0" expanded="false" />
-            <element signature="method#RegAllocator#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#11520#11538#0" expanded="false" />
-            <element signature="method#createStates#0;class#RegAllocator#0" expanded="false" />
-            <element signature="class#LiveRange#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#variableLiveRange#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#12885#12967#0" expanded="false" />
-            <element signature="class#RegisterConf#0;class#RegAllocator#0" expanded="false" />
-            <element signature="class#VariableAllocation#0;class#RegAllocator#0" expanded="false" />
-            <element signature="class#memoryPosition#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#reserveArray#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#store#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#reserve#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#release#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#14907#14972#0" expanded="false" />
-            <element signature="method#load#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#save#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="class#Register#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#Register#0;class#Register#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#Register#1;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#phiValue#0;class#Register#0;class#RegAllocator#0" expanded="false" />
+            <element signature="class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#updateValue#0;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#updateValue#1;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#preserveMemory#0;class#Register#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#18553#18563#0" expanded="false" />
+            <element signature="e#20178#20188#0" expanded="false" />
             <element signature="method#toString#0;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#registerContext#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#registerContext#1;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#swapRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#emptyRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#registerToFlushTo#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#23233#23322#0" expanded="false" />
+            <element signature="e#24858#24947#0" expanded="false" />
             <element signature="method#toString#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
             <element signature="class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#dependencyNode#0;class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#25220#25277#0" expanded="false" />
-            <element signature="e#25394#25412#0" expanded="false" />
+            <element signature="e#26845#26902#0" expanded="false" />
+            <element signature="e#27019#27037#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -824,29 +759,9 @@
           <folding>
             <element signature="class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#InstructionValue#1;class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#instructionCalled#0;class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#instructionAddedToBuffer#0;class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="class#outputInstruction#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#outputInstruction#0;class#outputInstruction#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#outputInstruction#1;class#outputInstruction#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#toString#0;class#outputInstruction#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#pickInstr#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#instructionWouldReturn#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#scheduleInstruction#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#instructionDependOnInstr#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#pickNextCache#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#needSpace#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="e#10430#10456#0" expanded="false" />
-            <element signature="e#13261#13305#0" expanded="false" />
-            <element signature="e#13759#13803#0" expanded="false" />
-            <element signature="e#14621#14679#0" expanded="false" />
-            <element signature="e#15804#15826#0" expanded="false" />
-            <element signature="e#16584#16641#0" expanded="false" />
-            <element signature="e#17591#17661#0" expanded="false" />
-            <element signature="e#18093#18136#0" expanded="false" />
             <element signature="method#InstructionSchedule#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#InstructionSchedule#1;class#InstructionSchedule#0" expanded="false" />
-            <element signature="e#20852#20903#0" expanded="false" />
+            <element signature="e#21418#21469#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -892,45 +807,25 @@
             <element signature="method#regIDForValue#0;class#RegAllocator#0" expanded="false" />
             <element signature="e#4388#4404#0" expanded="false" />
             <element signature="e#5187#5222#0" expanded="false" />
-            <element signature="e#9453#9479#0" expanded="false" />
-            <element signature="e#11088#11112#0" expanded="false" />
-            <element signature="method#RegAllocator#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#11520#11538#0" expanded="false" />
-            <element signature="method#createStates#0;class#RegAllocator#0" expanded="false" />
-            <element signature="class#LiveRange#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#variableLiveRange#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#12885#12967#0" expanded="false" />
-            <element signature="class#RegisterConf#0;class#RegAllocator#0" expanded="false" />
-            <element signature="class#VariableAllocation#0;class#RegAllocator#0" expanded="false" />
-            <element signature="class#memoryPosition#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#reserveArray#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#store#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#reserve#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#release#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#14907#14972#0" expanded="false" />
-            <element signature="method#load#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#save#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="class#Register#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#Register#0;class#Register#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#Register#1;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#phiValue#0;class#Register#0;class#RegAllocator#0" expanded="false" />
+            <element signature="class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#updateValue#0;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#updateValue#1;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#preserveMemory#0;class#Register#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#18553#18563#0" expanded="false" />
+            <element signature="e#20178#20188#0" expanded="false" />
             <element signature="method#toString#0;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#registerContext#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#registerContext#1;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#swapRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#emptyRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#registerToFlushTo#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#23233#23322#0" expanded="false" />
+            <element signature="e#24858#24947#0" expanded="false" />
             <element signature="method#toString#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
             <element signature="class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#dependencyNode#0;class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#25220#25277#0" expanded="false" />
-            <element signature="e#25394#25412#0" expanded="false" />
+            <element signature="e#26845#26902#0" expanded="false" />
+            <element signature="e#27019#27037#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -991,29 +886,9 @@
           <folding>
             <element signature="class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#InstructionValue#1;class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#instructionCalled#0;class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#instructionAddedToBuffer#0;class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="class#outputInstruction#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#outputInstruction#0;class#outputInstruction#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#outputInstruction#1;class#outputInstruction#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#toString#0;class#outputInstruction#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#pickInstr#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#instructionWouldReturn#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#scheduleInstruction#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#instructionDependOnInstr#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#pickNextCache#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#needSpace#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="e#10430#10456#0" expanded="false" />
-            <element signature="e#13261#13305#0" expanded="false" />
-            <element signature="e#13759#13803#0" expanded="false" />
-            <element signature="e#14621#14679#0" expanded="false" />
-            <element signature="e#15804#15826#0" expanded="false" />
-            <element signature="e#16584#16641#0" expanded="false" />
-            <element signature="e#17591#17661#0" expanded="false" />
-            <element signature="e#18093#18136#0" expanded="false" />
             <element signature="method#InstructionSchedule#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#InstructionSchedule#1;class#InstructionSchedule#0" expanded="false" />
-            <element signature="e#20852#20903#0" expanded="false" />
+            <element signature="e#21418#21469#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1059,45 +934,25 @@
             <element signature="method#regIDForValue#0;class#RegAllocator#0" expanded="false" />
             <element signature="e#4388#4404#0" expanded="false" />
             <element signature="e#5187#5222#0" expanded="false" />
-            <element signature="e#9453#9479#0" expanded="false" />
-            <element signature="e#11088#11112#0" expanded="false" />
-            <element signature="method#RegAllocator#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#11520#11538#0" expanded="false" />
-            <element signature="method#createStates#0;class#RegAllocator#0" expanded="false" />
-            <element signature="class#LiveRange#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#variableLiveRange#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#12885#12967#0" expanded="false" />
-            <element signature="class#RegisterConf#0;class#RegAllocator#0" expanded="false" />
-            <element signature="class#VariableAllocation#0;class#RegAllocator#0" expanded="false" />
-            <element signature="class#memoryPosition#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#reserveArray#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#store#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#reserve#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#release#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#14907#14972#0" expanded="false" />
-            <element signature="method#load#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#save#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="class#Register#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#Register#0;class#Register#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#Register#1;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#phiValue#0;class#Register#0;class#RegAllocator#0" expanded="false" />
+            <element signature="class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#updateValue#0;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#updateValue#1;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#preserveMemory#0;class#Register#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#18553#18563#0" expanded="false" />
+            <element signature="e#20178#20188#0" expanded="false" />
             <element signature="method#toString#0;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#registerContext#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#registerContext#1;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#swapRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#emptyRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#registerToFlushTo#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#23233#23322#0" expanded="false" />
+            <element signature="e#24858#24947#0" expanded="false" />
             <element signature="method#toString#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
             <element signature="class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#dependencyNode#0;class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#25220#25277#0" expanded="false" />
-            <element signature="e#25394#25412#0" expanded="false" />
+            <element signature="e#26845#26902#0" expanded="false" />
+            <element signature="e#27019#27037#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1109,29 +964,9 @@
           <folding>
             <element signature="class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#InstructionValue#1;class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#instructionCalled#0;class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#instructionAddedToBuffer#0;class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="class#outputInstruction#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#outputInstruction#0;class#outputInstruction#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#outputInstruction#1;class#outputInstruction#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#toString#0;class#outputInstruction#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#pickInstr#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#instructionWouldReturn#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#scheduleInstruction#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#instructionDependOnInstr#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#pickNextCache#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#needSpace#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="e#10430#10456#0" expanded="false" />
-            <element signature="e#13261#13305#0" expanded="false" />
-            <element signature="e#13759#13803#0" expanded="false" />
-            <element signature="e#14621#14679#0" expanded="false" />
-            <element signature="e#15804#15826#0" expanded="false" />
-            <element signature="e#16584#16641#0" expanded="false" />
-            <element signature="e#17591#17661#0" expanded="false" />
-            <element signature="e#18093#18136#0" expanded="false" />
             <element signature="method#InstructionSchedule#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#InstructionSchedule#1;class#InstructionSchedule#0" expanded="false" />
-            <element signature="e#20852#20903#0" expanded="false" />
+            <element signature="e#21418#21469#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1151,45 +986,25 @@
             <element signature="method#regIDForValue#0;class#RegAllocator#0" expanded="false" />
             <element signature="e#4388#4404#0" expanded="false" />
             <element signature="e#5187#5222#0" expanded="false" />
-            <element signature="e#9453#9479#0" expanded="false" />
-            <element signature="e#11088#11112#0" expanded="false" />
-            <element signature="method#RegAllocator#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#11520#11538#0" expanded="false" />
-            <element signature="method#createStates#0;class#RegAllocator#0" expanded="false" />
-            <element signature="class#LiveRange#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#variableLiveRange#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#12885#12967#0" expanded="false" />
-            <element signature="class#RegisterConf#0;class#RegAllocator#0" expanded="false" />
-            <element signature="class#VariableAllocation#0;class#RegAllocator#0" expanded="false" />
-            <element signature="class#memoryPosition#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#reserveArray#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#store#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#reserve#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#release#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#14907#14972#0" expanded="false" />
-            <element signature="method#load#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#save#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="class#Register#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#Register#0;class#Register#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#Register#1;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#phiValue#0;class#Register#0;class#RegAllocator#0" expanded="false" />
+            <element signature="class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#updateValue#0;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#updateValue#1;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#preserveMemory#0;class#Register#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#18553#18563#0" expanded="false" />
+            <element signature="e#20178#20188#0" expanded="false" />
             <element signature="method#toString#0;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#registerContext#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#registerContext#1;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#swapRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#emptyRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#registerToFlushTo#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#23233#23322#0" expanded="false" />
+            <element signature="e#24858#24947#0" expanded="false" />
             <element signature="method#toString#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
             <element signature="class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#dependencyNode#0;class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#25220#25277#0" expanded="false" />
-            <element signature="e#25394#25412#0" expanded="false" />
+            <element signature="e#26845#26902#0" expanded="false" />
+            <element signature="e#27019#27037#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1244,29 +1059,9 @@
           <folding>
             <element signature="class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#InstructionValue#1;class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#instructionCalled#0;class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#instructionAddedToBuffer#0;class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="class#outputInstruction#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#outputInstruction#0;class#outputInstruction#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#outputInstruction#1;class#outputInstruction#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#toString#0;class#outputInstruction#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#pickInstr#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#instructionWouldReturn#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#scheduleInstruction#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#instructionDependOnInstr#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#pickNextCache#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#needSpace#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="e#10430#10456#0" expanded="false" />
-            <element signature="e#13261#13305#0" expanded="false" />
-            <element signature="e#13759#13803#0" expanded="false" />
-            <element signature="e#14621#14679#0" expanded="false" />
-            <element signature="e#15804#15826#0" expanded="false" />
-            <element signature="e#16584#16641#0" expanded="false" />
-            <element signature="e#17591#17661#0" expanded="false" />
-            <element signature="e#18093#18136#0" expanded="false" />
             <element signature="method#InstructionSchedule#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#InstructionSchedule#1;class#InstructionSchedule#0" expanded="false" />
-            <element signature="e#20852#20903#0" expanded="false" />
+            <element signature="e#21418#21469#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1286,45 +1081,25 @@
             <element signature="method#regIDForValue#0;class#RegAllocator#0" expanded="false" />
             <element signature="e#4388#4404#0" expanded="false" />
             <element signature="e#5187#5222#0" expanded="false" />
-            <element signature="e#9453#9479#0" expanded="false" />
-            <element signature="e#11088#11112#0" expanded="false" />
-            <element signature="method#RegAllocator#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#11520#11538#0" expanded="false" />
-            <element signature="method#createStates#0;class#RegAllocator#0" expanded="false" />
-            <element signature="class#LiveRange#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#variableLiveRange#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#12885#12967#0" expanded="false" />
-            <element signature="class#RegisterConf#0;class#RegAllocator#0" expanded="false" />
-            <element signature="class#VariableAllocation#0;class#RegAllocator#0" expanded="false" />
-            <element signature="class#memoryPosition#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#reserveArray#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#store#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#reserve#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#release#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#14907#14972#0" expanded="false" />
-            <element signature="method#load#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#save#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="class#Register#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#Register#0;class#Register#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#Register#1;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#phiValue#0;class#Register#0;class#RegAllocator#0" expanded="false" />
+            <element signature="class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#updateValue#0;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#updateValue#1;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#preserveMemory#0;class#Register#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#18553#18563#0" expanded="false" />
+            <element signature="e#20178#20188#0" expanded="false" />
             <element signature="method#toString#0;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#registerContext#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#registerContext#1;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#swapRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#emptyRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#registerToFlushTo#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#23233#23322#0" expanded="false" />
+            <element signature="e#24858#24947#0" expanded="false" />
             <element signature="method#toString#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
             <element signature="class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#dependencyNode#0;class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#25220#25277#0" expanded="false" />
-            <element signature="e#25394#25412#0" expanded="false" />
+            <element signature="e#26845#26902#0" expanded="false" />
+            <element signature="e#27019#27037#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1398,33 +1173,13 @@
     <entry file="file://$PROJECT_DIR$/InstructionSchedule.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="577" column="36" selection-start-line="577" selection-start-column="36" selection-end-line="577" selection-end-column="36" />
+          <caret line="603" column="36" selection-start-line="603" selection-start-column="36" selection-end-line="603" selection-end-column="36" />
           <folding>
             <element signature="class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#InstructionValue#1;class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#instructionCalled#0;class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#instructionAddedToBuffer#0;class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="class#outputInstruction#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#outputInstruction#0;class#outputInstruction#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#outputInstruction#1;class#outputInstruction#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#toString#0;class#outputInstruction#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#pickInstr#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#instructionWouldReturn#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#scheduleInstruction#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#instructionDependOnInstr#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#pickNextCache#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="method#needSpace#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="e#10430#10456#0" expanded="false" />
-            <element signature="e#13261#13305#0" expanded="false" />
-            <element signature="e#13759#13803#0" expanded="false" />
-            <element signature="e#14621#14679#0" expanded="false" />
-            <element signature="e#15804#15826#0" expanded="false" />
-            <element signature="e#16584#16641#0" expanded="false" />
-            <element signature="e#17591#17661#0" expanded="false" />
-            <element signature="e#18093#18136#0" expanded="false" />
             <element signature="method#InstructionSchedule#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#InstructionSchedule#1;class#InstructionSchedule#0" expanded="false" />
-            <element signature="e#20852#20903#0" expanded="false" />
+            <element signature="e#21418#21469#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1448,7 +1203,7 @@
     <entry file="file://$PROJECT_DIR$/RegAllocator.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="222" column="0" selection-start-line="222" selection-start-column="0" selection-end-line="222" selection-end-column="0" />
+          <caret line="244" column="0" selection-start-line="244" selection-start-column="0" selection-end-line="244" selection-end-column="0" />
           <folding>
             <element signature="class#phiRequest#0;class#RegAllocator#0" expanded="false" />
             <element signature="class#phiMergerResult#0;class#RegAllocator#0" expanded="false" />
@@ -1460,45 +1215,25 @@
             <element signature="method#regIDForValue#0;class#RegAllocator#0" expanded="false" />
             <element signature="e#4388#4404#0" expanded="false" />
             <element signature="e#5187#5222#0" expanded="false" />
-            <element signature="e#9453#9479#0" expanded="false" />
-            <element signature="e#11088#11112#0" expanded="false" />
-            <element signature="method#RegAllocator#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#11520#11538#0" expanded="false" />
-            <element signature="method#createStates#0;class#RegAllocator#0" expanded="false" />
-            <element signature="class#LiveRange#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#variableLiveRange#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#12885#12967#0" expanded="false" />
-            <element signature="class#RegisterConf#0;class#RegAllocator#0" expanded="false" />
-            <element signature="class#VariableAllocation#0;class#RegAllocator#0" expanded="false" />
-            <element signature="class#memoryPosition#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#reserveArray#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#store#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#reserve#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#release#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#14907#14972#0" expanded="false" />
-            <element signature="method#load#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#save#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="class#Register#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#Register#0;class#Register#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#Register#1;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#phiValue#0;class#Register#0;class#RegAllocator#0" expanded="false" />
+            <element signature="class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#updateValue#0;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#updateValue#1;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#preserveMemory#0;class#Register#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#18553#18563#0" expanded="false" />
+            <element signature="e#20178#20188#0" expanded="false" />
             <element signature="method#toString#0;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#registerContext#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#registerContext#1;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#swapRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#emptyRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#registerToFlushTo#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#23233#23322#0" expanded="false" />
+            <element signature="e#24858#24947#0" expanded="false" />
             <element signature="method#toString#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
             <element signature="class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#dependencyNode#0;class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#25220#25277#0" expanded="false" />
-            <element signature="e#25394#25412#0" expanded="false" />
+            <element signature="e#26845#26902#0" expanded="false" />
+            <element signature="e#27019#27037#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1556,7 +1291,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Block.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.01939394">
+        <state vertical-scroll-proportion="0.030303031">
           <caret line="137" column="52" selection-start-line="137" selection-start-column="41" selection-end-line="137" selection-end-column="52" />
           <folding />
         </state>

@@ -162,11 +162,17 @@ public class RegAllocator {
                         //No space, so reallocate
                         int regID = mergedCtx.emptyRegister();
                         mergedCtx.registers[regID].updateValue(request.actualStmt);
+
                         InstructionSchedule.outputInstruction instr = insch.new outputInstruction();
                         instr.op = Instruction.move;
                         instr.arg1 = reg1.registerID;
                         instr.outputReg = regID;
                         edge1Instr.add(instr);
+
+                        instr = insch.new outputInstruction();
+                        instr.op = Instruction.move;
+                        instr.arg1 = reg1.registerID;
+                        instr.outputReg = regID;
                         edge2Instr.add(instr);
                     }
                 } else {
@@ -216,6 +222,13 @@ public class RegAllocator {
                 //A depended value is calculated->add it back
                 child.state.unresolveArgument--;
             }
+            request.actualStmt.basedInstr.state.scheduled();
+            
+            /*if (request.value1 != null)
+                request.value1.state.valueRepr.instructionCalled(request.actualStmt.basedInstr);
+
+            if (request.value2 != null)
+                request.value2.state.valueRepr.instructionCalled(request.actualStmt.basedInstr);*/
         }
         merger.resultContext = mergedCtx;
         merger.edge1 = edge1Instr;
@@ -249,6 +262,15 @@ public class RegAllocator {
 		// colorInterferenceGraph();
 		// program.elimiatePhi();
         InstructionSchedule schedule = new InstructionSchedule(program);
+        //Patch bra instruction
+        for (Instruction instr : program.instrs) {
+            if (instr.op == Instruction.bra) {
+                //It's a branch
+                Block destinationBlock = (Block)instr.arg1;
+                Block sourceBlock = instr.block;
+                sourceBlock.schedule.next1 = destinationBlock.schedule;
+            }
+        }
 		return schedule;
 	}
 
@@ -404,6 +426,21 @@ public class RegAllocator {
         public InstructionSchedule.outputInstruction phiValue(InstructionSchedule.InstructionValue instr) {
             //Store the instruction dependency
             InstructionSchedule.outputInstruction release = null;
+
+            Register instrReg = instr.basedInstr.state.storage.currentRegister;
+            memorySpace.memoryPosition pos = instr.basedInstr.state.storage.backstore;
+
+            if (instrReg != null) {
+                //Check if the register is the same, only move if not
+                if (instrReg.registerID != this.registerID) {
+                    //Move
+                    InstructionSchedule i = new InstructionSchedule();
+                    release = i.new outputInstruction();
+                    release.op = Instruction.move;
+                    release.arg1 = instrReg.registerID;
+                    release.outputReg = this.registerID;
+                }
+            }
             currentValue = instr;
             backendPosition = null;
             //Update the instruction value record

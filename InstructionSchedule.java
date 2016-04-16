@@ -17,6 +17,12 @@ public class InstructionSchedule {
 		InstructionValue() {}
 
 		InstructionValue(Instruction instr, Block currentBlock) {
+			usageCount = 0;
+	        referenceCount = 0;
+	        upcomingUsageCount = 0;
+	        upcomingReferenceCount = 0;
+
+
 			basedInstr = instr;
 			for (Instruction parent : instr.uses) {
 				boolean sameBlock = (instr.block == currentBlock);
@@ -64,7 +70,7 @@ public class InstructionSchedule {
 			return referenceCount>0;
 		}
 		public boolean flushable() {
-			return referenceCount == 0;
+			return referenceCount <= 0;
 		}
 		public int score() {
 			return referenceCount;
@@ -157,14 +163,24 @@ public class InstructionSchedule {
 			}
 			//Next
 			if (next1 != null) {
-				output += "Next 1: \n";
-				output += next1 + "\n";
+				output += "Next 1: ";
+				output += next1.referenceBlock.id + "\n";
 			}
 			//Next
 			if (next2 != null) {
-				output += "Next 2: \n";
-				output += next2 + "\n";
+				output += "Next 2: ";
+				output += next2.referenceBlock.id + "\n";
 			}
+
+			//Next
+			if (next1 != null) {
+				output += "\n" + next1 + "\n";
+			}
+			//Next
+			if (next2 != null) {
+				output += "\n" + next2 + "\n";
+			}
+
 			return output;
 		}
 
@@ -211,6 +227,9 @@ public class InstructionSchedule {
 			System.out.print("Instr: "+instr+"\n");
 			instr.state.valueRepr = value;
 
+			//Tell the instrcution depended on that it's releasing
+			instr.state.scheduled();
+
 			if (instructionWouldReturn(instr)) {
 				nextRegID = context.emptyRegister();
 				RegAllocator.Register nextReg =  context.registers[nextRegID];
@@ -221,8 +240,6 @@ public class InstructionSchedule {
 				
 			}
 			outputInstruction oi = new outputInstruction(instr, nextRegID);
-			//Tell the instrcution depended on that it's releasing
-			instr.state.scheduled();
 			return oi;
 		}
 
@@ -287,6 +304,8 @@ public class InstructionSchedule {
 
 		ScheduledBlock(RegAllocator.registerContext previousContext, Block inputBlock, RegAllocator.memorySpace space) {
 
+
+
 			inputBlock.schedule = this;
 
 			instructions = new ArrayList<InstructionSchedule.outputInstruction>();
@@ -346,6 +365,9 @@ public class InstructionSchedule {
 				if (ifJoin) {
 					RegAllocator.phiMergerResult result = RegAllocator.phiMerger(inputBlock.in1.schedule.context, inputBlock.in2.schedule.context, phiInstructions);
 					//TODO: Do something to the blocks
+					inputBlock.in1.schedule.insertPhiTransfer(result.edge1);
+					inputBlock.in2.schedule.insertPhiTransfer(result.edge2);
+					context = result.resultContext;
 				} else {
 					if (inputBlock.in1.schedule != null && inputBlock.in2.schedule != null) {
 						//Both input block is scheduled, so just patch the remain
@@ -545,11 +567,14 @@ public class InstructionSchedule {
 				if (inputBlock.branch.in2 != null && inputBlock.branch.id > inputBlock.branch.in2.id)
 					inputBlock.branch.dependent++;
 			}
+
 			if (inputBlock.fallThrough != null) {
-				if (inputBlock.fallThrough.id > inputBlock.id)
-					inputBlock.fallThrough.dependent--;
-				if (inputBlock.fallThrough.dependent == 0 && inputBlock.fallThrough.schedule == null)
-					next1 = new ScheduledBlock(context, inputBlock.fallThrough, space);
+				if (inputBlock.fallThrough != null) {
+					if (inputBlock.fallThrough.id > inputBlock.id)
+						inputBlock.fallThrough.dependent--;
+					if (inputBlock.fallThrough.dependent == 0 && inputBlock.fallThrough.schedule == null)
+						next1 = new ScheduledBlock(context, inputBlock.fallThrough, space);
+				} 
 				if (phiInstructions.size() > 0 && !ifJoin) {
 					//Has phi, not if join->while join
 					RegAllocator.phiMergerResult result = RegAllocator.phiTransform(next1.context, afterPhiCtx, phiInstructions);
@@ -560,8 +585,10 @@ public class InstructionSchedule {
 			if (inputBlock.branch != null) {
 				if (inputBlock.branch.id > inputBlock.id)
 					inputBlock.branch.dependent--;
-				if (inputBlock.branch.dependent == 0 && inputBlock.branch.schedule == null)
-					next2 = new ScheduledBlock(context, inputBlock.branch, space);
+				if (inputBlock.branch.dependent == 0)
+					if (inputBlock.branch.schedule == null)
+						next2 = new ScheduledBlock(context, inputBlock.branch, space);
+					else next2 = inputBlock.branch.schedule;
 			} else next2 = null;
 
 			if (endOfBlock) {
