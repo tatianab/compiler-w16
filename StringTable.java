@@ -52,6 +52,12 @@ public class StringTable {
 
 	}
 
+	public StringTable(StringTable copy) {
+		strings = new Hashtable<>(copy.strings);
+		ids =  new ArrayList<>(copy.ids);
+		nextOpenID = copy.nextOpenID;
+	}
+
 	// Add a new string to the string table.
 	public void add(String name) {
 		int id = nextOpenID;

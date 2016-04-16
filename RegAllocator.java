@@ -217,6 +217,9 @@ public class RegAllocator {
                 child.state.unresolveArgument--;
             }
         }
+        merger.resultContext = mergedCtx;
+        merger.edge1 = edge1Instr;
+        merger.edge2 = edge2Instr;
         return merger;
     }
 

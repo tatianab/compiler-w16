@@ -150,7 +150,7 @@ public class InstructionSchedule {
 
 		@Override
 		public String toString() {
-			String output = "Block: \n";
+			String output = "Block:"+referenceBlock.id+" \n";
 			output += "#instructions: " + instructions.size() + "\n";
 			for (outputInstruction oi : instructions) {
 				output += oi+"\n";
@@ -380,7 +380,9 @@ public class InstructionSchedule {
 						boolean cached = true;
 						if (child.instrsUsed != null)
 							for (Instruction parent: child.instrsUsed) {
-								if (parent != null && !parent.state.storage.loaded())
+								if (parent != null)
+									System.out.print("Parent: "+parent+"\n");
+								if (parent != null && ( !parent.deleted() && !parent.state.storage.loaded()) )
 									cached = false;
 							}
 						if (cached) {
@@ -418,7 +420,9 @@ public class InstructionSchedule {
 					unprocessBlock.remove(instr);
 					cachedInstruction.remove(instr);
 					for (Instruction _instr : instr.uses) {
-						if (_instr.op != Instruction.phi && _instr.block == inputBlock) {
+						if (_instr.op != Instruction.phi &&
+								!(_instr.op == Instruction.bra || (_instr.op >= Instruction.bne && _instr.op <= Instruction.ble))
+						&& _instr.block == inputBlock) {
 							cachedInstruction.remove(_instr);
 							cachedInstruction.add(_instr);
 						}
@@ -570,8 +574,11 @@ public class InstructionSchedule {
 		}
 
 		public void insertPhiTransfer(ArrayList<outputInstruction> ois) {
-			outputInstruction lastOI = instructions.get(instructions.size() - 1);
-			if (lastOI.op == Instruction.bra || (lastOI.op >= Instruction.bne && lastOI.op <= Instruction.ble)) {
+			outputInstruction lastOI;
+			if (instructions.size() > 0)
+				lastOI = instructions.get(instructions.size() - 1);
+			else lastOI = null;
+			if (lastOI != null && (lastOI.op == Instruction.bra || (lastOI.op >= Instruction.bne && lastOI.op <= Instruction.ble)) ) {
 				//It is branch
 				instructions.remove(lastOI);
 			} else lastOI = null;

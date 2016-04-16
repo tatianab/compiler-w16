@@ -2,3 +2,5 @@
 *.vcg
 *.bat
 *.cmd
+
+out/production/compiler-w16/report

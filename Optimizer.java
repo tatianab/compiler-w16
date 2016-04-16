@@ -5,6 +5,7 @@
  */
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Stack;
 
@@ -78,7 +79,7 @@ public class Optimizer {
 	/* True if it is OK to delete an instruction of this type.
 	 */
 	public boolean deletable(Instruction instr) {
-		if (instr.op >= write || instr.op == phi || instr.op == end) {
+		if (instr.op >= write || instr.op == phi || instr.op == end || instr.op == bra) {
 			return false;
 		} else if (instr.op == move && instr.arg1 instanceof Constant && instr.usedInPhi()) {
 			return false;
@@ -124,7 +125,14 @@ public class Optimizer {
 					newValue = instr.arg1;
 					oldInstr = (Instruction) instr.arg2;
 					if (oldInstr.op == phi) { continue; }
+
+					ArrayList<Instruction> useSites = new ArrayList<>();
+
 					for (Instruction useSite : oldInstr.uses) {
+						useSites.add(useSite);
+					}
+					for (int i = 0; i < useSites.size(); i++) {
+						Instruction useSite = useSites.get(i);
 						if (newValue instanceof Instruction) {
 							useSite.replace(oldInstr, (Instruction) newValue);
 						} else if (newValue instanceof Constant) {

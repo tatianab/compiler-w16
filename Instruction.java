@@ -98,6 +98,19 @@ public class Instruction extends Value {
 					instrsUsed[i].uses.remove(this);
 				}
 			}
+		if (uses != null) {
+			if (Compiler.debug) { System.out.println("Deleting from child instructions"); }
+			for (Instruction child: uses) {
+				if (child != null) {
+					if (Compiler.debug) { System.out.println("Deleting from child instruction " + child); }
+					for (int i = 0; i < 2; i++) {
+						if (child.instrsUsed[i] == this) {
+							child.instrsUsed[i] = null;
+						}
+					}
+				}
+			}
+		}
 		if (Compiler.debug) { System.out.println("Deleting instruction " + this); }
 		if (this.prev == null && this.next == null) { 
 			block.begin = null;
