@@ -9,7 +9,7 @@ public class Compiler {
 	   Options: -d        : Print debugging output.
 	   			-cfg      : Print control flow graph (in VCG format).
 	   			-dt       : Print dominator tree.
-	   			-ifg      : Print interference graph (in VCG format). 
+	   			-ifg      : Print interference graph (in VCG format).
 	   			-instr    : Print SSA instructions.
 	   			-O        : Perform optimizations.
 	   			-regAlloc : Allocate registers.
@@ -19,8 +19,7 @@ public class Compiler {
 	   			-run      : Run the program and display its output (if any).
 	   			-mem 	  : Print out the state of memory and registers after execution.
 	   			-all      : Do optimizations, register allocation and code generation.
-	   Usage: java Compiler <filename> [-d] [-cfg] [-dt] [-ifg] [-instr] [-O] [-regAlloc] [-assem] [-o]
-	   								   [-vtoi] [-run] [-mem] [-all]
+	   Usage: java Compiler <filename> [-d] [-cfg] [-dt] [-ifg] [-instr] [-O] [-regAlloc] [-assem] [-o] [-vtoi] [-run] [-mem] [-all]
 	 */
 
 	// Output flags.
@@ -107,15 +106,16 @@ public class Compiler {
      			if (contains(args, "-all")) {
      				all      = true;
      			}
-     		} 
+     		}
      	} catch (Exception e) {
-      		System.out.println("Usage: java Compiler <filename> [-d] [-cfg] [-dt] [-ifg] [-instr] [-O] [-o] [-assem] [-vtoi] [-run] [-mem] [-all]");
+      		System.out.println("Usage: java Compiler <filename> [-d] [-cfg] [-dt] [-ifg] [-instr] [-O] [-regAlloc] [-assem] [-o] [-vtoi] [-run] [-mem] [-all]");
+					System.exit(0);
     	}
 
     	// Compile the file.
     	Compiler compiler = new Compiler(filename, debug, cfg, dt, ifg, instr, optimize, regAlloc, byteCode, assembly, vtoi, run, memory, all);
     	compiler.compile();
-		
+
 	}
 
 	// Compile the file.
@@ -134,12 +134,12 @@ public class Compiler {
 		if (regAlloc) {
 			if (debug) { System.out.println("Cleaning up deleted instructions..."); }
 			program.clean();
-			if (debug) { System.out.println("Dumbly allocating registers..."); }
-			//program.dumbRegAlloc();
+			// if (debug) { System.out.println("Dumbly allocating registers..."); }
+			// program.dumbRegAlloc();
 			RegAllocator allocator = new RegAllocator(program);
-		 	//    program = allocator.allocate();
+		 	// program = allocator.allocate();
 			schedule = allocator.allocateRegisters();
-			if (debug) { System.out.println("Allocated registers:\n" + schedule); }
+			System.out.println("Allocated registers:\n" + schedule);
 		} else {
 			schedule = null;
 		}
@@ -162,8 +162,8 @@ public class Compiler {
 		}
 
 		// Auxillary data.
-		if (cfg) { 
-			System.out.println(program.cfgToString()); 
+		if (cfg) {
+			System.out.println(program.cfgToString());
 		}
 		if (dt) {
 			System.out.println(program.domTreeToString());

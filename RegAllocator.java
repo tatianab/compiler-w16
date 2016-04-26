@@ -32,10 +32,12 @@ public class RegAllocator {
         //Just update all the elements into the same thing
         //Update the value of the register to the phi functions, and drop all the variable that is no longer needed
         for (phiRequest request : requests) {
-            
+
             Instruction instr1 = request.value1;
             Instruction instr2 = request.value2;
-            System.out.println("Request Value: "+request.actualStmt.basedInstr);
+						if (Compiler.debug) {
+            	System.out.println("Request Value: "+request.actualStmt.basedInstr);
+					  }
             if (instr1.block.id <= senderBlock.id) {
                 //It is from sender block 1 side
                 //Just move the value
@@ -206,7 +208,7 @@ public class RegAllocator {
                     }
                 }
             } else if (reg1 == null && reg2 == null) {
-                //Both value are loaded in the memory, so assert the memory address is the 
+                //Both value are loaded in the memory, so assert the memory address is the
                 assert(instr1.state.storage.backstore.address == instr2.state.storage.backstore.address);
             } else {
                 //One in, one's not
@@ -223,7 +225,7 @@ public class RegAllocator {
                 child.state.unresolveArgument--;
             }
             request.actualStmt.basedInstr.state.scheduled();
-            
+
             /*if (request.value1 != null)
                 request.value1.state.valueRepr.instructionCalled(request.actualStmt.basedInstr);
 
@@ -243,7 +245,7 @@ public class RegAllocator {
     //One for frame pointer
     //One for heap pointer
     //One for memory address calculation
-    
+
 	IntermedRepr program;
 	InterferenceGraph interferenceGraph;
 
@@ -323,7 +325,7 @@ public class RegAllocator {
         public Variable variable;
         public ArrayList<RegisterConf> registers;
     }
-    
+
     public class memorySpace {
         //This is relative to the stack and frame pointer
         public class memoryPosition {
@@ -445,7 +447,9 @@ public class RegAllocator {
             backendPosition = null;
             //Update the instruction value record
             instr.basedInstr.state.storage.currentRegister = this;
-            System.out.println("Update register: "+registerID+" with value "+currentValue);
+						if (Compiler.debug) {
+            	System.out.println("Update register: "+registerID+" with value "+currentValue);
+						}
             return release;
         }
         public InstructionSchedule.outputInstruction updateValue(memorySpace.memoryPosition valueMem) {
@@ -460,15 +464,17 @@ public class RegAllocator {
             backendPosition = null;
             //Update the instruction value record
             instr.basedInstr.state.storage.currentRegister = this;
-            System.out.println("Update register: "+registerID+" with value "+currentValue);
+						if (Compiler.debug) {
+            	System.out.println("Update register: "+registerID+" with value "+currentValue);
+					  }
             return release;
         }
         public InstructionSchedule.outputInstruction preserveMemory() {
-            //4 case: 
-            //Memory being used? 
-            //value still needed? 
+            //4 case:
+            //Memory being used?
+            //value still needed?
             if (currentValue == null) {
-                //No instruction, so do nothing 
+                //No instruction, so do nothing
                 return null;
             }
             if (currentValue.stillNeeded() ) {
@@ -579,7 +585,7 @@ public class RegAllocator {
             return -1;
         }
         ArrayList<Integer> registerToFlushTo() {
-            //If there is no space anymore, flush the register to the memory in the following order: 
+            //If there is no space anymore, flush the register to the memory in the following order:
             //1. All register that won't be used in the current block
             //2. All register that has a high write amplification: more register will be used in this block to store the result before the register is released (Any instruction with a score higher than 1)
             Integer firstChoice = -1;       Integer secondChoice = -1;
@@ -602,7 +608,9 @@ public class RegAllocator {
             ArrayList<Integer> list = new ArrayList<Integer>();
             list.add(firstChoice);
             list.add(secondChoice);
+						if (Compiler.debug) {
                 System.out.println("Release: "+list);
+						}
             return list;
         }
         @Override public String toString() {
@@ -623,7 +631,7 @@ public class RegAllocator {
             dependencyNode(registerContext ctx, Instruction instr) {
                 this.instr = instr;
                 dependCount = 0;
-                //if (Instruction.getClass().isInstance(instr.arg1) && ) 
+                //if (Instruction.getClass().isInstance(instr.arg1) && )
                     //dependCount++;
             }
         }
