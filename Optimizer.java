@@ -5,8 +5,6 @@
  */
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Stack;
 
 public class Optimizer {
@@ -15,6 +13,7 @@ public class Optimizer {
 	   - Dead code elimination.
 	   - Common subexpression elimination.
 	   - Copy propagation.
+		 - Constant folding (computing constant expressions).
 	 */
 	IntermedRepr program;
 	boolean      debug;
@@ -24,6 +23,8 @@ public class Optimizer {
 		this.debug   = debug;
 	}
 
+	/* The pre-processor converts variables to instructions and determines
+	   dominator relationships for instructions. */
 	public IntermedRepr preprocess() {
 		if (debug) { System.out.println("Converting variables to instructions..."); }
 		program.varsToInstrs();
@@ -39,14 +40,14 @@ public class Optimizer {
 		commonSubexprElim();
 		if (debug) { System.out.println("Copy propagation..."); }
 		copyPropagation();
-		if (debug) { System.out.println("Precomputing constant values..."); }
+		if (debug) { System.out.println("Constant folding..."); }
 		constantPrecompuation();
 		return program;
 	}
 
-	/* Dead code elimination. 
+	/* Dead code elimination.
 	 * Deletes instructions that have no side effects
-	 * and are never used. 
+	 * and are never used.
 	 */
 	public void deadCodeElim() {
 		Stack<Instruction> workList = new Stack<Instruction>();
@@ -60,7 +61,8 @@ public class Optimizer {
 			if (!current.visited) {
 				current.visited = true;
 				if (deletable(current)) {
-					if (current.uses == null || current.uses.size() == 0) { 
+					if (current.uses == null || current.uses.size() == 0) {
+						if (debug) { System.out.println("Deleting " + current); }
 						current.delete();
 					}
 					if (current.instrsUsed != null) {
@@ -93,8 +95,6 @@ public class Optimizer {
 		Instruction equivInstr;
 		// If instruction Y dominates instruction X and Y = X, replace all
 		// occurrences of X with Y and delete X.
-		// // for (int i = program.instrs.size() - 1; i >= 0; i--) {
-		// 	currentInstr = program.instrs.get(i);
 		for (Instruction currentInstr : program.instrs) {
 			if (deletable(currentInstr)) {
 				equivInstr   = currentInstr.equivDominatingInstr();
@@ -109,7 +109,7 @@ public class Optimizer {
 	}
 
 	/* Copy propagation.
-	 * Delete move instructions 
+	 * Delete move instructions
      *		move y x
 	 * and replace all occurrences of x with y.
 	 */
@@ -118,9 +118,9 @@ public class Optimizer {
 		Value newValue;
 		for (Instruction instr : program.instrs) {
 			if (instr.op == move) {
-				if (debug) {System.out.println("CP: " + instr);} 
+				if (debug) {System.out.println("CP: " + instr);}
 				if (instr.usedInPhi() && instr.arg1 instanceof Constant) {
-					if (debug) {System.out.println("Don't delete me: " + instr);} 
+					if (debug) {System.out.println("Don't delete me: " + instr);}
 				} else {
 					newValue = instr.arg1;
 					oldInstr = (Instruction) instr.arg2;
@@ -151,7 +151,8 @@ public class Optimizer {
 			if (instr.op <= add && instr.op >= div) {
 				Value arg1 = instr.arg1;
 				Value arg2 = instr.arg2;
-				if (instr.arg1 instanceof Constant && instr.arg2 instanceof Constant && !instr.usedInPhi()) {
+				if (instr.arg1 instanceof Constant && instr.arg2 instanceof Constant
+				    && !instr.usedInPhi()) {
 					int value = 0;
 					switch(instr.op) {
 						case Instruction.add:

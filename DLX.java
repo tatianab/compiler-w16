@@ -10,12 +10,12 @@ import java.io.*;
 public class DLX {
 	// processor state variables
 	static int R[] = new int [32];
-	static int PC, op, a, b, c, format; 
-	
+	static int PC, op, a, b, c, format;
+
 	// emulated memory
 	static final int MemSize = 10000; // bytes in memory (divisible by 4)
 	static int M[] = new int [MemSize/4];
-    
+
 	public static void main(String argv[]) {
 	}
 
@@ -27,8 +27,9 @@ public class DLX {
 		M[i] = -1; // set first opcode of first instruction after program
 		           // to ERR in order to detect 'fall off the edge' errors
 	}
-	
-	public static void execute() throws IOException {
+
+	public static void execute(int breakPoint) throws IOException {
+		boolean kill = false;
 		int origc = 0; // used for F2 instruction RET
 		for (int i = 0; i < 32; i++) { R[i] = 0; };
 		PC = 0; R[30] = MemSize - 1;
@@ -36,10 +37,12 @@ public class DLX {
 		try {
 
 		execloop:
-		while (true) {
+		while (!kill) {
 			R[0] = 0;
 			disassem(M[PC]); // initializes op, a, b, c
-
+			if (PC == breakPoint) {
+				kill = true;
+			}
 			int nextPC = PC + 1;
 			if (format==2) {
 				origc = c; // used for RET
@@ -91,10 +94,10 @@ public class DLX {
 					break;
 				// Shifts: - a shift by a positive number means a left shift
 				//         - if c > 31 or c < -31 an error is generated
-				case LSH:  
+				case LSH:
 				case LSHI:
 					if ((c < -31) || (c >31)) {
-						System.out.println("Illegal value " + c + 
+						System.out.println("Illegal value " + c +
 						" of operand c or register c!");
 						bug(1);
 					}
@@ -104,7 +107,7 @@ public class DLX {
 				case ASH:
 				case ASHI:
 					if ((c < -31) || (c >31)) {
-						System.out.println("DLX.execute: Illegal value " + c + 
+						System.out.println("DLX.execute: Illegal value " + c +
 							" of operand c or register c!");
 						bug(1);
 					}
@@ -125,11 +128,11 @@ public class DLX {
 					break;
 				case LDW:
 				case LDX: // remember: c == R[origc] because of F2 format
-					R[a] = M[(R[b]+c) / 4]; 
+					R[a] = M[(R[b]+c) / 4];
 					break;
 				case STW:
 				case STX: // remember: c == R[origc] because of F2 format
-					M[(R[b]+c) / 4] = R[a]; 
+					M[(R[b]+c) / 4] = R[a];
 					break;
 				case POP:
 					R[a] = M[R[b] / 4];
@@ -142,49 +145,49 @@ public class DLX {
 				case BEQ:
 					if (R[a] == 0) nextPC = PC + c;
 					if ((nextPC < 0) || (nextPC > MemSize/4)) {
-						System.out.println(4*nextPC + " is no address in memory (0.." 
+						System.out.println(4*nextPC + " is no address in memory (0.."
 							+ MemSize + ").");
-						bug(40); 
+						bug(40);
 					}
 					break;
 				case BNE:
 					if (R[a] != 0) nextPC = PC + c;
 					if ((nextPC < 0) || (nextPC > MemSize/4)) {
-						System.out.println(4*nextPC + " is no address in memory (0.." 
+						System.out.println(4*nextPC + " is no address in memory (0.."
 							+ MemSize + ").");
-						bug(41); 
+						bug(41);
 					}
 					break;
 				case BLT:
 					if (R[a] < 0) nextPC = PC + c;
 					if ((nextPC < 0) || (nextPC > MemSize/4)) {
-						System.out.println(4*nextPC + " is no address in memory (0.." 
+						System.out.println(4*nextPC + " is no address in memory (0.."
 							+ MemSize + ").");
-						bug(42); 
+						bug(42);
 					}
 					break;
 				case BGE:
 					if (R[a] >= 0) nextPC = PC + c;
 					if ((nextPC < 0) || (nextPC > MemSize/4)) {
-						System.out.println(4*nextPC + " is no address in memory (0.." 
+						System.out.println(4*nextPC + " is no address in memory (0.."
 							+ MemSize + ").");
-						bug(43); 
+						bug(43);
 					}
 					break;
 				case BLE:
 					if (R[a] <= 0) nextPC = PC + c;
 					if ((nextPC < 0) || (nextPC > MemSize/4)) {
-						System.out.println(4*nextPC + " is no address in memory (0.." 
+						System.out.println(4*nextPC + " is no address in memory (0.."
 							+ MemSize + ").");
-						bug(44); 
+						bug(44);
 					}
 					break;
 				case BGT:
 					if (R[a] > 0) nextPC = PC + c;
 					if ((nextPC < 0) || (nextPC > MemSize/4)) {
-						System.out.println(4*nextPC + " is no address in memory (0.." 
+						System.out.println(4*nextPC + " is no address in memory (0.."
 							+ MemSize + ").");
-						bug(45); 
+						bug(45);
 					}
 					break;
 				case BSR:
@@ -195,14 +198,14 @@ public class DLX {
 					R[31] = (PC+1) * 4;
 					nextPC = c / 4;
 					break;
-				case RET: 
+				case RET:
 					if (origc == 0) break execloop; // remember: c==R[origc]
 					if ((c < 0) || (c > MemSize)) {
-						System.out.println(c + " is no address in memory (0.." 
+						System.out.println(c + " is no address in memory (0.."
 							+ MemSize + ").");
-						bug(49); 
+						bug(49);
 					}
-					nextPC = c / 4; 
+					nextPC = c / 4;
 					break;
 				case RDI:
 					System.out.print("?: ");
@@ -243,7 +246,7 @@ public class DLX {
 	"LDW","LDX","POP","ERR","STW","STX","PSH","ERR","BEQ","BNE","BLT","BGE","BLE","BGT","BSR","ERR",
 	"JSR","RET","RDI","WRD","WRH","WRL","ERR","ERR","ERR","ERR","ERR","ERR","ERR","ERR","ERR","ERR",
 	"ERR","ERR","ERR","ERR","ERR","ERR","ERR","ERR","ERR","ERR","ERR","ERR","ERR","ERR","ERR","ERR"};
-	static final int ADD = 0;  
+	static final int ADD = 0;
 	static final int SUB = 1;
 	static final int MUL = 2;
 	static final int DIV = 3;
@@ -276,7 +279,7 @@ public class DLX {
 	static final int POP = 34;
 	static final int STW = 36;
 	static final int STX = 37;
-	static final int PSH = 38; 
+	static final int PSH = 38;
 
 	static final int BEQ = 40;
 	static final int BNE = 41;
@@ -292,14 +295,14 @@ public class DLX {
 	static final int WRD = 51;
 	static final int WRH = 52;
 	static final int WRL = 53;
-	
-	static final int ERR = 63; // error opcode which is insertered by loader 
+
+	static final int ERR = 63; // error opcode which is insertered by loader
 	                           // after end of program code
 
 	static void disassem(int instructionWord) {
 		op = instructionWord >>> 26; // without sign extension
-		switch (op) {	
-			
+		switch (op) {
+
 			// F1 Format
 			case BSR:
 			case RDI:
@@ -334,7 +337,7 @@ public class DLX {
 				b = (instructionWord >>> 16) & 0x1F;
 				c = (short) instructionWord; // another dirty trick
 				break;
-				
+
 			// F2 Format
 			case RET:
 			case CHK:
@@ -357,7 +360,7 @@ public class DLX {
 				b = (instructionWord >>> 16) & 0x1F;
 				c = instructionWord & 0x1F;
 				break;
-			
+
 			// F3 Format
 			case JSR:
 				format = 3;
@@ -365,20 +368,20 @@ public class DLX {
 				b = -1;
 				c = instructionWord & 0x3FFFFFF;
 				break;
-				
+
 			// unknown instruction code
 			default:
 				System.out.println( "Illegal instruction! (" + PC + ")" );
 		}
 	}
-	
+
 	static String disassemble(int instructionWord) {
-		
+
 		disassem(instructionWord);
 		String line = mnemo[op] + "  ";
-		
+
 		switch (op) {
-			
+
 			case WRL:
 				return line;// += "\n";
 			case BSR:
@@ -434,18 +437,18 @@ public class DLX {
 				return line;// += "\n";
 			}
 	}
-	
+
 	static int assemble(int op) {
 		if (op != WRL) {
 			System.out.println("DLX.assemble: the only instruction without arguments is WRL!");
 			bug(1);
-		} 
+		}
 	    return F1(op,0,0,0);
 	}
-	
+
 	static int assemble(int op, int arg1) {
 		switch (op) {
-			
+
 			// F1 Format
 			case BSR:
 				return F1(op,0,0,arg1);
@@ -454,11 +457,11 @@ public class DLX {
 			case WRD:
 			case WRH:
 				return F1(op,0,arg1,0);
-				
+
 			// F2 Format
 			case RET:
 				return F2(op,0,0,arg1);
-			
+
 			// F3 Format
 			case JSR:
 				return F3(op,arg1);
@@ -469,10 +472,10 @@ public class DLX {
 				           // I'm thankful for every sensible explanation.
 		}
 	}
-	
+
 	static int assemble(int op, int arg1, int arg2) {
 		switch (op) {
-			
+
 			// F1 Format
 			case CHKI:
 			case BEQ:
@@ -482,21 +485,21 @@ public class DLX {
 			case BLE:
 			case BGT:
 				return F1(op,arg1,0,arg2);
-				
+
 			// F2 Format
 			case CHK:
 				return F2(op,arg1,0,arg2);
-			
+
 			default:
 				System.out.println("DLX.assemble: wrong opcode for two arg instruction!");
 				bug(1);
 				return -1;
 		}
 	}
-	
+
 	static int assemble(int op, int arg1, int arg2, int arg3) {
 		switch (op) {
-			
+
 			// F1 Format
 			case ADDI:
 			case SUBI:
@@ -515,7 +518,7 @@ public class DLX {
 			case STW:
 			case PSH:
 				return F1(op,arg1,arg2,arg3);
-				
+
 			// F2 Format
 			case ADD:
 			case SUB:
@@ -532,14 +535,14 @@ public class DLX {
 			case LDX:
 			case STX:
 				return F2(op,arg1,arg2,arg3);
-			
+
 			default:
 				System.out.println("DLX.assemble: wrong opcode for three arg instruction!");
 				bug(1);
 				return -1;
 		}
 	}
-	
+
 	static int F1(int op, int a, int b, int c) {
 		if (c < 0) c ^= 0xFFFF0000;
 		if ((a & ~0x1F | b & ~0x1F | c & ~0xFFFF) != 0) {
@@ -548,7 +551,7 @@ public class DLX {
 		}
 		return op << 26 | a << 21 | b << 16 | c;
 	}
-	
+
 	static int F2(int op, int a, int b, int c) {
 		if ((a & ~0x1F | b & ~0x1F | c & ~0x1F) != 0) {
 			System.out.println("Illegal Operand(s) for F2 Format.");
@@ -556,21 +559,21 @@ public class DLX {
 		}
 		return op << 26 | a << 21 | b << 16 | c;
 	}
-	
+
 	static int F3(int op, int c) {
 		if ((c < 0) || (c > MemSize)) {
-			System.out.println("Operand for F3 Format is referencing " + 
+			System.out.println("Operand for F3 Format is referencing " +
 			                   "non-existent memory location.");
 			bug(1);
 		}
 		return op << 26 | c;
 	}
-	
+
 	static void bug(int n) {
 		System.out.println("bug number: " + n);
 		try{ System.in.read(); } catch (Exception ee) {;}
 		System.exit(n);
 	}
-	
+
 
 }

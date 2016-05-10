@@ -247,7 +247,7 @@ public class RegAllocator {
     //One for memory address calculation
 
 	IntermedRepr program;
-	InterferenceGraph interferenceGraph;
+	// InterferenceGraph interferenceGraph;
 
     public RegAllocator() {
     }

@@ -122,6 +122,7 @@ public class Compiler {
 	public void compile() {
 		Parser parser        = new Parser(filename, debug);
 		IntermedRepr program = parser.parse();
+		GraphColor regAllocator = null;
 
 		Optimizer optimizer  = new Optimizer(program, debug);
 		if (vtoi || optimize || regAlloc) {
@@ -134,18 +135,21 @@ public class Compiler {
 		if (regAlloc) {
 			if (debug) { System.out.println("Cleaning up deleted instructions..."); }
 			program.clean();
-			// if (debug) { System.out.println("Dumbly allocating registers..."); }
-			// program.dumbRegAlloc();
+			/* ET's register allocation
 			RegAllocator allocator = new RegAllocator(program);
-		 	// program = allocator.allocate();
 			schedule = allocator.allocateRegisters();
 			System.out.println("Allocated registers:\n" + schedule);
+			*/
+			// Tatiana's register allocation
+			regAllocator = new GraphColor(program);
+			regAllocator.allocateRegisters();
+			program = regAllocator.program;
 		} else {
 			schedule = null;
 		}
 		if (assembly || byteCode || run || all) {
 			if (debug) { System.out.println("Generating native code..."); }
-			CodeGenerator generator = new CodeGenerator(program, schedule, debug);
+			CodeGenerator generator = new CodeGenerator(program, null, debug);
 		    generator.generateCode();
 		    if (assembly) {
 		    	System.out.println(generator.assemblyToString());
@@ -170,6 +174,11 @@ public class Compiler {
 		}
 		if (ifg) {
 			// Print out interference graph.
+			if (regAllocator == null) {
+				System.out.println("No interference graph.");
+			} else {
+				System.out.println(regAllocator.ifg);
+			}
 		}
 		if (instr) {
 			System.out.println(program.instrsToString());
@@ -200,7 +209,10 @@ public class Compiler {
 			this.vtoi     = true;
 		} else {
 			this.regAlloc = regAlloc;
-			this.vtoi     = vtoi;
+			this.vtoi = vtoi;
+		}
+		if (regAlloc) {
+			vtoi = true;
 		}
 	}
 

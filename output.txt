@@ -1,0 +1,83 @@
+Allocated registers:
+Main: 
+Block:0 
+#instructions: 2
+move R1 C1 C0
+move R2 C2 C0
+Next 1: 1
+
+Block:1 
+#instructions: 2
+cmp R3 R1 R2
+ble R-1 R3 C0
+Next 1: 2
+Next 2: 3
+
+Block:2 
+#instructions: 4
+add R3 R1 C1
+move R1 R3 C0
+move R3 R2 C0
+bra R-1 C0 C0
+Next 1: 4
+
+Block:4 
+#instructions: 0
+Next 1: 5
+
+Block:5 
+#instructions: 2
+cmp R2 R1 R3
+bge R-1 R2 C0
+Next 1: 6
+Next 2: 7
+
+Block:6 
+#instructions: 2
+sub R2 R1 C1
+move R1 R2 C0
+
+
+Block:7 
+#instructions: 3
+write R-1 R1 C0
+write R-1 R3 C0
+end R-1 C0 C0
+
+
+
+
+
+Block:3 
+#instructions: 1
+add R3 R2 C1
+Next 1: 4
+
+Block:4 
+#instructions: 0
+Next 1: 5
+
+Block:5 
+#instructions: 2
+cmp R2 R1 R3
+bge R-1 R2 C0
+Next 1: 6
+Next 2: 7
+
+Block:6 
+#instructions: 2
+sub R2 R1 C1
+move R1 R2 C0
+
+
+Block:7 
+#instructions: 3
+write R-1 R1 C0
+write R-1 R3 C0
+end R-1 C0 C0
+
+
+
+
+
+

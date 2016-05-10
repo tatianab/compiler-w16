@@ -1,20 +1,21 @@
-/* File: CodeGenerator.java
+/* File: CodeGen.java
  * Authors: Tatiana Bradley and Wai Man Chan
  * Winter 2016
  * CS 241 - Advanced Compiler Design
  */
 import java.util.ArrayList;
 
-public class CodeGenerator {
-	/* The code generator's responsibility is to emit native programs in DLX format
-	   after optimizations and register allocation.
+public class CodeGen {
+  /* Reorganized code generator.
+	   The code generator's responsibility is to emit native programs in DLX
+     format after optimizations and register allocation.
 
 	   Information about DLX processor
 
 	   Registers:
 	   32 general purpose 32-bit registers R0 - R31.
 	   R0 always contains 0.
-	   Branch instructions to subroutinges implicitly use R31 to store return address.
+	   Branch instructions to subroutines implicitly use R31 to store return address.
 
 	   Program loader:
 	   Object file has no header or footer.
@@ -33,16 +34,18 @@ public class CodeGenerator {
 
 	// TODO: associate assembly instructions with containing block and function.
 
+  // Reserved registers.
 	public static final int ZERO     = 0;  // R0 always stores the value 0.
 	public static final int SCRATCH  = 1;  // R1 is the scratch register to hold intermediate values.
 	public static final int SCRATCH2 = 2;  // R2 is the second scratch register.
+  public static final int SCRATCH3 = 3;  // R3 is the third scratch register.
 	public static final int FP       = 29; // Frame pointer is R29.
 	public static final int SP       = 28; // Stack pointer is R28.
 	public static final int GLOBALS  = 30; // R30 stores a pointer to global vars.
 	public static final int RET_ADDR = 31; // R31 is used to store the return address of subroutines.
 
 	// The first and last free general purpose registers.
-	public static final int FIRST_FREE_REG = 3;
+	public static final int FIRST_FREE_REG = 4;
 	public static final int LAST_FREE_REG  = FIRST_FREE_REG + 8;
 
 	public static final int BYTES_IN_WORD = 4;
@@ -230,6 +233,7 @@ public class CodeGenerator {
 	}
 
 	public void addInstruction(Instruction instr) {
+    // This should be the only function where the type of the given instruction //matters.
 		if (debug) { System.out.println("Translating instruction " + instr); }
 		// If the instruction is the first in its block, the position
 		// of this instruction will mark the beginning of the block's code.
@@ -266,6 +270,136 @@ public class CodeGenerator {
 			Compiler.error("Invalid instruction " + instr);
 		}
 	}
+
+  public int loadValue(int value, int type, int reg) {
+    // If the value is a constant
+    if (type == CONSTANT) {
+      addInstruction(DLX.ADDI, reg, ZERO, value);
+      return reg;
+    }
+    // Else if the value is a virtual register
+    else if (isVirtual(value)) {
+      addInstruction(DLX.LDW, reg, GLOBALS, getOffset(value));
+      return reg;
+    }
+    // Else: the value is a physical register.
+    else {
+      return value;
+    }
+  }
+
+  public void storeValue(int virtual, int physical) {
+    // If virtual is the same as physical, do nothing.
+    // Otherwise, store value held in physical reg in virtual reg.
+    if (virtual != physical) {
+      addInstruction(DLX.STW, physical, GLOBALS, getOffset(virtual));
+    }
+  }
+
+  public int getOffset(int virtual) {
+
+  }
+
+  public boolean isVirtual(int register) {
+
+  }
+
+  public void inputOutput(int ssaOp, int arg, int argType) {
+    int dlxOp = getDlxOp(ssaOp);
+    int reg;
+
+    // Write new line.
+    if (dlxOp == DLX.WRL) {
+      addInstruction(dlxOp);
+      return;
+    }
+
+    // If the argument is a register.
+
+    // If the argument is a constant, load it into scratch.
+
+    // Emit the instruction.
+
+    // Load
+    switch(instr.op) {
+      case Instruction.read   :
+        dlxOp = DLX.RDI;
+        arg   = instr;
+        break;
+      case Instruction.write  :
+        dlxOp = DLX.WRD;
+        arg   = instr.arg1;
+        break;
+      case Instruction.writeNL:
+        addInstruction(dlxOp);
+      default:
+        // Nothing
+    }
+
+    int reg = arg.getReg();
+
+    if (arg instanceof Constant) {
+      addInstruction(DLX.ADDI, SCRATCH, ZERO, arg.getVal());
+      reg = SCRATCH;
+    }
+    addInstruction(dlxOp, reg);
+    return true;
+  }
+
+  public void computation(int ssaOp, int dest, int arg1, int arg1Type, int arg2, int arg2Type) {
+    int destReg, arg1Reg, arg2Reg;
+    int dlxOp = getDlxOp(ssaOp);
+
+    // If the destination is a virtual register, put the final result in a scratch register which will later be stored to memory.
+    if (isVirtual(dest)) {
+      destReg = SCRATCH3;
+    } else {
+      destReg = dest;
+    }
+
+    // If the first argument is a constant, load it into a scratch register.
+    if (arg1Type == CONSTANT) {
+      addInstruction(DLX.ADDI, SCRATCH, ZERO, arg1);
+      arg1Reg = SCRATCH;
+    }
+    // Else if the first argument is in a virtual register, load it into a scratch register.
+    else if (arg1Type == REGISTER && isVirtual(arg1)) {
+      // Load into SCRATCH
+      addInstruction(DLX.LDW, SCRATCH, GLOBALS, getOffset(arg1));
+      arg1Reg = SCRATCH;
+    }
+    // Otherwise, use the physical register.
+    else {
+      arg1Reg = arg1;
+    }
+
+    arg1Reg = loadValue(arg1, arg1Type, SCRATCH);
+    arg2Reg = loadValue(arg2, arg2Type, SCRATCH2);
+    // TODO: fix logic
+    // If the second argument is a constant, use the immediate operator.
+    if (arg2Type == CONSTANT) {
+      addInstruction(dlxOp + IMM_OFFSET, destReg, arg1Reg, arg2);
+      return;
+    }
+    // Else if the second argument is in a virtual register, load it into (the second) scratch register.
+    else if (arg2Type == REGISTER && isVirtual(arg2)) {
+      addInstruction(DLX.LDW, SCRATCH2, GLOBALS, getOffset(arg2));
+      arg1Reg = SCRATCH2;
+    }
+    // Otherwise, use the physical register.
+    else {
+      arg2Reg = arg2;
+    }
+
+    // Emit computation instruction.
+    addInstruction(dlxOp, destReg, arg1Reg, arg2Reg);
+
+    // Store result to memory if necessary.
+    if (isVirtual(dest)) {
+      addInstruction(DLX.STW, destReg, GLOBALS, getOffset(dest));
+    }
+  }
+
 
 	// Deal with intructions like add, mul, sub, div etc.
 	// Return true if successful.

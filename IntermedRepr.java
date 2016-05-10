@@ -11,11 +11,11 @@ import java.util.Stack;
 public class IntermedRepr {
 	// Encapsulates intermediate representation of a PL241
 	// program in SSA form.
-  
-    public static IntermedRepr currentRepresentation = null;
 
-    public boolean debug;
-    
+  public static IntermedRepr currentRepresentation = null;
+
+  public boolean debug;
+
 	public int nextOpenInstr;  // Next available instruction ID.
 	public int nextOpenBlock;  // Next available block ID.
 
@@ -23,8 +23,6 @@ public class IntermedRepr {
 	public Block firstBlock;
 	public Stack<Block> currentBlocks;
 	public Block currentBlock;
-
-	public InterferenceGraph ifg;          // Interference graph.
 
 	public static final Function MAIN = new Function(-1, "MAIN");
 
@@ -174,7 +172,7 @@ public class IntermedRepr {
 
 	// Insert an existing instruction into the current block.
 	public void insertInstr(Instruction instr) {
-		Block current = currentBlock(); 
+		Block current = currentBlock();
 		if (current != null) {
 			currentBlock().addInstr(instr); // Add instruction to current block.
 			addToInstructionList(instr);    // Add instruction to list of instructions.
@@ -228,7 +226,7 @@ public class IntermedRepr {
     /* Convert all variables into instructions.
 	 */
 	public void varsToInstrs() {
-		// Loop over all instructions and convert any 
+		// Loop over all instructions and convert any
 		// variables to instructions.
 		for (Instruction instr : instrs) {
 			instr.varsToInstrs();
@@ -240,7 +238,7 @@ public class IntermedRepr {
 		try {
 			addInstr(end);
 			endBlock();
-		} catch (Exception e) { 
+		} catch (Exception e) {
 			error("Possible null pointer in end.");
 		}
 	}
@@ -251,7 +249,7 @@ public class IntermedRepr {
 		// Generate string for each block.
 		for (Block block : blocks) {
 			// Generate string for the block's instructions.
-			result += VCG.node(block.id, block.toString(), 
+			result += VCG.node(block.id, block.toString(),
 							   block.instrsToString());
 
 			// For now, don't show previous edges.
@@ -281,7 +279,7 @@ public class IntermedRepr {
 		// Generate string for each block.
 		for (Block block : blocks) {
 			// Generate node for block with description and instructions.
-			result += VCG.node(block.id, block.toString(), 
+			result += VCG.node(block.id, block.toString(),
 							   block.instrsToString());
 			// Generate dominance related edges.
 			if (block.dominator != null) { // Dominators.
@@ -289,7 +287,7 @@ public class IntermedRepr {
 			}
 			if (block.dominees != null) {  // Dominees.
 				for (Block dominee : block.dominees) {
-					result += VCG.edge(block.id, dominee.id, "blue"); 
+					result += VCG.edge(block.id, dominee.id, "blue");
 				}
 			}
 		}
@@ -302,7 +300,7 @@ public class IntermedRepr {
 		String result = VCG.header("SSA Instructions");
 		for (Instruction instr : instrs) {
 			// Generate the instruction.
-			result += VCG.node(instr.id, instr.toString(), 
+			result += VCG.node(instr.id, instr.toString(),
 					  instr.dataToString());
 			// Generate edges.
 			if (instr.prev != null) {
@@ -352,7 +350,7 @@ public class IntermedRepr {
 			} else {
 				prev = prev.dominatingInstr();
 			}
-			
+
 		}
 	}
 
@@ -375,116 +373,99 @@ public class IntermedRepr {
 
 	/** Methods related to REGISTER ALLOCATION. **/
 
-	/* Assigns first available register to instruction.
-       Once all registers are filled it gives up. */
-    public void dumbRegAlloc() {
-        int FIRST_REG = 3;
-        int LAST_REG  = 27;
-        int nextAvailReg = FIRST_REG;
-        for (Instruction instr : instrs) {
-        	if (instr.op != phi) {
-            	instr.assignReg(nextAvailReg);
-            	nextAvailReg++;
-            	if (nextAvailReg > LAST_REG) {
-                	Compiler.error("Not enough registers!");
-            	}
-            }
-        }
-    }
+	// /* Assigns first available register to instruction.
+  //      Once all registers are filled it gives up. */
+  //   public void dumbRegAlloc() {
+  //       int FIRST_REG = 3;
+  //       int LAST_REG  = 27;
+  //       int nextAvailReg = FIRST_REG;
+  //       for (Instruction instr : instrs) {
+  //       	if (instr.op != phi) {
+  //           	instr.assignReg(nextAvailReg);
+  //           	nextAvailReg++;
+  //           	if (nextAvailReg > LAST_REG) {
+  //               	Compiler.error("Not enough registers!");
+  //           	}
+  //           }
+  //       }
+  //   }
 
-    public void eliminatePhi() {
-    	ArrayList<Instruction> oldInstrs = new ArrayList<Instruction>(instrs);
-    	for (Instruction instr : oldInstrs) {
-    		if (instr.op == phi) {
-    			replacePhi(instr);
-    		}
-    	}
-    }
+    // public void eliminatePhi() {
+    // 	ArrayList<Instruction> oldInstrs = new ArrayList<Instruction>(instrs);
+    // 	for (Instruction instr : oldInstrs) {
+    // 		if (instr.op == phi) {
+    // 			replacePhi(instr);
+    // 		}
+    // 	}
+    // }
+    //
+    // public void replacePhi(Instruction instr) {
+    // 	Instruction moveInstr, arg1, arg2;
+    // 	arg1 = (Instruction) instr.arg1;
+    // 	arg2 = (Instruction) instr.arg2;
+    // 	if (arg1 != null) {
+    // 		moveInstr = createInstr();
+    // 		moveInstr.setOp(move);
+		// 	moveInstr.setArgs(arg1, instr);
+    // 		arg1.block.addToEnd(moveInstr);
+    // 	}
+    // 	if (arg2 != null) {
+    // 		moveInstr = createInstr();
+    // 		moveInstr.setOp(move);
+		// 	moveInstr.setArgs(arg2, instr);
+    // 		arg2.block.addToEnd(moveInstr);
+    // 	}
+    // 	instrs.remove(instr);
+    // 	instr.delete();
+    // }
 
-    public void replacePhi(Instruction instr) {
-    	Instruction moveInstr, arg1, arg2;
-    	arg1 = (Instruction) instr.arg1;
-    	arg2 = (Instruction) instr.arg2;
-    	if (arg1 != null) {
-    		moveInstr = createInstr();
-    		moveInstr.setOp(move);
-			moveInstr.setArgs(arg1, instr);
-    		arg1.block.addToEnd(moveInstr);
-    	}
-    	if (arg2 != null) {
-    		moveInstr = createInstr();
-    		moveInstr.setOp(move);
-			moveInstr.setArgs(arg2, instr);
-    		arg2.block.addToEnd(moveInstr);
-    	}
-    	instrs.remove(instr);
-    	instr.delete();
-    }
-
-    // Topologically sort blocks and instructions based on dominator
-	// relationships. 
-	public void topoSort() {
-		ArrayList<Block> sortedBlocks = new ArrayList<Block>();
-
-		// Set all visited flags to false.
-		for (Block current : blocks) {
-			current.visited = false;
-		}
-
-		// Visit every block.
-		for (Block current : blocks) {
-			visit(current, sortedBlocks);
-		}
-
-		blocks = sortedBlocks;
-
-		ArrayList<Instruction> sortedInstrs = new ArrayList<Instruction>();
-		Instruction instr;
-		for (Block current : blocks) {
-			instr = current.begin;
-			if (instr != null) {
-				while (instr != current.end) {
-					sortedInstrs.add(instr);
-					instr = instr.next;
-				}
-				sortedInstrs.add(instr);
-			}
-			
-		}
-		
-		instrs = sortedInstrs;
-	}
-
-	// Helper for topological sort.
-	public void visit(Block block, ArrayList<Block> sortedBlocks) {
-		block.visited = true;
-		for (Block dominee : block.dominees) {
-			visit(dominee, sortedBlocks);
-		}
-		sortedBlocks.add(0, block);
-	}
+  // // Topologically sort blocks and instructions based on dominator
+	// // relationships.
+	// public void topoSort() {
+	// 	ArrayList<Block> sortedBlocks = new ArrayList<Block>();
+  //
+	// 	// Set all visited flags to false.
+	// 	for (Block current : blocks) {
+	// 		current.visited = false;
+	// 	}
+  //
+	// 	// Visit every block.
+	// 	for (Block current : blocks) {
+	// 		visit(current, sortedBlocks);
+	// 	}
+  //
+	// 	blocks = sortedBlocks;
+  //
+	// 	ArrayList<Instruction> sortedInstrs = new ArrayList<Instruction>();
+	// 	Instruction instr;
+	// 	for (Block current : blocks) {
+	// 		instr = current.begin;
+	// 		if (instr != null) {
+	// 			while (instr != current.end) {
+	// 				sortedInstrs.add(instr);
+	// 				instr = instr.next;
+	// 			}
+	// 			sortedInstrs.add(instr);
+	// 		}
+  //
+	// 	}
+  //
+	// 	instrs = sortedInstrs;
+	// }
+  //
+	// // Helper for topological sort.
+	// public void visit(Block block, ArrayList<Block> sortedBlocks) {
+	// 	block.visited = true;
+	// 	for (Block dominee : block.dominees) {
+	// 		visit(dominee, sortedBlocks);
+	// 	}
+	// 	sortedBlocks.add(0, block);
+	// }
 
     // This needs to be fixed.
     public int getNumGlobals() {
     	return instrs.size();
     }
-
-	/* Create interference graph. */
-	public void createInterferenceGraph() {
-		// Loop over all SSA values.
-		// for (Instruction instr : instrs) {
-		// 	current = instr.varDef;
-		// 	if (current != null) {
-		// 		for (Instruction use : current.uses) {
-		// 			if (use.op == phi ) { // && something else
-		// 				// Do something.
-		// 			} else {
-		// 				// beginLiveRange(use, current);
-		// 			}
-		// 		}
-		// 	}
-		// }
-	}
 
 	/** Methods related to CODE GENERATION. **/
 
@@ -518,10 +499,10 @@ public class IntermedRepr {
 	public static final int bgt     = Instruction.bgt;
 	public static final int ble     = Instruction.ble;
 
-	public static final int[] opCodes = new int[]{neg, add, sub, mul, div, cmp,    
- 												  adda, load, store, move, phi,  
- 												  end, read, write, writeNL, 
- 												  bra, bne, beq, bge, blt, bgt,    
+	public static final int[] opCodes = new int[]{neg, add, sub, mul, div, cmp,
+ 												  adda, load, store, move, phi,
+ 												  end, read, write, writeNL,
+ 												  bra, bne, beq, bge, blt, bgt,
  												  ble};
 	/* End operation codes. */
 

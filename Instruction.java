@@ -44,27 +44,27 @@ public class Instruction extends Value {
 	public static final int mul     = 4;
 	public static final int div     = 5;
 	public static final int cmp     = 6;
-   				  
+
 	public static final int adda    = 7;
 	public static final int load    = 8;
 	public static final int store   = 9;
 	public static final int move    = 10;
 	public static final int phi     = 11;
-                  
+
 	public static final int end     = 12;
 	public static final int bra     = 13;
-	              
+
 	public static final int read    = 14;
 	public static final int write   = 15;
 	public static final int writeNL = 16;
-                   
+
 	public static final int bne     = 20;
 	public static final int beq     = 21;
 	public static final int bge     = 22;
 	public static final int blt     = 23;
 	public static final int bgt     = 24;
 	public static final int ble     = 25;
-                  
+
 	public static final int call    = 30;
 
 	public static final int arrayStore = 35;
@@ -112,7 +112,7 @@ public class Instruction extends Value {
 			}
 		}
 		if (Compiler.debug) { System.out.println("Deleting instruction " + this); }
-		if (this.prev == null && this.next == null) { 
+		if (this.prev == null && this.next == null) {
 			block.begin = null;
 			block.end   = null;
 		} else if (this.prev == null) {
@@ -198,7 +198,7 @@ public class Instruction extends Value {
 			setUsage(param);
 		}
 	}
-    
+
     public void updateArg(Value original, Value updated) {
 		if (updated instanceof Variable && varsUsed != null && varsUsed[0] == original)
 			varsUsed[0] = (Variable)updated;
@@ -325,7 +325,7 @@ public class Instruction extends Value {
 		return false;
 	}
 
-	// Convert all variables related to this instruction into 
+	// Convert all variables related to this instruction into
 	// pure instructions.
 	public void varsToInstrs() {
 		if (varDefd != null) {
@@ -333,7 +333,7 @@ public class Instruction extends Value {
 		}
 		if (arg1 != null) {
 			if (arg1 instanceof Variable) {
-				arg1 = ((Variable) arg1).def;	
+				arg1 = ((Variable) arg1).def;
 			}
 		}
 		if (arg2 != null) {
@@ -374,7 +374,7 @@ public class Instruction extends Value {
 	public void replace(Instruction oldInstr, Value newValue) {
 		if (arg1 != null) {
 			if (arg1 == oldInstr) {
-				arg1 = newValue;	
+				arg1 = newValue;
 			}
 		}
 		if (arg2 != null) {
@@ -411,7 +411,7 @@ public class Instruction extends Value {
 	}
 
 	public void assignReg(int reg) {
-		this.register = reg;
+		this.register = reg + CodeGenerator.FIRST_FREE_REG; // Map register to actually available register.
 	}
 
 	// Get the register assigned to this instruction.
@@ -435,7 +435,7 @@ public class Instruction extends Value {
 
 	/* Output data about the instruction:
 	 *		Containing block, variables used, variables defined.
-	 */ 		
+	 */
 	public String dataToString() {
 		String result = "";
 		if (block != null) {
@@ -496,7 +496,7 @@ public class Instruction extends Value {
 		} else if (op == arrayLoad) {
 			return id + " : " + ops[op] + " " + arg1.shortRepr() + " " + Array.indicesToString(params);
 		} else if (arg1 != null && arg2 != null) {
-			return id + " : " + ops[op] + " " + arg1.shortRepr() 
+			return id + " : " + ops[op] + " " + arg1.shortRepr()
 				   + " " + arg2.shortRepr();
 		} else if (arg1 != null) {
 			return id + " : " + ops[op] + " " + arg1.shortRepr();

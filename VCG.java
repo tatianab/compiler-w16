@@ -7,13 +7,13 @@
 public class VCG {
 	/* A collection of static methods to aid in
 	   creation of VCG code to visualize intermediate
-	   code in the compiler. 
+	   code in the compiler.
 	*/
 
 	public static String header(String title) {
-		return "graph: { title: \"" + title +"\" \n" 
-						// + "layoutalgorithm: dfs \n" 
-						+ "manhattan_edges: yes \n" 
+		return "graph: { title: \"" + title +"\" \n"
+						// + "layoutalgorithm: dfs \n"
+						+ "manhattan_edges: yes \n"
 						+ "smanhattan_edges: yes \n"
 						+ "orientation: top_to_bottom \n";
 	}
@@ -29,6 +29,14 @@ public class VCG {
 		return  "edge: { sourcename: \"" + src + "\" \n" +
 			    "targetname: \"" + dest + "\" \n" +
 			    "color: " + color + "\n } \n";
+	}
+
+	public static String twoWayEdge(int src, int dest, String color) {
+		return  "edge: { sourcename: \"" + src + "\" \n" +
+					"targetname: \"" + dest + "\" \n" +
+					"backarrowsize: 10 \n" +
+					"backarrowstyle: solid \n" +
+					"color: " + color + "\n } \n";
 	}
 
 	public static String footer() {
