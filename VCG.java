@@ -25,6 +25,7 @@ public class VCG {
 				contents + "]\" \n} \n";
 	}
 
+	// Directed edge.
 	public static String edge(int src, int dest, String color) {
 		return  "edge: { sourcename: \"" + src + "\" \n" +
 			    "targetname: \"" + dest + "\" \n" +

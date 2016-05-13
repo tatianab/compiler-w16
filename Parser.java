@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 public class Parser {
 	/* Parser for PL241 language.
-	   The parser's job is to convert a PL241 into an 
+	   The parser's job is to convert a PL241 into an
 	   intermediate representation of the progam in SSA form.
 	 */
 
@@ -40,27 +40,27 @@ public class Parser {
 	private static final int becomesToken      = 40;
 	private static final int thenToken		   = 41;
 	private static final int doToken           = 42;
-	private static final int openparenToken	   = 50;          
+	private static final int openparenToken	   = 50;
 	private static final int number		       = 60;
 	private static final int ident		       = 61;
-	private static final int semiToken		   = 70;       
-	private static final int endToken		   = 80;       
-	private static final int odToken		   = 81;       
-	private static final int fiToken		   = 82;       
-	private static final int elseToken		   = 90;       
-	private static final int letToken		   = 100;    
-	private static final int callToken		   = 101;   
-	private static final int ifToken		   = 102;   
-	private static final int whileToken		   = 103;   
-	private static final int returnToken	   = 104; 
-	private static final int varToken		   = 110;   
-	private static final int arrToken		   = 111;   
-	private static final int funcToken		   = 112;   
-	private static final int procToken		   = 113;     
-	private static final int beginToken		   = 150;   
-	private static final int mainToken		   = 200;   
-	private static final int eofToken		   = 255;   
-	/* End token values. */  
+	private static final int semiToken		   = 70;
+	private static final int endToken		   = 80;
+	private static final int odToken		   = 81;
+	private static final int fiToken		   = 82;
+	private static final int elseToken		   = 90;
+	private static final int letToken		   = 100;
+	private static final int callToken		   = 101;
+	private static final int ifToken		   = 102;
+	private static final int whileToken		   = 103;
+	private static final int returnToken	   = 104;
+	private static final int varToken		   = 110;
+	private static final int arrToken		   = 111;
+	private static final int funcToken		   = 112;
+	private static final int procToken		   = 113;
+	private static final int beginToken		   = 150;
+	private static final int mainToken		   = 200;
+	private static final int eofToken		   = 255;
+	/* End token values. */
 
 	/* Operation codes for intermediate representation. */
 	public static int neg     = Instruction.neg;
@@ -126,13 +126,13 @@ public class Parser {
 		while (check(procToken) || check(funcToken)) {
 			funcDecl();
 		}
-		
+
 		expect(beginToken);
 		// Signal beginning of program.
 		program.begin();
 		statSequence(); // The program.
 
-		expect(endToken);    
+		expect(endToken);
 		expect(periodToken);
 		expect(eofToken);
 		// Signal end of program.
@@ -147,19 +147,19 @@ public class Parser {
 
 		// Begin function and set up.
 		program.beginFunction(function);
-		Block body = program.addBlock("Body of function " + function.shortRepr());
+		Block body = program.addBlock("Body of function " + function.shortRepr(), Block.OTHER);
 		function.enter.addNext(body, false); // Connect blocks - fall through.
 
 		// Variable declarations.
 		while (check(arrToken) || check(varToken)) {
 			varDecl();
 		}
-		
+
 		// Function body.
 		expect(beginToken);
 		if (!check(endToken)) {
 			body = statSequence();
-		} 
+		}
 		expect(endToken);
 
 		// End function and clean up.
@@ -184,7 +184,7 @@ public class Parser {
 			id = ident();
 			table.declareFormalParam(id);
 			formalParams.add(table.getName(id));
-			while (accept(commaToken)) { 
+			while (accept(commaToken)) {
 				id = ident();
 				table.declareFormalParam(id);
 				formalParams.add(table.getName(id));
@@ -212,15 +212,15 @@ public class Parser {
 
 	 		// Get formal parameters.
 			if (!check(semiToken)) {
-				formalParam(function);   
+				formalParam(function);
 			}
 
 	 		// Get body of function or procedure.
 			expect(semiToken);
-			funcBody(function);         
+			funcBody(function);
 			expect(semiToken);
 
-		} else { 
+		} else {
 			error("Invalid function declaration.");
 	 	}
 	}
@@ -232,14 +232,14 @@ public class Parser {
 		Value variable = typeDecl();   // Get the variable or array.
 		int id = ident();
 		table.declare(variable, id);
-		if (debug && variable instanceof Variable) { 
-			System.out.println("Declared variable " + table.getVar(id).shortRepr()); 
+		if (debug && variable instanceof Variable) {
+			System.out.println("Declared variable " + table.getVar(id).shortRepr());
 		}
 		while (accept(commaToken)) {
 		    id = ident();
 			table.declare(variable, id);
-			if (debug && variable instanceof Variable) { 
-				System.out.println("Declared variable " + table.getVar(id).shortRepr()); 
+			if (debug && variable instanceof Variable) {
+				System.out.println("Declared variable " + table.getVar(id).shortRepr());
 			}
 		}
 		expect(semiToken);
@@ -266,7 +266,7 @@ public class Parser {
 			expect(closebracketToken);
 			while (accept(openbracketToken)) {
 				dim = number().getVal();        // More array dimensions.
-			    array.addDim(dim);			   
+			    array.addDim(dim);
 				expect(closebracketToken);
 			}
 			array.commitDims();                 // Done with array dimensions.
@@ -335,20 +335,20 @@ public class Parser {
 		program.endBlock();				   // End previous block.
 
 		// Create basic block with compare and branch -- join block.
-		join = program.addBlock("While join/compare block.");
+		join = program.addBlock("While join/compare block.", Block.WHILE_ENTER);
 		relation();                        // Grab the while condition.
 		program.endBlock();                // End compare block.
 		expect(doToken);
 
 		// New basic block -- fall-through block (true).
-		whileBlock = program.addBlock("While inner block.");
+		whileBlock = program.addBlock("While inner block.", Block.WHILE_BODY);
 		endWhileBlock = statSequence();    // Fill in instructions in while loop.
 		program.addInstr(bra, join);       // Branch to join.
 		program.endBlock();				   // End inner block.
 		expect(odToken);
 
 		// New basic block (follow block) -- branch.
-		follow = program.addBlock("Follow (while).");
+		follow = program.addBlock("Follow (while).", Block.WHILE_FOLLOW);
 
 		// Connect blocks as appropriate.
 		previous.addNext(join, false);     // Fall-through to join/compare from previous.
@@ -370,7 +370,7 @@ public class Parser {
 	 * instructions.
 	 */
 	private void ifStatement() {
-		Block previous, compare, trueBlock, falseBlock, 
+		Block previous, compare, trueBlock, falseBlock,
 			  endTrueBlock, endFalseBlock, join;
 
 		if (debug) { System.out.println("Parsing if statement."); }
@@ -380,21 +380,21 @@ public class Parser {
 		program.endBlock();					 // End the previous block.
 
 		// New basic block with compare and branch.
-		compare = program.addBlock("If compare.");
+		compare = program.addBlock("If compare.", Block.IF_ENTER);
 		relation();                          // Create cmp and branch instructions. (Must be fixed).
 		program.endBlock();                  // End the compare block.
 		previous.addNext(compare, false);    // Fall through to compare from previous.
 		expect(thenToken);
 
 		// New basic block -- fall through (true).
-		trueBlock    = program.addBlock("If true block.");
+		trueBlock    = program.addBlock("If true block.", Block.IF_TRUE);
 		endTrueBlock = statSequence();       // Instructions in true block.
 		program.addInstr(bra);				 // Unconditional branch. (Must be fixed.)
 		program.endBlock();                  // End true block.
 
 		if (accept(elseToken)) {
 			// New basic block -- branch (false).
-			falseBlock    = program.addBlock("If false block.");
+			falseBlock    = program.addBlock("If false block.", Block.IF_FALSE);
 			endFalseBlock = statSequence();  // Instructions in false block.
 			program.endBlock();              // End false block.
 		} else {
@@ -404,13 +404,13 @@ public class Parser {
 		expect(fiToken);
 
 		// New basic block -- join.
-		join = program.addBlock("If join block.");
-		
+		join = program.addBlock("If join block.", Block.IF_JOIN);
+
 		// Block connections for false branch, or no false branch.
 		if (falseBlock != null) {               // If there is a false branch:
 			// Fix CFG.
 			compare.fix(falseBlock);            // Fix jump instruction.
-			compare.addNext(trueBlock, falseBlock);   
+			compare.addNext(trueBlock, falseBlock);
 			endFalseBlock.addNext(join, false); // Fall through to join from false.
 			endTrueBlock.addNext(join, true);   // Jump to join from true.
 			endTrueBlock.fix(join);             // Fix branch from true.
@@ -420,7 +420,7 @@ public class Parser {
 		} else {								// If there's just a true branch:
 			// Fix CFG.
 		    compare.fix(join);                  // Fix jump instruction.
-			compare.addNext(trueBlock, join);  
+			compare.addNext(trueBlock, join);
 			endTrueBlock.addNext(join, false);  // Fall through to join from true.
 	        endTrueBlock.fix();                 // Delete branch instruction from true.
 		}
@@ -432,7 +432,7 @@ public class Parser {
 
 	}
 
-	/* funcCall. 
+	/* funcCall.
 	 * funcCall = "call" ident [ "(" [expression { "," expression } ] ")"].
 	 * We will deal with function calls later...
 	 */
@@ -533,7 +533,7 @@ public class Parser {
 
 		// Check for errors and return the variable.
 		if (var == null) {
-			error("Undeclared variable " + table.getName(id)); 
+			error("Undeclared variable " + table.getName(id));
 		} else if (assignment) {
 			Variable newVar = new Variable(id, table.getName(id));
 			if (var.isGlobal() || (var.isLocal() && program.inMainFunction())) {
@@ -543,7 +543,7 @@ public class Parser {
 			}
 			return newVar;
 		} else if (var.uninit() && (program.inMainFunction() || var.isLocal()) ) {
-			error("Uninitialized variable " + table.getName(id)); 
+			error("Uninitialized variable " + table.getName(id));
 		} else {
 			return var;
 		}
@@ -560,7 +560,7 @@ public class Parser {
 	private void relation() {
 		Value compare, left, right;
 
-		left = expression(); 		           // 1st expression. 
+		left = expression(); 		           // 1st expression.
 		int branchCode = opposite(relOp());	   // Comparison operator.
 		right = expression();		           // 2nd expression.
 
@@ -583,7 +583,7 @@ public class Parser {
 
 		// Check for unary minus.
 		if (accept(minusToken)) {
-			next = term();   
+			next = term();
 			expr = program.addInstr(neg, next);
 			if (debug) { System.out.println("Generated neg instruction " + expr); }
 		} else {
@@ -592,11 +592,11 @@ public class Parser {
 
 		while (check(plusToken) || check(minusToken) ) {
 			if (accept(plusToken)) {
-				next = term();   
+				next = term();
 				expr = program.addInstr(add, expr, next);
 				if (debug) { System.out.println("Generated add instruction " + expr); }
 			} else if (accept(minusToken)) {
-				next = term();   
+				next = term();
 				expr = program.addInstr(sub, expr, next);
 				if (debug) { System.out.println("Generated sub instruction " + expr); }
 			}
@@ -612,7 +612,7 @@ public class Parser {
 	private Value term() {
 		Value term, next;
 
-		term = factor();      
+		term = factor();
 		while (check(timesToken) || check(divToken)) {
 			if (accept(timesToken)) {
 				next = factor();
@@ -688,7 +688,7 @@ public class Parser {
 
 	/* Helper functions for checking validity of tokens. */
 
-	// Checks that the current token is the expected one 
+	// Checks that the current token is the expected one
 	// and advances the stream. Throws error if not.
 	private int expect(int token) {
 		int result = errorToken;
@@ -708,10 +708,10 @@ public class Parser {
 			error("Expect failed. Saw " + scanner.currentToken() + ", expected "
 			 	  + table.symToString(token) + ".");
 		}
-		return result; 
+		return result;
 	}
 
-	// Checks that the current token is the expected one 
+	// Checks that the current token is the expected one
 	// and advances the stream if so.
 	private boolean accept(int token) {
 		if (scanner.sym == token) {

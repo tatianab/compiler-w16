@@ -23,11 +23,11 @@ public class Block extends Value {
 	public Block in2;   	    // If a join block.
 
 	public Block fallThrough;   // Fall through block, (i.e., true branch).
-	public Block branch;        // Explicit branch block, 
+	public Block branch;        // Explicit branch block,
 								//  (i.e, false branch or unconditional branch).
 
 	public String description;  // Description of block.
-    
+
     public HashMap<String, Variable> createdValue;
 
     public boolean visited;     // For use in topological sorting.
@@ -40,26 +40,56 @@ public class Block extends Value {
 
     public InstructionSchedule.ScheduledBlock schedule;
     public int dependent = -1;
-    
+
+	public int nestingDepth; // Shows how deeply nested this block is.
+													 // Used for cost function in register allocation.
+
+  public int pos; // Final position in three address progam.
+
+	public ArrayList<Instruction> ftEdgeInstrs; // Fall through edge instructions.
+	public ArrayList<Instruction> brEdgeInstrs; // Branch edge instructions.
+
+	public int type;
+
+	// Possible block types.
+	public static int WHILE_ENTER  = 0;
+	public static int WHILE_BODY   = 1;
+	public static int WHILE_FOLLOW = 2;
+
+	public static int IF_ENTER     = 3;
+	public static int IF_TRUE      = 4;
+	public static int IF_FALSE     = 5;
+	public static int IF_JOIN      = 6;
+	
+	public static int OTHER        = 7;
+
 	// Constructors for a block.
 	public Block(int id) {
 		this.id = id;
 		this.description = "";
-        
+
         createdValue = new HashMap<String, Variable>();
         dominees     = new ArrayList<Block>();
         this.visited = false;
         dlxPos = null;
+
+		this.nestingDepth = 0;
 	}
 
-	public Block(int id, String description) {
+	public Block(int id, String description, int type) {
 		this.id = id;
         this.description = description;
-        
+
         createdValue = new HashMap<String, Variable>();
         dominees     = new ArrayList<Block>();
         this.visited = false;
         dlxPos = null;
+		this.nestingDepth = 0;
+	}
+
+	// Set this block's nesting depth in relation to an outer block's nesting depth.
+	public void setNestingDepth(Block outer) {
+		nestingDepth = outer.nestingDepth + 1;
 	}
 
 	// Signify the end of a basic block.
@@ -70,6 +100,16 @@ public class Block extends Value {
 	public void addToEnd(Instruction instr) {
 		addInstr(instr);
 		end = current;
+	}
+
+	// Fall through
+	public void addToFtEdge(Instruction instr) {
+		ftEdgeInstrs.add(instr);
+	}
+
+  // Branch
+	public void addToBrEdge(Instruction instr) {
+		brEdgeInstrs.add(instr);
 	}
 
 	// Add an instruction to the block and update current.
@@ -95,7 +135,7 @@ public class Block extends Value {
             createdValue.put(resultVar.ident, resultVar);
         }
     }
-    
+
 	/* Methods dealing with previous blocks. */
 	public void addPrev(Block in) {
 		if (in1 == null) {
@@ -105,11 +145,11 @@ public class Block extends Value {
             addPrev(in1, in2);
 		}
 	}
-    
+
     public Variable fetchLastDefinedInstance(String variableName) {
         Variable result = createdValue.get(variableName);
         if (result == null && in1 != null) {
-            // If there is no definition, and it has a parent block, 
+            // If there is no definition, and it has a parent block,
             // search up stream
             return in1.fetchLastDefinedInstance(variableName);
         }
@@ -119,7 +159,7 @@ public class Block extends Value {
 	public void addPrev(Block in1, Block in2) {
 		in1 = in1;
 		in2 = in2;
-        
+
         HashSet<String> changeVar = new HashSet<String>();
         if (in1.in1 == in2) {
             // If there is no else block, and in1 is the then block
@@ -134,20 +174,20 @@ public class Block extends Value {
         }
 
         IntermedRepr inpr = IntermedRepr.currentRepresentation;
-        
+
         StringTable table  = StringTable.sharedTable;
-        
+
         //Got the last block of inner loop
         Block inner = null;
         if (in1.id > id)
             inner = in1;
         if (in2.id > id)
             inner = in2;
-        
+
         Instruction phiBegin = null;
         Instruction phiEnd = null;
         Instruction instr;
-        
+
         // Generate Phi function
         for (String varianceName: changeVar) {
             Variable var1 = in1.fetchLastDefinedInstance(varianceName);
@@ -155,15 +195,15 @@ public class Block extends Value {
 
             if (var1 != null && var2 != null && var1 != var2) {
                 instr = inpr.createInstr();
-                
+
                 //this.addInstr(instr); // Add instruction to current block.
-                
+
                 instr.setArgs(var1, var2);
                 instr.setOp(Instruction.phi);
-            
+
                 instr.setBlock(this);
                 this.current = instr;
-                
+
                 // Reassign for this Variable.
                 Variable var = new Variable(var1.id, table.getName(var1.id));
                 table.reassignVar(var1.id, var);
@@ -171,15 +211,15 @@ public class Block extends Value {
                 instr.defines(var);
         		var.definedAt(instr);
         		inpr.currentBlock().addReturnValue(var);
-                
+
                 if (phiBegin == null) {
                     phiBegin = instr;
                 } else {
                     phiEnd.next = instr;
                 }
-                
+
                 phiEnd = instr;
-                
+
                 if (inner != null) {
                     //Go back to the inside of loop, replace the the old value with the phi version, such that the value
                     //Example: a3 = phi(a1, a2), if a[x] is the upstream, replace a[x] with a3 ([x] = 1 or 2)
@@ -188,15 +228,15 @@ public class Block extends Value {
                     inner.fixLoopingPhi(var1, var);
                     inner.fixLoopingPhi(var2, var);
                 }
-                
+
             }
         }
-        
+
         if (phiEnd != null) {
         	phiEnd.next = begin;
         	begin = phiBegin;
         }
-        
+
 	}
 	/* End previous block methods. */
 
@@ -302,6 +342,18 @@ public class Block extends Value {
 
 	/* End methods related to dominance. */
 
+	public void getPhiInstrs(ArrayList<Instruction> result) {
+		Instruction current = this.begin;
+		while (current != null) {
+			if (current.op == Instruction.phi) {
+				result.add(current);
+			} else {
+				return;
+			}
+			current = current.next;
+		}
+	}
+
 	/* Methods related to string representation (in VCG form). */
 
 	// String representation of the instructions in this block.
@@ -317,7 +369,7 @@ public class Block extends Value {
 		}
 		return result;
 	}
- 
+
  	// String representation of this block with id and description.
 	@Override
 	public String toString() {

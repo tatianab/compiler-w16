@@ -1,8 +1,8 @@
 # compiler-w16
 
-An optimizing compiler for the "PL241" language, a simple procedural language with assignments, operations (+,-,\*,/), if-else statements, while loops, functions, integers and integer arrays.
+An optimizing compiler for the "PL241" language, a simple procedural language with assignments, operations (+,-,\*,/), if-else statements, while loops, functions, procedures (functions with no return value), integers, and integer arrays.
 
-Written by **Tatiana Bradley** and **Wai Man Chan** for "CS 241 - Advanced Compiler Construction" (Winter 2016), a graduate course taught by Michael Franz at University of California, Irvine.
+The project is written by **Tatiana Bradley** and **Wai Man Chan** for "CS 241 - Advanced Compiler Construction" (Winter 2016), a graduate course taught by Michael Franz at University of California, Irvine.
 
 See the [CS 241 course website](http://www.michaelfranz.com/w16cs241.html) for more info on requirements and the PL 241 grammar.
 
@@ -39,7 +39,7 @@ The main program `Compiler.java` parses command line arguments and runs the vari
 #### SSA Form
 The intermediate representation we use is *SSA (Static Single Assignment)* form. It requires that each variable be defined only once.
 
-A key feature of SSA is *phi functions*, which indicate that a variable may take on multiple values depending on what control flow path is taken.
+A key feature of SSA is the *phi function*, which indicates that a variable may take on multiple values depending on what control flow path is taken.
 
 #### Optimizations
 `Optimizer.java` performs the following optimizations:
@@ -53,6 +53,8 @@ The `-O` flag turns on optimization.
 #### Register Allocation
 
 #### Code Generation
-The final step is converting the optimized code with registers allocated into machine-readable code. Our compiler outputs byte code readable by the *DLX Processor* with the `-o` flag, or human-readable assembly with the `-assem` flag. Code execution can be simulated with the `-run` flag.
+The final step is converting the optimized code with registers allocated into machine-readable code. Our compiler outputs byte code readable by the *DLX Processor* with the `-o` flag, or human-readable assembly with the `-assem` flag.
+
+Code execution can be simulated with the `-run` flag.
 
 Code generation occurs in `CodeGenerator.java` with help from `DLX.java`.

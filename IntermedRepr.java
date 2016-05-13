@@ -42,14 +42,14 @@ public class IntermedRepr {
 		blocks        = new ArrayList<Block>();
 		instrs        = new ArrayList<Instruction>();
 		currentBlocks = new Stack<Block>();
-        currentRepresentation = this;
-        functions     = new ArrayList<Function>();
-        currentFunction = MAIN;
-        mainInstrs    = new ArrayList<Instruction>();
+    currentRepresentation = this;
+    functions     = new ArrayList<Function>();
+    currentFunction = MAIN;
+    mainInstrs    = new ArrayList<Instruction>();
 	}
 
 	public Block begin() {
-		Block block = addBlock("Program begins.");
+		Block block = addBlock("Program begins.", Block.OTHER);
 		return block;
 	}
 
@@ -60,14 +60,14 @@ public class IntermedRepr {
 	// Begin compiling a function.
 	public void beginFunction(Function function) {
 		this.currentFunction = function;
-		Block enter = addBlock("Enter function " + function.shortRepr());
+		Block enter = addBlock("Enter function " + function.shortRepr(), Block.OTHER);
 		endBlock();
 		function.begin(enter);
 	}
 
 	// Clean up after compiling a function.
 	public void endFunction() {
-		Block exit = addBlock("Exit function " + currentFunction.shortRepr());
+		Block exit = addBlock("Exit function " + currentFunction.shortRepr(), Block.OTHER);
 		currentFunction.end(exit);
 		endBlock();
 		functions.add(currentFunction);
@@ -89,8 +89,8 @@ public class IntermedRepr {
 		return block;
 	}
 
-	public Block createBlock(String description) {
-		Block block = new Block(nextOpenBlock, description);
+	public Block createBlock(String description, int type) {
+		Block block = new Block(nextOpenBlock, description, type);
 		nextOpenBlock++;
 		return block;
 	}
@@ -103,8 +103,8 @@ public class IntermedRepr {
 		return block;
 	}
 
-	public Block addBlock(String description) {
-		Block block = new Block(nextOpenBlock, description);
+	public Block addBlock(String description, int type) {
+		Block block = new Block(nextOpenBlock, description, type);
 		nextOpenBlock++;
 		insertBlock(block);
 		return block;
@@ -142,6 +142,42 @@ public class IntermedRepr {
     	}
 
     	instrs.add(instr);
+    }
+
+    // TODO
+    // Return a list of all phi instructions in the program.
+    public ArrayList<Instruction> getPhiInstrs() {
+      ArrayList<Instruction> result = new ArrayList<Instruction>();
+      for (Block block : blocks) {
+        block.getPhiInstrs(result);
+      }
+      return result;
+    }
+
+    // For phi resolution.
+    // Add a move instruction on the edge between arg's block and
+    // phiInstr's block.
+    public void addMoveOnEdge(Instruction phiInstr, Instruction arg) {
+      Instruction moveInstr = createInstr(); // TODO
+      moveInstr.op   = move;
+      moveInstr.arg1 = phiInstr; // Destination
+      moveInstr.arg2 = arg;      // Source
+      // TODO: make sure correct order here
+
+      boolean ft = false;
+      if (arg.block.fallThrough == phiInstr.block) {
+        ft = true;
+      } else if (arg.block.branch == phiInstr.block) {
+        ft = false;
+      } else {
+        Compiler.error("Improper phi to arg relationship.");
+      }
+
+      if (ft) {
+        arg.block.addToFtEdge(moveInstr);
+      } else {
+        arg.block.addToBrEdge(moveInstr);
+      }
     }
 
 	// Add a new instruction to the current block.

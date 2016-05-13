@@ -5,6 +5,7 @@
  */
 
 import java.util.HashSet;
+import java.util.ArrayList;
 
 public class Instruction extends Value {
 	// Class representing an instruction in intermediate form.
@@ -34,6 +35,10 @@ public class Instruction extends Value {
 	HashSet<Instruction> uses;       // The instructions that use the result of this instruction.
 
 	public int register; // The register that the value of this instruction is assigned to.
+
+	public int numUses; // The number of times this instruction is used in the program by other instructions.
+
+	public int cost;
 
 	public InstructionState state;
 
@@ -89,6 +94,8 @@ public class Instruction extends Value {
 		// this.instrsUsed = new Instruction[2];
 		this.uses     = new HashSet<Instruction>();
 		this.register = -1;
+		this.numUses = 0;
+		this.cost    = 0;
 	}
 
 	public void delete() {
@@ -152,18 +159,28 @@ public class Instruction extends Value {
 		if (instrsUsed != null) {
 			if (instrsUsed[0] == instr) {
 				instrsUsed[0] = null;
+				instr.numUses--;
+				instr.cost -= this.getNestingDepth();
 			} else if (instrsUsed[1] == instr) {
 				instrsUsed[1] = null;
+				instr.numUses--;
+				instr.cost -= this.getNestingDepth();
 			}
 		}
 	}
 
 	public void usedIn(Instruction instr) {
 		uses.add(instr);
+		numUses++;
+		cost += instr.getNestingDepth();
 	}
 
 	public void defines(Variable var) {
 		this.varDefd = var;
+	}
+
+	public int getNestingDepth() {
+		return block.nestingDepth;
 	}
 
 	/* Setters. */
@@ -190,6 +207,19 @@ public class Instruction extends Value {
 		}
 		setUsage(arg);
 	}
+
+	// Returns the arguments of this Instruction that are themselves Instructions.
+	public Instruction[] getInstrArgs() {
+		ArrayList<Instruction> result = new ArrayList<Instruction>();
+		if (arg1 instanceof Instruction) {
+			result.add((Instruction) arg1);
+		}
+		if (arg2 instanceof Instruction) {
+			result.add((Instruction) arg2);
+		}
+		return result.toArray(new Instruction[result.size()]);
+	}
+
 
 	// Should only be called for call instructions.
 	public void setParams(Value[] params) {

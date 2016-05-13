@@ -213,6 +213,11 @@ public class CodeGen {
 		dlxOps.add(new DlxOp(op, null, null, null));
 	}
 
+  public void addInstruction(int op, int a, Block branch) {
+    dlxOps.add(new DlxOp(op, a, branch));
+  }
+
+  // Emit native code, ie bytecode for the given instruction.
 	public int getNativeInstr(DlxOp instr) {
 		if (debug) { System.out.println("Generating native code for " + instr + "(" + instr.instr + ")"); }
 		int op = instr.op;
@@ -271,6 +276,9 @@ public class CodeGen {
 		}
 	}
 
+  // Load the value (if necessary) and return the register that
+  // contains it.
+  // Do nothing if the value is already a physical register.
   public int loadValue(int value, int type, int reg) {
     // If the value is a constant
     if (type == CONSTANT) {
@@ -306,7 +314,6 @@ public class CodeGen {
 
   public void inputOutput(int ssaOp, int arg, int argType) {
     int dlxOp = getDlxOp(ssaOp);
-    int reg;
 
     // Write new line.
     if (dlxOp == DLX.WRL) {
@@ -314,219 +321,60 @@ public class CodeGen {
       return;
     }
 
-    // If the argument is a register.
-
-    // If the argument is a constant, load it into scratch.
-
-    // Emit the instruction.
-
-    // Load
-    switch(instr.op) {
-      case Instruction.read   :
-        dlxOp = DLX.RDI;
-        arg   = instr;
-        break;
-      case Instruction.write  :
-        dlxOp = DLX.WRD;
-        arg   = instr.arg1;
-        break;
-      case Instruction.writeNL:
-        addInstruction(dlxOp);
-      default:
-        // Nothing
-    }
-
-    int reg = arg.getReg();
-
-    if (arg instanceof Constant) {
-      addInstruction(DLX.ADDI, SCRATCH, ZERO, arg.getVal());
-      reg = SCRATCH;
-    }
+    // Read/Write an integer.
+    int reg = loadValue(arg, argType, SCRATCH);
     addInstruction(dlxOp, reg);
-    return true;
+
   }
 
   public void computation(int ssaOp, int dest, int arg1, int arg1Type, int arg2, int arg2Type) {
     int destReg, arg1Reg, arg2Reg;
     int dlxOp = getDlxOp(ssaOp);
 
-    // If the destination is a virtual register, put the final result in a scratch register which will later be stored to memory.
-    if (isVirtual(dest)) {
-      destReg = SCRATCH3;
-    } else {
-      destReg = dest;
-    }
-
-    // If the first argument is a constant, load it into a scratch register.
-    if (arg1Type == CONSTANT) {
-      addInstruction(DLX.ADDI, SCRATCH, ZERO, arg1);
-      arg1Reg = SCRATCH;
-    }
-    // Else if the first argument is in a virtual register, load it into a scratch register.
-    else if (arg1Type == REGISTER && isVirtual(arg1)) {
-      // Load into SCRATCH
-      addInstruction(DLX.LDW, SCRATCH, GLOBALS, getOffset(arg1));
-      arg1Reg = SCRATCH;
-    }
-    // Otherwise, use the physical register.
-    else {
-      arg1Reg = arg1;
-    }
-
+    // Grab the appropriate registers.
     arg1Reg = loadValue(arg1, arg1Type, SCRATCH);
     arg2Reg = loadValue(arg2, arg2Type, SCRATCH2);
-    // TODO: fix logic
-    // If the second argument is a constant, use the immediate operator.
+    destReg = loadValue(dest, REGISTER, SCRATCH3);
+
+    // Use the immediate operation if the second argument is a constant,
+    // and the normal operation otherwise.
     if (arg2Type == CONSTANT) {
       addInstruction(dlxOp + IMM_OFFSET, destReg, arg1Reg, arg2);
-      return;
-    }
-    // Else if the second argument is in a virtual register, load it into (the second) scratch register.
-    else if (arg2Type == REGISTER && isVirtual(arg2)) {
-      addInstruction(DLX.LDW, SCRATCH2, GLOBALS, getOffset(arg2));
-      arg1Reg = SCRATCH2;
-    }
-    // Otherwise, use the physical register.
-    else {
-      arg2Reg = arg2;
+    } else {
+      addInstruction(dlxOp, destReg, arg1Reg, arg2Reg);
     }
 
-    // Emit computation instruction.
-    addInstruction(dlxOp, destReg, arg1Reg, arg2Reg);
-
-    // Store result to memory if necessary.
-    if (isVirtual(dest)) {
-      addInstruction(DLX.STW, destReg, GLOBALS, getOffset(dest));
-    }
+    // Store the result to the physical destination, if necessary.
+    storeValue(dest, destReg);
   }
 
+  public void branch(int ssaOp, int arg, int argType, Block jump) {
+    int dlxOp = getDlxOp(ssaOp);
 
-	// Deal with intructions like add, mul, sub, div etc.
-	// Return true if successful.
-	public boolean generateComputation(Instruction instr) {
-		// Add 16 to opcode to get immediate instruction.
-		int dlxOp, immOp;
-		int dstReg = instr.getReg(); // Where the result goes.
-		Value arg1 = instr.arg1;
-		Value arg2 = instr.arg2;
+    // Handle unconditional branch.
+    if (dlxOp == DLX.BSR) {
+      return;
+    }
 
-		int regArg1, regArg2; // The registers where the first and second arguments live.
+    int reg = loadValue(arg, argType, SCRATCH);
+    addInstruction(reg, jump);
+  }
 
-		// If arg1 is a constant
-			// Load arg1 into a register
-		// Otherwise, if arg1 is an instruction
-			// Get arg1's register
-			// If it is a virtual register
-				// Load into a physical register
+  public void loadStore(int ssaOp, int dest, int arg1, int arg1Type, int arg2, int arg2Type) {
+    int destReg, arg1Reg, arg2Reg;
+    int dlxOp = getDlxOp(ssaOp);
 
-		// Same process for arg2
-
-		// If arg2 is a constant
-
-		// TODO: what if arg1 or arg2 are stored in memory rather than registers?
-
-		// Determine the operation code.
-		switch(instr.op) {
-			case Instruction.neg:
-				dlxOp = DLX.SUB;
-				arg2  = arg1;
-				arg1  = new Constant(0);
-				break;
-			case Instruction.add:
-				dlxOp = DLX.ADD;
-				break;
-			case Instruction.adda:
-				dlxOp = DLX.ADD;
-				// TODO: handle address adding
-				break;
-			case Instruction.sub:
-				dlxOp = DLX.SUB;
-				break;
-			case Instruction.mul:
-				dlxOp = DLX.MUL;
-				break;
-			case Instruction.div:
-				dlxOp = DLX.DIV;
-				break;
-			case Instruction.cmp:
-				dlxOp = DLX.CMP;
-				break;
-			default:
-				return false;
-		}
-
-		immOp = dlxOp + 16; // The immediate operation.
-
-		if (arg1.getReg() >= 0 && arg2.getReg() >= 0) {                    // Both args have registers.
-			if (debug) { System.out.println("Computation: Neither arg constant.");}
-			addInstruction(dlxOp, dstReg, arg1.getReg(), arg2.getReg());
-		} else if (arg1 instanceof Constant && arg2 instanceof Constant) { // Neither have registers.
-			if (debug) { System.out.println("Computation: Both args constant.");}
-			addInstruction(DLX.ADDI, SCRATCH, ZERO, arg1.getVal());
-			addInstruction(immOp, dstReg, SCRATCH, arg2.getVal());
-		} else if (arg1 instanceof Constant) {                             // Just first has a register.
-			if (debug) { System.out.println("Computation: 1st arg constant.");}
-			addInstruction(DLX.ADDI, SCRATCH, ZERO, arg1.getVal());
-			addInstruction(dlxOp, dstReg, SCRATCH, arg2.getReg());
-		} else if (arg2 instanceof Constant) {                             // Just second has a register.
-			if (debug) { System.out.println("Computation: 2nd arg constant.");}
-			addInstruction(immOp, dstReg, arg1.getReg(), arg2.getVal());
-		} else {
-			Compiler.error("Invalid arguments to instruction " + instr);
-		}
-
-		return true;
-	}
-
-	public void addInstruction(int op, int a, Block branch) {
-		dlxOps.add(new DlxOp(op, a, branch));
-	}
-
-	public boolean generateBranch(Instruction instr) {
-		int dlxOp;
-		Value compare = instr.arg1;
-		int compareReg = compare.getReg();
-		Block jumpTo  = (Block) instr.arg2;
-
-		switch (instr.op) {
-			case Instruction.bne:
-				dlxOp = DLX.BNE;
-				break;
-			case Instruction.beq:
-				dlxOp = DLX.BEQ;
-				break;
-			case Instruction.bge:
-				dlxOp = DLX.BGE;
-				break;
-			case Instruction.blt:
-				dlxOp = DLX.BLT;
-				break;
-			case Instruction.bgt:
-				dlxOp = DLX.BGT;
-				break;
-			case Instruction.ble:
-				dlxOp = DLX.BLE;
-				break;
-			case Instruction.bra:
-				dlxOp = DLX.BEQ; // Unconditional branch.
-				compare = (Value) null;
-				compareReg = ZERO;
-				jumpTo = (Block) instr.arg1;
-				break;
-			default:
-				return false;
-		}
+    // Grab the appropriate registers.
+    arg1Reg = loadValue(arg1, arg1Type, SCRATCH);
+    arg2Reg = loadValue(arg2, arg2Type, SCRATCH2);
+    destReg = loadValue(dest, REGISTER, SCRATCH3);
 
 
-		if (compare instanceof Constant) {
-				addInstruction(DLX.ADDI, SCRATCH, ZERO, compare.getVal());
-				addInstruction(dlxOp, SCRATCH, jumpTo);
-		} else {
-				addInstruction(dlxOp, compareReg, jumpTo);
-		}
-		return true;
+  }
 
-	}
+  public void move() {
+
+  }
 
 	public boolean generateLoadStore(Instruction instr) {
 		// This currently only works for move instructions.

@@ -210,6 +210,7 @@ public class CodeGenerator {
 		dlxOps.add(new DlxOp(op, null, null, null));
 	}
 
+	// Get native (byte code) instruction.
 	public int getNativeInstr(DlxOp instr) {
 		if (debug) { System.out.println("Generating native code for " + instr + "(" + instr.instr + ")"); }
 		int op = instr.op;
