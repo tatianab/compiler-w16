@@ -1,5 +1,4 @@
-main 
-array [2][5] m;
+main
 var a,b,c;
 {
 	let a <- 10;
@@ -9,9 +8,6 @@ var a,b,c;
 	let b <- 2 + a;
 	let a <- (c / 5);
 
-	let m[1][3] <- 4;
-
 	call OutputNum(a);
-	call OutputNewLine();
-	call OutputNum(m[1][3])
+	call OutputNewLine()
 }.

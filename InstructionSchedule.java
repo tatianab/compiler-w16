@@ -91,6 +91,7 @@ public class InstructionSchedule {
 			arg2 = -1;
 		}
 		outputInstruction(Instruction instr, int outputRegistetNo) {
+      Block b;
         	//Search for arg1
 			int reg1 = -1;
 			if (instr.arg1 instanceof Instruction) {
@@ -100,7 +101,10 @@ public class InstructionSchedule {
 			} else if (instr.arg1 instanceof Constant) {
 				Constant c = (Constant)instr.arg1;
 				constant1 = c.getVal();
-			}
+			} else if (instr.arg1 instanceof Block) {
+        b = (Block)instr.arg1;
+        jumpBlock = b;
+      }
         	//Search for arg2
 			int reg2 = -1;
 
@@ -119,7 +123,7 @@ public class InstructionSchedule {
 					Constant c = (Constant)instr.arg2;
 					constant2 = c.getVal();
 				} else if (instr.arg2 instanceof Block) {
-					Block b = (Block)instr.arg2;
+					b = (Block)instr.arg2;
 					jumpBlock = b;
 				}
 
@@ -155,6 +159,12 @@ public class InstructionSchedule {
 		public ArrayList<Instruction> directDependent;
 		public Block referenceBlock;
 		public RegAllocator.registerContext context;
+
+    public boolean compiled = false;
+
+    public boolean isEmpty() {
+      return instructions.size() == 0;
+    }
 
 		@Override
 		public String toString() {

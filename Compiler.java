@@ -134,12 +134,8 @@ public class Compiler {
 		if (regAlloc) {
 			if (debug) { System.out.println("Cleaning up deleted instructions..."); }
 			program.clean();
-			// if (debug) { System.out.println("Dumbly allocating registers..."); }
-			// program.dumbRegAlloc();
 			RegAllocator allocator = new RegAllocator(program);
-		 	// program = allocator.allocate();
 			schedule = allocator.allocateRegisters();
-			System.out.println("Allocated registers:\n" + schedule);
 		} else {
 			schedule = null;
 		}
@@ -170,6 +166,7 @@ public class Compiler {
 		}
 		if (ifg) {
 			// Print out interference graph.
+			System.out.println("Allocated registers:\n" + schedule);
 		}
 		if (instr) {
 			System.out.println(program.instrsToString());
