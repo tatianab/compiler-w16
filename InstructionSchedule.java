@@ -385,7 +385,8 @@ public class InstructionSchedule {
 
         void clearContext(ArrayList<Instruction> dependencyList) {
             for (Instruction instr: dependencyList) {
-                instr.state.storage.currentRegister = null;
+                if (instr.state != null)
+                    instr.state.storage.currentRegister = null;
             }
         }
 
@@ -762,8 +763,8 @@ public class InstructionSchedule {
                 if (phiInstructions.size() > 0 && !ifJoin) {
                     //Has phi, not if join->while join
                     //After the effect in the
-                    RegAllocator.phiMergerResult result = RegAllocator.phiTransform(next1.context, afterPhiCtx, space, phiInstructions);
-                    next1.insertPhiTransfer(result.edge1);
+                    RegAllocator.phiMergerResult result = RegAllocator.phiTransform(inputBlock.in2.schedule.context, afterPhiCtx, space, phiInstructions);
+                    inputBlock.in2.schedule.insertPhiTransfer(result.edge1);
                 }
             } else next1 = null;
             
