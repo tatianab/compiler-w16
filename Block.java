@@ -26,6 +26,8 @@ public class Block extends Value {
 	public Block branch;        // Explicit branch block, 
 								//  (i.e, false branch or unconditional branch).
 
+	public Block rootBlock;
+
 	public String description;  // Description of block.
     
     public HashMap<String, Variable> createdValue;
@@ -50,6 +52,8 @@ public class Block extends Value {
         dominees     = new ArrayList<Block>();
         this.visited = false;
         dlxPos = null;
+
+		rootBlock = this;
 	}
 
 	public Block(int id, String description) {
@@ -60,6 +64,8 @@ public class Block extends Value {
         dominees     = new ArrayList<Block>();
         this.visited = false;
         dlxPos = null;
+
+		rootBlock = this;
 	}
 
 	// Signify the end of a basic block.
@@ -119,7 +125,10 @@ public class Block extends Value {
 	public void addPrev(Block in1, Block in2) {
 		in1 = in1;
 		in2 = in2;
-        
+
+		if (in1.rootBlock != null) rootBlock = in1.rootBlock;
+		if (in2.rootBlock != null) rootBlock = in2.rootBlock;
+
         HashSet<String> changeVar = new HashSet<String>();
         if (in1.in1 == in2) {
             // If there is no else block, and in1 is the then block
@@ -154,6 +163,25 @@ public class Block extends Value {
             Variable var2 = in2.fetchLastDefinedInstance(varianceName);
 
             if (var1 != null && var2 != null && var1 != var2) {
+
+
+				Value def1_1 = var1.def.arg1;
+				Value def1_2 = var1.def.arg2;
+				Value def2_1 = var2.def.arg1;
+				Value def2_2 = var2.def.arg2;
+
+				if (def1_1 instanceof phiPatcher) {
+					((phiPatcher)def1_1).patch();
+				}
+				if (def1_2 instanceof phiPatcher) {
+					((phiPatcher)def1_2).patch();
+				}if (def2_1 instanceof phiPatcher) {
+					((phiPatcher)def2_1).patch();
+				}if (def2_2 instanceof phiPatcher) {
+					((phiPatcher)def2_2).patch();
+				}
+
+
                 instr = inpr.createInstr();
                 
                 //this.addInstr(instr); // Add instruction to current block.
@@ -185,19 +213,86 @@ public class Block extends Value {
                     //Example: a3 = phi(a1, a2), if a[x] is the upstream, replace a[x] with a3 ([x] = 1 or 2)
                     this.fixLoopingPhi(var1, var);
                     this.fixLoopingPhi(var2, var);
+					fallThrough.fixLoopingPhi(var1, var);
+					fallThrough.fixLoopingPhi(var2, var);
                     inner.fixLoopingPhi(var1, var);
                     inner.fixLoopingPhi(var2, var);
                 }
                 
-            }
+            } else if (var1 != var2 && var2 != null) {
+				//Var 1 is null, so create a dummy phi variable
+				var1 = new phiPatcher();
+				((phiPatcher)var1).variableName = varianceName;
+				((phiPatcher)var1).origBlock = this;
+				((phiPatcher)var1).inner = inner;
+				((phiPatcher)var1).traceBlock = in1;
+
+				patchers.add((phiPatcher)var1);
+
+				instr = inpr.createInstr();
+				((phiPatcher)var1).phiInstr = instr;
+
+				//this.addInstr(instr); // Add instruction to current block.
+
+				instr.setArgs(var1, var2);
+				instr.setOp(Instruction.phi);
+
+				instr.setBlock(this);
+				this.current = instr;
+
+				// Reassign for this Variable.
+				Variable var = new Variable(var2.id, table.getName(var2.id));
+				table.reassignVar(var1.id, var);
+
+				((phiPatcher)var1).replacementVar = var;
+
+				instr.defines(var);
+				var.definedAt(instr);
+				inpr.currentBlock().addReturnValue(var);
+
+				if (phiBegin == null) {
+					phiBegin = instr;
+				} else {
+					phiEnd.next = instr;
+				}
+
+				phiEnd = instr;
+
+				if (inner != null) {
+					//Go back to the inside of loop, replace the the old value with the phi version, such that the value
+					//Example: a3 = phi(a1, a2), if a[x] is the upstream, replace a[x] with a3 ([x] = 1 or 2)
+					this.fixLoopingPhi(var2, var);
+					fallThrough.fixLoopingPhi(var2, var);
+					inner.fixLoopingPhi(var2, var);
+				}
+			}
         }
         
-        if (phiEnd != null) {
+        if (phiBegin != null) {
         	phiEnd.next = begin;
         	begin = phiBegin;
         }
         
 	}
+
+	ArrayList<phiPatcher>patchers = new ArrayList<phiPatcher>();
+
+	public class phiPatcher extends Variable {
+		public String variableName; public  Variable replacementVar;
+		public Block origBlock;	public Block inner; public Block traceBlock;
+		public Instruction phiInstr;
+		void patch() {
+			Variable origVar = traceBlock.fetchLastDefinedInstance(variableName);
+			phiInstr.updateArg(phiInstr.arg1, origVar);
+			if (inner != null) {
+				//Go back to the inside of loop, replace the the old value with the phi version, such that the value
+				//Example: a3 = phi(a1, a2), if a[x] is the upstream, replace a[x] with a3 ([x] = 1 or 2)
+				origBlock.fixLoopingPhi(origVar, replacementVar);
+				inner.fixLoopingPhi(origVar, replacementVar);
+			}
+		}
+	}
+
 	/* End previous block methods. */
 
 	public void smartlyCopy(HashMap<String, Variable> source, HashMap<String, Variable> target) {
@@ -210,6 +305,8 @@ public class Block extends Value {
 
 	/* Methods dealing with next blocks. */
 	public void addNext(Block next, boolean jump) {
+		next.rootBlock = rootBlock;
+
 		smartlyCopy(createdValue, next.createdValue);
 		if (jump) {
 			branch = next;
@@ -220,6 +317,9 @@ public class Block extends Value {
 	}
 
 	public void addNext(Block fallThrough, Block branch) {
+		fallThrough.rootBlock = rootBlock;
+		branch.rootBlock = rootBlock;
+
 		smartlyCopy(createdValue, fallThrough.createdValue);
 		smartlyCopy(createdValue, branch.createdValue);
 
@@ -247,11 +347,17 @@ public class Block extends Value {
     public void fixLoopingPhi(Variable originalVar, Variable replacementVar) {
         //TODO:
         //Look for all instruction that use originalVar, and replace it with replacement
-        Instruction instr = begin;
+		HashSet<Instruction> instrs= new HashSet<Instruction>(originalVar.uses);
+		for (Instruction instr: instrs) {
+			if (/*originalVar.def.block.id <= replacementVar.def.block.id && */ originalVar.def.block.isDominatorOf( replacementVar.def.block ) && replacementVar.def.block.isDominatorOf( instr.block ) && instr != replacementVar.def)
+				instr.updateArg(originalVar, replacementVar);
+		}
+		Instruction instr = begin;
         while (instr != end) {
-            instr.updateArg(originalVar, replacementVar);
+            //instr.updateArg(originalVar, replacementVar);
             instr = instr.next;
         }
+
     }
 
 

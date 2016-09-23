@@ -4,6 +4,7 @@
  * CS 241 - Advanced Compiler Design
  */
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 public class Instruction extends Value {
@@ -218,7 +219,7 @@ public class Instruction extends Value {
             	((Instruction)original).uses.remove(this);
             } else if (original instanceof Variable) {
 				((Variable)original).uses.remove(this);
-				((Variable)original).def.uses.remove(this);
+				if (((Variable)original).def != null) ((Variable)original).def.uses.remove(this);
             }
         }
         if (this.arg2 == original && op != move) {
@@ -490,7 +491,7 @@ public class Instruction extends Value {
 		} else if (op == call) {
 			return id + " : call " + arg1.shortRepr() + " on input " + Function.paramsToString(params);
 		} else if (op == phi) {
-			return id + " : PHI " + varDefd.shortRepr() + " := " + arg1.shortRepr() + " " + arg2.shortRepr();
+			return id + " : PHI " + varDefd.shortRepr() + " := " + arg1.shortRepr() + " " + arg2.shortRepr() + " " + block.id;
 		} else if (op == arrayStore) {
 			return id + " : " + ops[op] + " " + arg1.shortRepr() + " " + arg2.shortRepr() + " " + Array.indicesToString(params);
 		} else if (op == arrayLoad) {
@@ -512,6 +513,23 @@ public class Instruction extends Value {
 		} else {
 			return "(" + id + ")";
 		}
+	}
+
+
+	/* ET Phi Patch
+	 * For each instruction linked with a phi function, it should be store in the same memory space
+	 */
+	public ArrayList<Instruction> phiRelated = new ArrayList<Instruction>();
+	public void phiLinkage(Instruction withInstruction) {
+		if (withInstruction == this) return;
+		for (Instruction instr: phiRelated) {
+			instr.phiLinkage(withInstruction);
+		}
+		phiRelated.add(withInstruction);
+	}
+	public boolean memorySpaceEqual(Instruction withInstruction) {
+		if (this == withInstruction) return true;
+		return phiRelated.contains(withInstruction);
 	}
 
 }

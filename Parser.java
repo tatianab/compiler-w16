@@ -350,16 +350,16 @@ public class Parser {
 		// New basic block (follow block) -- branch.
 		follow = program.addBlock("Follow (while).");
 
+		// Add dominance.
+		previous.dominates(join);
+		join.dominates(whileBlock);
+		join.dominates(follow);
+
 		// Connect blocks as appropriate.
 		previous.addNext(join, false);     // Fall-through to join/compare from previous.
 		join.addNext(whileBlock, follow);  // Join/compare falls through to inner block, or jumps to follow.
 		join.fix(follow);                  // Branch to follow.
 		endWhileBlock.addNext(join, true); // Jump from inner block to join/compare.
-
-		// Add dominance.
-		previous.dominates(join);
-		join.dominates(whileBlock);
-		join.dominates(follow);
 
 
 	}
@@ -405,6 +405,11 @@ public class Parser {
 
 		// New basic block -- join.
 		join = program.addBlock("If join block.");
+
+		// Add dominance.
+		previous.dominates(compare);
+		compare.dominates(trueBlock);
+		compare.dominates(join);
 		
 		// Block connections for false branch, or no false branch.
 		if (falseBlock != null) {               // If there is a false branch:
@@ -424,11 +429,6 @@ public class Parser {
 			endTrueBlock.addNext(join, false);  // Fall through to join from true.
 	        endTrueBlock.fix();                 // Delete branch instruction from true.
 		}
-
-		// Add dominance.
-		previous.dominates(compare);
-		compare.dominates(trueBlock);
-		compare.dominates(join);
 
 	}
 

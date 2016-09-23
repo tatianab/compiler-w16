@@ -123,6 +123,8 @@ public class Compiler {
 		Parser parser        = new Parser(filename, debug);
 		IntermedRepr program = parser.parse();
 
+		program.phify();
+
 		Optimizer optimizer  = new Optimizer(program, debug);
 		if (vtoi || optimize || regAlloc) {
 			program = optimizer.preprocess();

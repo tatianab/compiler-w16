@@ -38,6 +38,7 @@ public class RegAllocator {
 						if (Compiler.debug) {
             	System.out.println("Request Value: "+request.actualStmt.basedInstr);
 					  }
+            RegAllocator r = new RegAllocator();
             if (instr1.block.id <= senderBlock.id) {
                 //It is from sender block 1 side
                 //Just move the value
@@ -49,7 +50,7 @@ public class RegAllocator {
                 }
                 if (instr1.state.storage.backstore != null) {
                     //There is a memory position, so update it
-                    instr1.state.storage.backstore.value = request.actualStmt.basedInstr;
+                    instr1.state.storage.backstore.identity = r.new memoryID(request.actualStmt.basedInstr);
                     request.actualStmt.basedInstr.state.storage.backstore = instr1.state.storage.backstore;
                 }
             } else {
@@ -63,7 +64,7 @@ public class RegAllocator {
                 }
                 if (instr2.state.storage.backstore != null) {
                     //There is a position, so update it
-                    instr2.state.storage.backstore.value = request.actualStmt.basedInstr;
+                    instr2.state.storage.backstore.identity = r.new memoryID(request.actualStmt.basedInstr);
                     request.actualStmt.basedInstr.state.storage.backstore = instr2.state.storage.backstore;
                 }
             }
@@ -71,6 +72,15 @@ public class RegAllocator {
             for (Instruction child: request.actualStmt.basedInstr.uses) {
                 //A depended value is calculated->add it back
                 child.state.unresolveArgument--;
+            }
+        }
+
+    }
+
+    public static void freezePhiForReg(registerContext ctx) {
+        for (Register r: ctx.registers) {
+            if (r.currentValue != null) {
+                r.currentValue.phiCounter++;
             }
         }
     }
@@ -92,26 +102,33 @@ public class RegAllocator {
     }
 
     //a2: inner
-    //b: join
+    //b: join, after phi transform
     //requests: phi
     //Only edge 1 will has instruction, result context would be the same
-    public static phiMergerResult phiTransform(registerContext a2, registerContext b, ArrayList<phiRequest> requests) {
+    //Transfer a2 back to b
+    public static phiMergerResult phiTransform(registerContext a2, registerContext b, memorySpace space, ArrayList<phiRequest> requests) {
         //For while loop
         //We have to transform register context a2 back into b, with 100% correctness
+
         InstructionSchedule insch = new InstructionSchedule();
 
         RegAllocator r = new RegAllocator();
         phiMergerResult merger = r.new phiMergerResult();
         merger.edge1 = new ArrayList<InstructionSchedule.outputInstruction>();
 
+        //First stage: make all the register value into phi-ed version, in case the phi function changed it
         for (Register reg:a2.registers) {
             if (reg.currentValue != null && b.registers[reg.registerID].currentValue != null) {
                 phiRequest req = requestForValue(requests, reg.currentValue);
-                //Transform back to phi
-                reg.currentValue = req.actualStmt;
+                if (req != null) {
+                    //Transform back to phi
+                    System.out.println(req);
+                    reg.currentValue = req.actualStmt;
+                }
             }
         }
 
+        //Second stage: swap register until all existed value aligned
         for (Register reg:b.registers) {
             int actualID = regIDForValue(a2, reg.currentValue);
             //If a2 contains the value, aID > 0
@@ -123,17 +140,31 @@ public class RegAllocator {
             }
         }
 
+        //Third stage: if it does not existed in b, but in a2, load it
         for (Register reg: b.registers) {
             //Load value that is not there
             if (reg.currentValue != null && a2.registers[reg.registerID].currentValue != reg.currentValue) {
                 //The inner loop has the higher block id
-                phiRequest request = requestForValue(requests, reg.currentValue);
+                /*phiRequest request = requestForValue(requests, reg.currentValue);
                 Instruction instrVal = (request.value1.block.id > request.value2.block.id)?request.value1:request.value2;
-                InstructionSchedule.outputInstruction oi = a2.registers[reg.registerID].updateValue(instrVal.state.valueRepr);
-                merger.edge1.add(oi);
+                InstructionSchedule.outputInstruction oi = a2.registers[reg.registerID].updateValue(instrVal.state.valueRepr);*/
+                Register src = reg;
+                Register dst = a2.registers[reg.registerID];
+                InstructionSchedule.outputInstruction oi = src.currentValue.basedInstr.state.storage.load(dst, space);
+                if (oi != null) {
+                    merger.edge1.add(oi);
+                }
             }
         }
         merger.resultContext = a2;
+
+        //Cancel phi state counter
+        for (Register reg: b.registers) {
+            if (reg.currentValue != null) {
+                reg.currentValue.phiCounter--;
+            }
+        }
+
         return merger;
     }
 
@@ -226,11 +257,11 @@ public class RegAllocator {
             }
             request.actualStmt.basedInstr.state.scheduled();
 
-            /*if (request.value1 != null)
+            if (request.value1 != null)
                 request.value1.state.valueRepr.instructionCalled(request.actualStmt.basedInstr);
 
             if (request.value2 != null)
-                request.value2.state.valueRepr.instructionCalled(request.actualStmt.basedInstr);*/
+                request.value2.state.valueRepr.instructionCalled(request.actualStmt.basedInstr);
         }
         merger.resultContext = mergedCtx;
         merger.edge1 = edge1Instr;
@@ -326,13 +357,22 @@ public class RegAllocator {
         public ArrayList<RegisterConf> registers;
     }
 
+    public class memoryID {
+        public String name;
+        public Block identityBlock;
+        memoryID(Instruction instr) {
+            name = instr.varDefd.ident;
+            identityBlock = instr.block.rootBlock;
+        }
+    }
+
     public class memorySpace {
         //This is relative to the stack and frame pointer
         public class memoryPosition {
             public int address;
             public int size;
             public int count;
-            public Value value;
+            public memoryID identity;
         }
         private int memoryHead;
         private int memoryTail;
@@ -349,6 +389,42 @@ public class RegAllocator {
         }
 
         public HashMap<memoryPosition, InstructionSchedule.InstructionValue> preserve;
+
+        public InstructionSchedule.InstructionValue fetchEqualvalent(InstructionSchedule.InstructionValue value) {
+            for (InstructionSchedule.InstructionValue val: preserve.values()) {
+                if (val.basedInstr.memorySpaceEqual(value.basedInstr)) { return val; }
+            }
+            return null;
+        }
+
+        //Memory listing management
+        public InstructionSchedule.InstructionValue fetchExistedValue(InstructionSchedule.InstructionValue val) {
+            for (InstructionSchedule.InstructionValue _val: preserve.values()) {
+                if (_val.basedInstr.memorySpaceEqual(val.basedInstr))
+                    return _val;
+            }
+            return null;
+        }
+
+        public memoryPosition fetchMemorySpace(InstructionSchedule.InstructionValue val) {
+            InstructionSchedule.InstructionValue baseValue = fetchExistedValue(val);
+            if (baseValue == null) {
+                //Not registered, so create a space
+                memoryPosition pos = reserve();
+                store(val, pos);
+                return pos;
+            }
+            for (memoryPosition pos: preserve.keySet()) {
+                if (preserve.get(pos) == baseValue)
+                    return pos;
+            }
+            return null;
+        }
+
+        public void releaseMemorySpace(InstructionSchedule.InstructionValue val) {
+            memoryPosition pos = fetchMemorySpace(val);
+            preserve.remove(pos);
+        }
 
         memorySpace() {
             preserve = new HashMap<memoryPosition, InstructionSchedule.InstructionValue>();
@@ -381,6 +457,7 @@ public class RegAllocator {
             InstructionSchedule.InstructionValue val = preserve.get(position);
             //Update the value to the register
             reg.updateValue(val);
+            reg.updateValue(position);
 
             //Update the instruction
             val.basedInstr.state.storage.currentRegister = reg;
@@ -405,12 +482,15 @@ public class RegAllocator {
             return storeInstr;
         }
     }
+    static int regWriteCount = 0;
+    public int fetchWriteCount() { return regWriteCount++; }
 
     public class Register {
         public final int registerID;
         public InstructionSchedule.InstructionValue currentValue;
         public memorySpace.memoryPosition backendPosition;
         private memorySpace memSpace;
+        int versioning = -1;
         Register(int regID, memorySpace memSpace) {
             registerID = regID;
             this.memSpace = memSpace;
@@ -421,6 +501,7 @@ public class RegAllocator {
             this.memSpace = copy.memSpace;
             this.currentValue = copy.currentValue;
             backendPosition = copy.backendPosition;
+            versioning = copy.versioning;
         }
         public boolean isAvailable() {
             return currentValue == null || currentValue.usageCount == 0;
@@ -452,12 +533,13 @@ public class RegAllocator {
 						}
             return release;
         }
-        public InstructionSchedule.outputInstruction updateValue(memorySpace.memoryPosition valueMem) {
-            InstructionSchedule.outputInstruction release = preserveMemory();
+        //Read from memory
+        public void updateValue(memorySpace.memoryPosition valueMem) {
             backendPosition = valueMem;
-            return release;
         }
+        //Read from instruction / Save from onstruction
         public InstructionSchedule.outputInstruction updateValue(InstructionSchedule.InstructionValue instr) {
+            versioning = fetchWriteCount();
             //Store the instruction dependency
             InstructionSchedule.outputInstruction release = preserveMemory();
             currentValue = instr;
@@ -477,15 +559,24 @@ public class RegAllocator {
                 //No instruction, so do nothing
                 return null;
             }
+            boolean needToStore = false;
             if (currentValue.stillNeeded() ) {
-                if (backendPosition == null)
-                    backendPosition = memSpace.reserve();
-                memSpace.store(currentValue, backendPosition);
+                //if (backendPosition == null)
+                //    backendPosition = memSpace.reserve();
+                //memSpace.store(currentValue, backendPosition);
+                if (backendPosition == null) {
+                    backendPosition = memSpace.fetchMemorySpace(currentValue);
+                    needToStore = true;
+                }
+                //Else, the value is in the memory
             } else if (backendPosition != null) {
-                memSpace.release(backendPosition);
+                //No longer needed, stored backend position
+                memSpace.releaseMemorySpace(currentValue);
+                backendPosition = null;
+                //memSpace.release(backendPosition);
             }
             InstructionSchedule.outputInstruction storeInstr = null;
-            if (backendPosition != null) {
+            if (needToStore) {
                 storeInstr = memSpace.save(registerID, backendPosition);
             }
             Instruction instr = currentValue.basedInstr;
@@ -493,10 +584,11 @@ public class RegAllocator {
             instr.state.storage.currentRegister = null;
             //After preserve, it's nothing
             currentValue = null;
+            backendPosition = null;
             return storeInstr;
         }
         public int releaseRate() {
-            return currentValue.score();
+            return versioning;//currentValue.score();
         }
         @Override public String toString() {
             String result = registerID + ": ";
@@ -572,6 +664,10 @@ public class RegAllocator {
                 instr3.outputReg = regB;
                 tmp.add(instr3);
             }
+            InstructionSchedule.InstructionValue valA = registers[regA].currentValue;
+            InstructionSchedule.InstructionValue valB = registers[regB].currentValue;
+            registers[regA].updateValue(valB);
+            registers[regB].updateValue(valA);
             return tmp;
         }
         boolean hasSpace() {
@@ -588,16 +684,28 @@ public class RegAllocator {
             //If there is no space anymore, flush the register to the memory in the following order:
             //1. All register that won't be used in the current block
             //2. All register that has a high write amplification: more register will be used in this block to store the result before the register is released (Any instruction with a score higher than 1)
-            Integer firstChoice = -1;       Integer secondChoice = -1;
-            Integer firstChoiceRate = -1;   Integer secondChoiceRate = -1;
+            Integer firstChoice = -1;       Integer secondChoice = -1;      Integer thirdChoice = -1;
+            Integer firstChoiceRate = Integer.MAX_VALUE;   Integer secondChoiceRate = Integer.MAX_VALUE;  Integer thirdChoiceRate = Integer.MAX_VALUE;
             for (int i = 1; i < numberOfRegister-numberOfReverse; i++) {
                 Register reg = registers[i];
-                if (reg.releaseRate() < firstChoiceRate) {
-                    if (reg.releaseRate() > secondChoiceRate) {
+                if (reg.releaseRate() > firstChoiceRate) {
+                    if (reg.releaseRate() < secondChoiceRate) {
+                        //Swap out the second
+                        thirdChoice = secondChoice;
+                        thirdChoiceRate = secondChoiceRate;
+
                         secondChoice = i;
                         secondChoiceRate = reg.releaseRate();
+                    } else if (reg.releaseRate() < thirdChoiceRate)  {
+                        //Swap out the third
+                        thirdChoice = i;
+                        thirdChoiceRate = reg.releaseRate();
                     }
                 } else  {
+                    //Swap out the first
+                    thirdChoice = secondChoice;
+                    thirdChoiceRate = secondChoiceRate;
+
                     secondChoice = firstChoice;
                     secondChoiceRate = firstChoiceRate;
 
@@ -608,6 +716,7 @@ public class RegAllocator {
             ArrayList<Integer> list = new ArrayList<Integer>();
             list.add(firstChoice);
             list.add(secondChoice);
+            list.add(thirdChoice);
 						if (Compiler.debug) {
                 System.out.println("Release: "+list);
 						}

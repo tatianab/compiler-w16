@@ -1,4 +1,7 @@
 public class InstructionState{
+
+	public boolean schedule = false;
+
 	public Instruction instr;
 	public int unresolveArgument = 0;
 	public float remainingAvailableChildSize = 0;
@@ -11,11 +14,11 @@ public class InstructionState{
 					unresolveArgument++;
 				}
 			}
-			for (Instruction child: _instr.uses) {
-				for (Instruction child_Arg: child.instrsUsed) {
-					if (child_Arg == _instr)
-						remainingAvailableChildSize += 0.5;
-				}
+		}
+		for (Instruction child: _instr.uses) {
+			for (Instruction child_Arg: child.instrsUsed) {
+				if (child_Arg == _instr)
+					remainingAvailableChildSize += 0.5;
 			}
 		}
 		storage = new storageState();
@@ -83,5 +86,6 @@ public class InstructionState{
 			((Instruction)instr.arg2).state.valueRepr.upcomingReferenceCount += 1;
 
 		}
+		schedule = true;
 	}
 }

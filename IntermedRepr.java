@@ -356,6 +356,15 @@ public class IntermedRepr {
 		}
 	}
 
+	public void phify() {
+		for (Instruction instr: instrs) {
+			if (instr.op == Instruction.phi && instr.arg1 instanceof Block.phiPatcher) {
+				Block.phiPatcher patcher = (Block.phiPatcher)instr.arg1;
+				patcher.patch();
+			}
+		}
+	}
+
 	// Get rid of any deleted instructions.
 	// TODO: get rid of deleted
 	public void clean() {
