@@ -41,6 +41,7 @@ public class Optimizer {
 		copyPropagation();
 		if (debug) { System.out.println("Precomputing constant values..."); }
 		constantPrecompuation();
+		// if (debug) { System.out.println("Collapsing empty blocks..."); }
 		return program;
 	}
 
@@ -138,6 +139,7 @@ public class Optimizer {
 						} else if (newValue instanceof Constant) {
 							useSite.replace(oldInstr, (Constant) newValue);
 						}
+						if (debug) { System.out.println("	Replacing value in instruction " + useSite); }
 					}
 					oldInstr.delete();
 				}
@@ -173,6 +175,15 @@ public class Optimizer {
 			}
 		}
 	}
+
+	// // Get rid of any empty blocks while maintaining structure.
+	// public void collapseEmptyBlocks() {
+	// 	for (Block block : program.blocks) {
+	// 		if (block.isEmpty()) {
+	// 			block.remove();
+	// 		}
+	// 	}
+	// }
 
 	/* Operation codes for intermediate representation. */
 	public static final int neg     = Instruction.neg;

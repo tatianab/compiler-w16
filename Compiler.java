@@ -7,6 +7,7 @@
 public class Compiler {
 	/* Class representing the entire compiler.
 	   Options: -d        : Print debugging output.
+	   			-v        : Verbose mode; print out what we are doing at a high level.
 	   			-cfg      : Print control flow graph (in VCG format).
 	   			-dt       : Print dominator tree.
 	   			-ifg      : Print interference graph (in VCG format).
@@ -24,6 +25,7 @@ public class Compiler {
 
 	// Output flags.
 	static boolean debug;   // Debugging.
+	static boolean verbose; // Verbose mode.
 	final boolean cfg;      // Control flow graph.
 	final boolean dt;       // Dominator tree.
 	final boolean ifg;      // Interference graph.
@@ -63,6 +65,7 @@ public class Compiler {
 		boolean run      = false;
 		boolean memory   = false;
 		boolean all      = false;
+		boolean verbose  = false;
 
     	try {
      		filename = args[0];     // Get the filename.
@@ -106,14 +109,17 @@ public class Compiler {
      			if (contains(args, "-all")) {
      				all      = true;
      			}
+     			if (contains(args, "-v")) {
+     				verbose  = true;
+     			}
      		}
      	} catch (Exception e) {
-      		System.out.println("Usage: java Compiler <filename> [-d] [-cfg] [-dt] [-ifg] [-instr] [-O] [-regAlloc] [-assem] [-o] [-vtoi] [-run] [-mem] [-all]");
+      		System.out.println("Usage: java Compiler <filename> [-d] [-v] [-cfg] [-dt] [-ifg] [-instr] [-O] [-regAlloc] [-assem] [-o] [-vtoi] [-run] [-mem] [-all]");
 					System.exit(0);
     	}
 
     	// Compile the file.
-    	Compiler compiler = new Compiler(filename, debug, cfg, dt, ifg, instr, optimize, regAlloc, byteCode, assembly, vtoi, run, memory, all);
+    	Compiler compiler = new Compiler(filename, debug, cfg, dt, ifg, instr, optimize, regAlloc, byteCode, assembly, vtoi, run, memory, all, verbose);
     	compiler.compile();
 
 	}
@@ -121,28 +127,31 @@ public class Compiler {
 	// Compile the file.
 	public void compile() {
 		Parser parser        = new Parser(filename, debug);
+		if (verbose) { System.out.println("Scanning and parsing into SSA..."); }
 		IntermedRepr program = parser.parse();
 
 		program.phify();
 
+		if (verbose) { System.out.println("Optimizing SSA..."); }
 		Optimizer optimizer  = new Optimizer(program, debug);
 		if (vtoi || optimize || regAlloc) {
 			program = optimizer.preprocess();
 		}
 		if (optimize || all) {
 			program = optimizer.optimize();
+			program.clean();
 		}
 		InstructionSchedule schedule;
 		if (regAlloc) {
-			if (debug) { System.out.println("Cleaning up deleted instructions..."); }
-			program.clean();
+			// program.clean();
+			if (verbose) { System.out.println("Allocating registers and scheduling instructions..."); }
 			RegAllocator allocator = new RegAllocator(program);
 			schedule = allocator.allocateRegisters();
 		} else {
 			schedule = null;
 		}
 		if (assembly || byteCode || run || all) {
-			if (debug) { System.out.println("Generating native code..."); }
+			if (verbose) { System.out.println("Generating native code..."); }
 			CodeGenerator generator = new CodeGenerator(program, schedule, debug);
 		    generator.generateCode();
 		    if (assembly) {
@@ -179,7 +188,7 @@ public class Compiler {
 	// Constructor.
 	public Compiler(String filename, boolean debug, boolean cfg, boolean dt, boolean ifg,
 					boolean instr, boolean optimize, boolean regAlloc, boolean byteCode, boolean assembly,
-					boolean vtoi, boolean run, boolean memory, boolean all) {
+					boolean vtoi, boolean run, boolean memory, boolean all, boolean verbose) {
 		this.filename   = filename;
 		this.filePrefix = getFilePrefix();
 		this.debug    = debug;
@@ -193,6 +202,7 @@ public class Compiler {
 		this.run      = run;
 		this.memory   = memory;
 		this.all      = all;
+		this.verbose  = verbose;
 
 		if (ifg || byteCode || assembly || run || memory || all ) {
 			this.regAlloc = true;
@@ -200,6 +210,10 @@ public class Compiler {
 		} else {
 			this.regAlloc = regAlloc;
 			this.vtoi     = vtoi;
+		}
+
+		if (debug) {
+			verbose = true;
 		}
 	}
 

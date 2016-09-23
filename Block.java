@@ -13,6 +13,8 @@ import java.util.ArrayList;
 public class Block extends Value {
 	// Class representing a basic block in the control flow graph.
 
+	public boolean deleted;     // Whether or not this block has been deleted.
+
 	public Instruction begin;   // First instruction in block.
 	public Instruction end;     // Last instruction in block.
 	public Instruction current; // Current instruction in block.
@@ -343,6 +345,27 @@ public class Block extends Value {
 	}
 	/* End next block methods. */
 
+	// // Delete this block by collapsing it into its successor.
+	// // If it has no successor, don't delete.
+	// public void delete() {
+	// 	// Collapse 
+	// 	// Mark as deleted.
+	// }
+
+	// // True if this block is empty (contains no undeleted instructions).
+	// public boolean isEmpty() {
+	// 	return false;
+	// }
+
+	// public int numSuccessors() {
+	// 	if (fallThrough == null && branch == null) {
+	// 		return 0;
+	// 	} else if () {
+	// 		return 1;
+	// 	} else {
+	// 		return 2;
+	// 	}
+	// } 
 
     public void fixLoopingPhi(Variable originalVar, Variable replacementVar) {
         //TODO:

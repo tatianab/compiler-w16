@@ -383,6 +383,8 @@ public class Instruction extends Value {
 				arg2 = newValue;
 			}
 		}
+
+		// This part does not work for call instructions.
 		if (instrsUsed != null && newValue instanceof Instruction) {
 			for (int i = 0; i < 2; i++) {
 				if (instrsUsed[i] == oldInstr) {
@@ -396,9 +398,21 @@ public class Instruction extends Value {
 				}
 			}
 		}
+
+		if (op == call) {
+			// if (Compiler.debug) { System.out.print("		Call instruction"); }
+			for (int i = 0; i < params.length; i++) {
+				if (params[i] == oldInstr) {
+					// if (Compiler.debug) { System.out.print(" Param " + params[i]); }
+					params[i] = newValue;
+				}
+			}
+			if (Compiler.debug) { System.out.print("\n"); }
+		}
+
 		((Instruction)oldInstr).uses.remove(this);
 		if (newValue instanceof Instruction) {
-			((Instruction)newValue).uses.add(this);
+			((Instruction) newValue).uses.add(this);
 		}
 	}
 
