@@ -715,10 +715,12 @@ public class CodeGenerator {
 		return result;
 	}
 
+	// String rep'n of the contents of simulated memory.
 	public String memoryToString() {
 		return memoryToString(DLX.MemSize / BYTES_IN_WORD);
 	}
 
+	// String rep'n of the contents of simulated memory, truncated to a certain number of lines.
 	public String memoryToString(int truncate) {
 		String result = "Memory \n";
 		if (truncate > (DLX.MemSize / BYTES_IN_WORD)) { truncate = (DLX.MemSize / BYTES_IN_WORD); }
@@ -741,6 +743,7 @@ public class CodeGenerator {
 		return result;
 	}
 
+	// String representation of the current contents of the registers.
 	public String registersToString() {
 		String result = "Registers \n";
 		for (int i = 0; i < 32; i++) {
@@ -795,7 +798,6 @@ public class CodeGenerator {
 	/* End operation codes. */
 
 	// Translate SSA op codes to DLX op codes.
-
 	int opLookup(int op) {
 		switch (op) {
 			case neg:
@@ -839,46 +841,46 @@ public class CodeGenerator {
 			case ble:
 			  return DLX.BLE;
 			default:
-				Compiler.warning("Operation not found.");
+				Compiler.warning("Operation " + op + " not found.");
 				return -1;
 		}
 	}
 
-		// Translate SSA op codes to DLX op codes.
+	// Output the number of arguments expected for a given SSA op code.
+	int numArgs(int op) {
+		switch (op) {
+			case writeNL:
+				return 0;
 
-		int numArgs(int op) {
-			switch (op) {
-				case writeNL:
-					return 0;
+			case end:
+			case read:
+			case write:
+				return 1;
 
-				case end:
-				case read:
-				case write:
-					return 1;
+			case load:
+			case store:
+			case bra:
+			case bne:
+			case beq:
+			case bge:
+			case blt:
+			case bgt:
+			case ble:
+				return 2;
 
-				case load:
-				case store:
-				case bra:
-				case bne:
-				case beq:
-				case bge:
-				case blt:
-				case bgt:
-				case ble:
-					return 2;
+			case neg:
+			case add:
+			case sub:
+			case mul:
+			case div:
+			case cmp:
+			case adda:
+				return 3;
 
-				case neg:
-				case add:
-				case sub:
-				case div:
-				case cmp:
-				case adda:
-					return 3;
-
-				default:
-					Compiler.warning("Operation not found.");
-					return -1;
-			}
+			default:
+				Compiler.warning("Operation " + op + " not found.");
+				return -1;
+		}
 
 	}
 
