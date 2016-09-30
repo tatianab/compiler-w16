@@ -23,6 +23,7 @@ public class IntermedRepr {
 	public Block firstBlock;
 	public Stack<Block> currentBlocks;
 	public Block currentBlock;
+	public Block mainBegin;
 
 	public InterferenceGraph ifg;          // Interference graph.
 
@@ -52,6 +53,7 @@ public class IntermedRepr {
 
 	public Block begin() {
 		Block block = addBlock("Program begins.");
+		mainBegin = block;
 		return block;
 	}
 
