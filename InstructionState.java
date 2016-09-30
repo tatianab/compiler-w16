@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class InstructionState{
 
 	public boolean schedule = false;
@@ -27,7 +29,7 @@ public class InstructionState{
 		public RegAllocator.Register currentRegister = null;
 		public RegAllocator.memorySpace.memoryPosition backstore = null;
 		public boolean loaded() { return currentRegister!=null; }
-		public InstructionSchedule.outputInstruction load(RegAllocator.Register reg, RegAllocator.memorySpace space) {
+		public ArrayList<InstructionSchedule.outputInstruction> load(RegAllocator.Register reg, RegAllocator.memorySpace space) {
 			if (loaded()) return null;
 			else {
 				return space.load(reg, backstore);

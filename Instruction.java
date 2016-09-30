@@ -519,13 +519,36 @@ public class Instruction extends Value {
 	/* ET Phi Patch
 	 * For each instruction linked with a phi function, it should be store in the same memory space
 	 */
-	public ArrayList<Instruction> phiRelated = new ArrayList<Instruction>();
-	public void phiLinkage(Instruction withInstruction) {
-		if (withInstruction == this) return;
+	public HashSet<Instruction> phiRelated = new HashSet<Instruction>();
+	public void phiLinkage(ArrayList fromSrc) {
+		if (fromSrc.contains(this)) return;
 		for (Instruction instr: phiRelated) {
-			instr.phiLinkage(withInstruction);
+			if (fromSrc.contains(instr)) return;
 		}
-		phiRelated.add(withInstruction);
+
+		if (instrsUsed != null) {
+			for (Instruction instr : instrsUsed) {
+				if (instr != null && instr.op == Instruction.phi)
+					phiRelated.add(instr);
+			}
+		}
+		if (uses != null) {
+			for (Instruction instr : uses) {
+				if (instr.op == Instruction.phi)
+					phiRelated.add(instr);
+			}
+		}
+		if (op == Instruction.phi) {
+			for (Instruction instr : instrsUsed) {
+				phiRelated.add(instr);
+			}
+		}
+
+		for (Instruction instr: phiRelated) {
+			fromSrc.add(this);
+			instr.phiLinkage(fromSrc);
+			fromSrc.remove(this);
+		}
 	}
 	public boolean memorySpaceEqual(Instruction withInstruction) {
 		if (this == withInstruction) return true;

@@ -138,8 +138,14 @@ public class Block extends Value {
             changeVar.addAll(in2.createdValue.keySet());
         } else {
             // Either a bi-directional if, or a loop
-            changeVar.addAll(in1.createdValue.keySet());
-            changeVar.addAll(in2.createdValue.keySet());
+			if (in2.id > id) {
+				//Loop
+				changeVar.addAll(in2.createdValue.keySet());
+			} else {
+				//If
+				changeVar.addAll(in1.createdValue.keySet());
+				changeVar.addAll(in2.createdValue.keySet());
+			}
         }
 
         IntermedRepr inpr = IntermedRepr.currentRepresentation;

@@ -211,6 +211,20 @@ public class InstructionSchedule {
         }
         
     }
+
+    public static void clearContext(ArrayList<Instruction> dependencyList) {
+        for (Instruction instr: dependencyList) {
+            if (instr.state != null)
+                instr.state.storage.currentRegister = null;
+        }
+    }
+
+    public static void setContext(RegAllocator.registerContext ctx) {
+        for (RegAllocator.Register reg: ctx.registers) {
+            if (reg.currentValue != null && reg.currentValue.basedInstr != null)
+                reg.currentValue.basedInstr.state.storage.currentRegister = reg;
+        }
+    }
     
     public class ScheduledBlock {
         public ScheduledBlock next1, next2;
@@ -218,7 +232,9 @@ public class InstructionSchedule {
         public ArrayList<Instruction> directDependent;
         public Block referenceBlock;
         public RegAllocator.registerContext context;
-        
+
+        public RegAllocator.memorySpace scheduledSpace;
+
         public boolean compiled = false;
 
         public boolean isEmpty() {
@@ -288,7 +304,28 @@ public class InstructionSchedule {
                     return true;
             }
         }
-        
+
+        private void phiMemoryDeduction(Instruction instr, RegAllocator.registerContext context) {
+            for (RegAllocator.Register reg: context.registers) {
+                if (reg.currentValue != null) {
+                    Instruction regInstr = reg.currentValue.basedInstr;
+                    if (regInstr.op == Instruction.phi && (regInstr.arg1 == instr || regInstr.arg2 == instr)) {
+                        reg.currentValue.usageCount *= -1;
+                    }
+                }
+            }
+        }
+        private void phiMemoryRestore(Instruction instr, RegAllocator.registerContext context) {
+            for (RegAllocator.Register reg: context.registers) {
+                if (reg.currentValue != null) {
+                    Instruction regInstr = reg.currentValue.basedInstr;
+                    if (regInstr.op == Instruction.phi && (regInstr.arg1 == instr || regInstr.arg2 == instr)) {
+                        reg.currentValue.usageCount *= -1;
+                    }
+                }
+            }
+        }
+
         public outputInstruction scheduleInstruction(Instruction instr, RegAllocator.registerContext context) {
             //Get register, set the value to the register
             if (Compiler.debug) {
@@ -307,14 +344,22 @@ public class InstructionSchedule {
             outputInstruction oi = new outputInstruction(instr, nextRegID);
             
             if (instructionWouldReturn(instr)) {
-                nextRegID = context.emptyRegister();
+                phiMemoryDeduction(instr, context);
+                nextRegID = context.checkRegister(oi.arg1, oi.arg2);
+                if (nextRegID < 0) nextRegID = context.emptyRegister();
+                phiMemoryRestore(instr, context);
                 RegAllocator.Register nextReg =  context.registers[nextRegID];
                 if (Compiler.debug) {
                     System.out.println("Instruction: "+instr+" Register ID: "+nextRegID);
                 }
                 //The register is empty, so just write the value
+                InstructionValue oldVal = nextReg.currentValue;
                 outputInstruction release = nextReg.updateValue(value);
-                assert(release == null);//Should be null, meaning no overwriting the variable
+                if (release != null) {
+                    System.out.println("Check Register "+nextRegID);
+                    //context.space.release(oldVal.basedInstr.state.storage.backstore);
+                }
+                //assert release == null;//Should be null, meaning no overwriting the variable
                 
                 oi.outputReg = nextRegID;
                 
@@ -383,21 +428,22 @@ public class InstructionSchedule {
         
         public RegAllocator.registerContext afterPhiCtx;
 
-        void clearContext(ArrayList<Instruction> dependencyList) {
-            for (Instruction instr: dependencyList) {
-                if (instr.state != null)
-                    instr.state.storage.currentRegister = null;
-            }
-        }
-
-        void setContext(RegAllocator.registerContext ctx) {
-            for (RegAllocator.Register reg: ctx.registers) {
-                if (reg.currentValue != null && reg.currentValue.basedInstr != null)
-                    reg.currentValue.basedInstr.state.storage.currentRegister = reg;
-            }
-        }
-
         ScheduledBlock(RegAllocator.registerContext previousContext, Block inputBlock, RegAllocator.memorySpace space, RegAllocator.registerContext lastPhiReg) {
+
+            boolean ifJoin = false;
+
+            //Solve the if memory space split problem
+            if (inputBlock.in1!=null && inputBlock.in2!=null && inputBlock.in1.id < inputBlock.id && inputBlock.in2.id < inputBlock.id) {
+                //We are at a merge section, so merge
+                RegAllocator.memorySpace space1 = inputBlock.in1.schedule.scheduledSpace;
+                RegAllocator.memorySpace space2 = inputBlock.in2.schedule.scheduledSpace;
+                space = space.upperSpace;
+                ifJoin = true;
+            }
+
+            boolean ifCmp = false;
+            if (inputBlock.in2 == null && inputBlock.branch != null)
+                ifCmp = true;
 
             inputBlock.schedule = this;
             
@@ -438,7 +484,9 @@ public class InstructionSchedule {
                     RegAllocator.phiRequest req = rc.new phiRequest();
                     req.value1 = ((Instruction)currentInstr.arg1);
                     req.value2 = ((Instruction)currentInstr.arg2);
-                    req.actualStmt = new InstructionValue(currentInstr, inputBlock);
+                    if (currentInstr.state.valueRepr != null)
+                        req.actualStmt = currentInstr.state.valueRepr;
+                    else req.actualStmt = new InstructionValue(currentInstr, inputBlock);
                     currentInstr.state.valueRepr = req.actualStmt;
                     
                     phiInstructions.add(req);
@@ -455,7 +503,6 @@ public class InstructionSchedule {
                 
                 currentInstr = currentInstr.next;
             }
-            boolean ifJoin = true;
             if (phiInstructions.size() > 0) {
                 //There is phi instruction
                 //Check phi status
@@ -463,7 +510,6 @@ public class InstructionSchedule {
                 if (Compiler.debug) {
                     System.out.println("PHI");
                 }
-                ifJoin = (inputBlock.id > inputBlock.in1.id) && (inputBlock.id > inputBlock.in2.id);
                 if (ifJoin) {
                     //This is a merge block
                     RegAllocator.phiMergerResult result = RegAllocator.phiMerger(inputBlock.in1.schedule.context, inputBlock.in2.schedule.context, phiInstructions);
@@ -545,8 +591,8 @@ public class InstructionSchedule {
                     }
                 }
                 if (Compiler.debug) {
-                    System.out.println("# of unscheduled instruction: "+unprocessBlock.size()+"\n"+unprocessBlock);
-                    System.out.println("# of cached instruction: "+cachedInstruction.size());
+                    /*System.out.println("# of unscheduled instruction: "+unprocessBlock.size()+"\n"+unprocessBlock);
+                    System.out.println("# of cached instruction: "+cachedInstruction.size());*/
                     System.out.println("Scheduled: "+instructions);
                 }
                 
@@ -579,7 +625,7 @@ public class InstructionSchedule {
                     
                     if (Compiler.debug) {
                         System.out.print("Schedule instruction: "+instr+"\n");
-                        System.out.print("Register Context: " + context + "\n");
+                        //System.out.print("Register Context: " + context + "\n");
                     }
                 }
                 
@@ -618,7 +664,7 @@ public class InstructionSchedule {
                             Instruction[] dependents = instr.instrsUsed;
                             ArrayList<Integer> nextFlush = context.registerToFlushTo();
                             for (Instruction dep: dependents) {
-                                if (dep != null) {
+                                if (dep != null && !dep.deleted()) {
                                     int index = nextFlush.indexOf(dep.state.storage.currentRegister.registerID);
                                     if (index >= 0) nextFlush.remove(index);
                                 }
@@ -654,7 +700,7 @@ public class InstructionSchedule {
                         //Then add the instruction from the available pool
                         Instruction instr = pickNextCache(availableInstruction);
                         if (instr != null) {
-                            outputInstruction oi = instr.state.storage.load(r, space);
+                            ArrayList<InstructionSchedule.outputInstruction> oi = instr.state.storage.load(r, space);
 
                             if (r.currentValue.basedInstr != instr) {
                                 //The value is not correct, so check if phi-able
@@ -662,7 +708,7 @@ public class InstructionSchedule {
                                         r.currentValue.basedInstr == instr.arg1 || r.currentValue.basedInstr == instr.arg2 )
                                         ) {
                                     //Phi-able
-                                    r.currentValue.basedInstr = instr;
+                                    r.currentValue = instr.state.valueRepr;
                                     instr.state.storage.currentRegister = r;
                                 } else { assert false; }
                             }
@@ -677,7 +723,7 @@ public class InstructionSchedule {
                             }
                             
                             if (oi != null) {
-                                loadInstrBuffer.add(oi);
+                                loadInstrBuffer.addAll(oi);
                             }
                         }
                         
@@ -694,14 +740,14 @@ public class InstructionSchedule {
                 //Worst case: the save is followed by load at the same register
                 
                 if (Compiler.debug) {
-                    System.out.print("Schedule Stat: \n"
+                    /*System.out.print("Schedule Stat: \n"
                                      + "Load: " + loadInstrBuffer.size() + "\n"
                                      + "Save: " + saveInstrBuffer.size() + "\n"
                                      + "Instr: " + instrBuffer.size() + "\n"
-                                     + "Total: " + instructions.size() + "\n");
+                                     + "Total: " + instructions.size() + "\n");*/
                 }
             }
-            
+
             if (branch != null) {
                 //There is branch statement, so do the branch
                 if (branch.instrsUsed != null) {
@@ -720,7 +766,7 @@ public class InstructionSchedule {
                 outputInstruction oi = scheduleInstruction(branch, context);
                 instructions.add(oi);
             }
-            
+
             //Get the set of the instructions dependent
             //This is used to for the previous block to have component scheduled
             //Dependent counter init
@@ -752,8 +798,13 @@ public class InstructionSchedule {
                     if (inputBlock.fallThrough.dependent == 0 && inputBlock.fallThrough.schedule == null) {
                         if (inputBlock.fallThrough != null && inputBlock.branch != null && inputBlock.in2 != null) {
                             //There is a multi-path, so it is either a while, or an if branch (as in2 exist->must not be a if)->while only->has a new phi target
-                            rc.freezePhiForReg(context);
-                            next1 = new ScheduledBlock(context, inputBlock.fallThrough, space, context);
+                            rc.freezePhiForReg(previousContext, phiInstructions);
+                            next1 = new ScheduledBlock(context, inputBlock.fallThrough, space, previousContext);
+                        } else if (ifCmp) {
+                            //This is a if branch, scheudling the fall through
+                            //So create a sub-memory space
+                            RegAllocator.memorySpace subSpace = rc.new memorySpace(space);
+                            next1 = new ScheduledBlock(context, inputBlock.fallThrough, subSpace, lastPhiReg);
                         } else {
                             next1 = new ScheduledBlock(context, inputBlock.fallThrough, space, lastPhiReg);
                         }
@@ -779,8 +830,13 @@ public class InstructionSchedule {
                         //It has a branch, a fall through is given, so it must throw a new phi
                         if (inputBlock.in2 != null) {
                             //While branch
-                            rc.freezePhiForReg(context);
-                            next2 = new ScheduledBlock(context, inputBlock.branch, space, context);
+                            rc.freezePhiForReg(previousContext, phiInstructions);
+                            next2 = new ScheduledBlock(context, inputBlock.branch, space, previousContext);
+                        } else if (ifCmp) {
+                            //This is a if branch, scheudling the fall through
+                            //So create a sub-memory space
+                            RegAllocator.memorySpace subSpace = rc.new memorySpace(space);
+                            next1 = new ScheduledBlock(context, inputBlock.branch, subSpace, lastPhiReg);
                         } else {
                             next2 = new ScheduledBlock(context, inputBlock.branch, space, lastPhiReg);
                         }
@@ -833,7 +889,9 @@ public class InstructionSchedule {
         //Init memory set
         RegAllocator.memorySpace space = rac.new memorySpace();
         RegAllocator.registerContext regCtx = rac.new registerContext(space);
-        
+
+        Function f = IntermedRepr.MAIN;
+
         mainBlock = new ScheduledBlock(regCtx, repr.firstBlock, space, null);
 
         //Init functions
