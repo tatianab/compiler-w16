@@ -23,19 +23,18 @@ public class IntermedRepr {
 	public Block firstBlock;
 	public Stack<Block> currentBlocks;
 	public Block currentBlock;
-	public Block mainBegin;
 
 	public InterferenceGraph ifg;          // Interference graph.
 
-	public static final Function MAIN = new Function(-1, "MAIN");
+	public final Function MAIN = new Function(-1, "MAIN");
 
 	// Function compilation.
 	public Function currentFunction;
 
-	public ArrayList<Block> blocks;           // All of the blocks in the program.
+	public ArrayList<Block>       blocks;     // All of the blocks in the program.
 	public ArrayList<Instruction> instrs;     // All instructions in the program.
 	public ArrayList<Instruction> mainInstrs; // Just the instructions in the main program.
-	public ArrayList<Function> functions;     // All compiled user-defined functions.
+	public ArrayList<Function>    functions;  // All compiled user-defined functions.
 
 	// Constructor.
 	public IntermedRepr(boolean debug) {
@@ -53,7 +52,7 @@ public class IntermedRepr {
 
 	public Block begin() {
 		Block block = addBlock("Program begins.");
-		mainBegin = block;
+		MAIN.enter = block;
 		return block;
 	}
 

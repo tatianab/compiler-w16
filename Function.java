@@ -22,12 +22,15 @@ public class Function extends Value {
 
 	public ArrayList<Instruction> instrs;
 
+	public ArrayList<Array> arrays; // Arrays in this function.
+
 	
 	public Function(int id, String ident) {
 		this.id = id;
 		this.ident = ident;
 		numParams = 0;
 		this.instrs = new ArrayList<Instruction>();
+		this.arrays = new ArrayList<Array>();
 	}
 
 	public Function(int id, String ident, int numParams) {
@@ -35,6 +38,7 @@ public class Function extends Value {
 		this.ident = ident;
 		this.numParams = numParams;
 		this.instrs = new ArrayList<Instruction>();
+		this.arrays = new ArrayList<Array>();
 	}
 
 	public int getNumParams() {
@@ -88,6 +92,10 @@ public class Function extends Value {
 
 	public void addInstr(Instruction instr) {
 		instrs.add(instr);
+	}
+
+	public void addArray(Array array) {
+		arrays.add(array);
 	}
 
 	@Override

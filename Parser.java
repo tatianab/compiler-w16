@@ -270,6 +270,10 @@ public class Parser {
 				expect(closebracketToken);
 			}
 			array.commitDims();                 // Done with array dimensions.
+
+			// Add array to list of local arrays for this function.
+			program.currentFunction.addArray(array);
+
 			return array;
 		} else {
 			error("Invalid type declaration.");
