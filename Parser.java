@@ -321,6 +321,7 @@ public class Parser {
 		expect(returnToken);
 		if (!check(semiToken)) {
 			expression();       // Expression to return.
+			// Branch to exit point.
 		}
 	}
 

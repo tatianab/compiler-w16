@@ -6,6 +6,7 @@ Enter and Leave helper of the function (copy back reg 1 content if its a procedu
 Merge the if memory space
 Implement load and store in the code generator
 Separate the function and procedure within the FUNCTION object
+Create fake return variable for functions
 
 
 Done:

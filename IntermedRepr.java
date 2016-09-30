@@ -476,7 +476,7 @@ public class IntermedRepr {
 
     // This needs to be fixed.
     public int getNumGlobals() {
-    	return instrs.size();
+    	return MAIN.instrs.size();
     }
 
 	/* Create interference graph. */
