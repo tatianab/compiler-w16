@@ -655,6 +655,15 @@ public class RegAllocator {
             else result += "null";
             return result+"\n";
         }
+
+        public ArrayList<InstructionSchedule.outputInstruction> helperBlock() {
+            return null;
+        }
+
+        public ArrayList<InstructionSchedule.outputInstruction> popperBlock() {
+            return null;
+        }
+
     }
 
     public class registerContext {

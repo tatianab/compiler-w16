@@ -890,9 +890,7 @@ public class InstructionSchedule {
         RegAllocator.memorySpace space = rac.new memorySpace();
         RegAllocator.registerContext regCtx = rac.new registerContext(space);
 
-        Function f = IntermedRepr.MAIN;
-
-        mainBlock = new ScheduledBlock(regCtx, repr.firstBlock, space, null);
+        mainBlock = new ScheduledBlock(regCtx, repr.MAIN.enter, space, null);
 
         //Init functions
         functionBlocks = new HashMap<Function, ScheduledBlock>();
