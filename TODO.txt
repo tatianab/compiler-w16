@@ -1,0 +1,12 @@
+TODO:
+Branch in the return statement
+List of Global variable
+Materialize Array load and store
+Enter and Leave helper of the function (copy back reg 1 content if its a procedure)
+Merge the if memory space
+Implement load and store in the code generator
+Separate the function and procedure within the FUNCTION object
+
+
+Done:
+List of arrays in block
