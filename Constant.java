@@ -29,4 +29,12 @@ public class Constant extends Value {
 	public String shortRepr() {
 		return "#" + value;
 	}
+
+	@Override
+	public boolean equals(Value other) {
+		if (other instanceof Constant) {
+			return (value == other.getVal());
+		}
+		return false;
+	}
 }

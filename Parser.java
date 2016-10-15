@@ -497,8 +497,14 @@ public class Parser {
 			if (debug) { System.out.println("Generated move instruction " + moveInstr); }
 		} else if (var instanceof Array) {
 			// Create an array store instruction for this array.
-			Instruction arrayInstr = program.addArrayInstr(Instruction.arrayStore, (Array) var, ((Array) var).currentIndices, expr);
-			if (debug) { System.out.println("Generated array instruction " + arrayInstr); }
+			// Generate instructions to compute offset.
+			Value offset = arrayOffset(((Array) var).currentIndices, ((Array) var).dims);
+			// Adda and store instructions.
+			Instruction addaInstr  = program.addInstr(adda, (Array) var, offset);
+			Instruction storeInstr = program.addInstr(store, expr, addaInstr);
+			addaInstr.linkTo(storeInstr);
+			// Instruction arrayInstr = program.addArrayInstr(Instruction.arrayStore, (Array) var, ((Array) var).currentIndices, expr);
+			if (debug) { System.out.println("Generated array instruction " /* + arrayInstr */); }
 		}
 	}
 
@@ -528,7 +534,14 @@ public class Parser {
 					array.setCurrentIndices(indices);
 					return array;
 				} else {
-					return program.addArrayInstr(Instruction.arrayLoad, array, indices);
+					// Generate load instruction for an array.
+					Value offset = arrayOffset(indices, array.dims);
+					// Adda and store instructions.
+					Instruction addaInstr  = program.addInstr(adda, array, offset);
+					Instruction loadInstr  = program.addInstr(load, addaInstr);
+					addaInstr.linkTo(loadInstr);
+					return loadInstr;
+					// return program.addArrayInstr(Instruction.arrayLoad, array, indices);
 				}
 			}
 		}
@@ -732,6 +745,28 @@ public class Parser {
 	}
 
 	/* End token validity checks. */
+
+	// Calculate array offset.
+	private Value arrayOffset(Value[] indices, int[] dims) {
+		Value total   = null;
+		Value current = null;
+
+		for (int i = 0; i < indices.length; i++) {
+			// The current term is index multiplied by all following dimensions.
+			current = indices[i];
+			for (int d = i + 1; d < dims.length; d++) {
+				current = program.addInstr(mul, current, new Constant(dims[d]) );
+			}
+			// Add the current term to the running sum.
+			if (total != null) {
+				total = program.addInstr(add, total, current);
+			} else {
+				total = current;
+			}
+		}
+
+		return total;
+	}
 
 	// Print an error message and exit the program.
 	private void error(String message) {

@@ -32,10 +32,12 @@ public class Instruction extends Value {
 										// same op code as this instruction.
 
 	public Instruction[] instrsUsed; // The instructions used by this one.
-	HashSet<Instruction> uses;       // The instructions that use the result of this instruction.
+	HashSet<Instruction> uses;        // The instructions that use the result of this instruction.
 
-	public int register; // The register that the value of this instruction is assigned to.
+	private Instruction link; // The linked instruction (for adda-store or adda-load).
+	public int register;      // The register that the value of this instruction is assigned to.
 
+	public boolean global;    // True if this instruction is used by one or more instructions in the main function.
 	public InstructionState state;
 
 	/* Operation codes. */
@@ -90,6 +92,9 @@ public class Instruction extends Value {
 		// this.instrsUsed = new Instruction[2];
 		this.uses     = new HashSet<Instruction>();
 		this.register = -1;
+		this.link     = null;
+		this.arg1     = null;
+		this.arg2     = null;
 	}
 
 	public void delete() {
@@ -141,6 +146,7 @@ public class Instruction extends Value {
 		}
 	}
 
+	// Indicate that this instruction uses the given instruction.
 	public void uses(Instruction instr) {
 		if (this.instrsUsed == null) {
 			this.instrsUsed = new Instruction[]{instr, null};
@@ -159,12 +165,40 @@ public class Instruction extends Value {
 		}
 	}
 
+	// Indicate that the given instruction uses this instruction.
 	public void usedIn(Instruction instr) {
 		uses.add(instr);
 	}
 
+	// // Check whether this uses instr.
+	// public boolean uses(Instruction instr) {
+	// 	// Return true if instr is in instrsUsed.
+	// 	if () {
+
+	// 		return true;
+	// 	}
+	// 	// Or if instr is in params list.
+	// 	else if () {
+
+	// 		return true;
+	// 	}
+
+	// 	// False otherwise
+	// 	return false;
+	// }
+
+	// Get list of instructions used.
+
 	public void defines(Variable var) {
 		this.varDefd = var;
+	}
+
+	public boolean isLinked() {
+		return (link != null);
+	}
+
+	public Instruction getLink() {
+		return link;
 	}
 
 	/* Setters. */
@@ -271,6 +305,11 @@ public class Instruction extends Value {
 
 	/* End setters. */
 
+	public void linkTo(Instruction instr) {
+		link       = instr;
+		instr.link = this;
+	}
+
 	// Return instruction that immediately dominates this instruction.
 	// If none exists, return null.
 	public Instruction dominatingInstr() {
@@ -318,12 +357,18 @@ public class Instruction extends Value {
 			return false;
 		} else if (op != phi) {
 			if (this.op == other.op && !this.deleted() && !other.deleted()) {
-				if (this.arg1 == other.arg1 && this.arg2 == other.arg2) {
-					return true;
-				}
+				return this.argsEquiv(other);
 			}
 		}
 		return false;
+	}
+
+	private boolean argsEquiv(Instruction other) {
+		if (this.arg1 == null || this.arg2 == null) {
+			return (this.arg1 == other.arg1 && this.arg2 == other.arg2);
+		} else {
+			return (this.arg1.equals(other.arg1) && this.arg2.equals(other.arg1));
+		}
 	}
 
 	// Convert all variables related to this instruction into 

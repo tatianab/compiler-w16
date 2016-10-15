@@ -196,16 +196,27 @@ public class IntermedRepr {
 
 	public Instruction addArrayInstr(int op, Array array, Value[] indices, Value expr) {
 		Instruction instr = addInstr(op, array, expr);
-		instr.params = indices;
-		// Add indices to usedAt
+		addIndexUsage(instr, array, indices);
 		return instr;
 	}
 
 	public Instruction addArrayInstr(int op, Array array, Value[] indices) {
 		Instruction instr = addInstr(op, array);
-		instr.params = indices;
-		// Add indices to usedAt
+		addIndexUsage(instr, array, indices);
 		return instr;
+	}
+
+	// Update usage information for indices of an array.
+	public void addIndexUsage(Instruction instr, Array array, Value[] indices) {
+		// Ensure that all indices are instructions. TODO
+
+		// Associate the instruction with the indices.
+		instr.params = indices;
+
+		// Update usage info for indices and the instruction.
+		// for (Instruction index : indices) {
+		// 	index.usedIn(instr);
+		// }
 	}
 
 	// Add assignment (move) instruction.
@@ -214,6 +225,8 @@ public class IntermedRepr {
 		moveInstr.defines(var);
         var.definedAt(moveInstr);
         currentBlock().addReturnValue(var);
+        // TODO: check if this is a global variable being
+        // modified inside a function
 		return moveInstr;
 	}
 
