@@ -932,7 +932,7 @@ public class InstructionSchedule {
                             //This is a if branch, scheudling the fall through
                             //So create a sub-memory space
                             RegAllocator.memorySpace subSpace = rc.new memorySpace(space);
-                            next1 = new ScheduledBlock(context, inputBlock.branch, subSpace, lastPhiReg);
+                            next2 = new ScheduledBlock(context, inputBlock.branch, subSpace, lastPhiReg);
                         } else {
                             next2 = new ScheduledBlock(context, inputBlock.branch, space, lastPhiReg);
                         }
