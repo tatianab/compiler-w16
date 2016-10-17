@@ -5,19 +5,15 @@ var a;
 	let a <- 10;
 	if 2 == 3 then
 		if 3 == 4 then
-			let a <- 1;
-			call OutputNum(0)
+			let a <- 1
 		else
-			let a <- 2;
-			call OutputNum(5)
+			let a <- 2
 		fi
 	else
 		if 3 == 4 then
-			let a <- 3;
-			call OutputNum(0)
+			let a <- 3
 		else
-			let a <- 4;
-			call OutputNum(5)
+			let a <- 4
 		fi
 	fi;
 

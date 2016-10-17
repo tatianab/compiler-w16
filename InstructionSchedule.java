@@ -1,7 +1,3 @@
-import com.sun.org.apache.bcel.internal.generic.InstructionComparator;
-import com.sun.tools.internal.jxc.ap.Const;
-import com.sun.tools.internal.xjc.generator.bean.ImplStructureStrategy;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
