@@ -168,6 +168,18 @@ public class Compiler {
 		    }
 		}
 
+		if (debug) {
+			System.out.print("Global vars and arrays \n");
+			for (Variable v : program.globalVars) {
+				System.out.print(v.shortRepr() + " ");
+			}
+			System.out.print("\n");
+			for (Array a : program.globalArrays) {
+				System.out.print(a.shortRepr()  + " ");
+			}
+			System.out.print("\n");
+		}
+
 		// Auxillary data.
 		if (cfg) {
 			System.out.println(program.cfgToString());

@@ -24,6 +24,9 @@ public class Function extends Value {
 
 	public ArrayList<Array> arrays; // Arrays in this function.
 
+	public ArrayList<Variable> globalsUsed;
+	public ArrayList<Variable> globalsModified;
+
 	
 	public Function(int id, String ident) {
 		this.id = id;
@@ -39,6 +42,10 @@ public class Function extends Value {
 		this.numParams = numParams;
 		this.instrs = new ArrayList<Instruction>();
 		this.arrays = new ArrayList<Array>();
+	}
+
+	public boolean isMain() {
+		return id == -1;
 	}
 
 	public int getNumParams() {
@@ -96,6 +103,38 @@ public class Function extends Value {
 
 	public void addArray(Array array) {
 		arrays.add(array);
+	}
+
+	// Handle globals that are MODIFIED by this function.
+	public void addGlobalModification(Variable var, Instruction instr) {
+		// If this global has already been modified,
+		// change the store entry.
+		if (false) {
+			// TODO
+		}
+		// If this global has not already been modified,
+		// store it back in the EXIT block of the function.
+		else {
+			// TODO
+		}
+	}
+
+	// Handle globals that are USED by this function.
+	public void addGlobalUse(Variable var) {
+		// If this variable has already been loaded,
+		// do nothing.
+		if (false) {
+			// TODO
+		}
+		// Otherwise, load it into the ENTER block of the
+		// function.
+		else {
+			// Instruction instr = program.createInstr();
+			// instr.setOp(Instruction.move);
+			// instr.setArgs(var, instr);
+			// enter.addToEnd(instr);
+		}
+		
 	}
 
 	@Override

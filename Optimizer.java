@@ -33,12 +33,12 @@ public class Optimizer {
 	}
 
 	public IntermedRepr optimize() {
-		if (debug) { System.out.println("Eliminating common subexpressions..."); }
-		commonSubexprElim();
 		if (debug) { System.out.println("Copy propagation..."); }
 		copyPropagation();
 		if (debug) { System.out.println("Precomputing constant values..."); }
 		constantPrecompuation();
+		if (debug) { System.out.println("Eliminating common subexpressions..."); }
+		commonSubexprElim();
 		if (debug) { System.out.println("Eliminating dead code..."); }
 		deadCodeElim();
 		// if (debug) { System.out.println("Collapsing empty blocks..."); }
@@ -111,7 +111,7 @@ public class Optimizer {
 					for (Instruction useSite : currentInstr.uses) {
 						useSite.replace(currentInstr, equivInstr);
 					}
-					// currentInstr.delete();
+					//currentInstr.delete();
 			//	}
 			}
 		}
@@ -159,27 +159,36 @@ public class Optimizer {
 	public void constantPrecompuation() {
 		for (Instruction instr : program.instrs) {
 			if (instr.op >= add && instr.op <= div) {
-				if (debug) { System.out.println("CP: testing " + instr); }
+				if (debug) { System.out.print("Cons. Precomp: testing " + instr); }
 				Value arg1 = instr.arg1;
 				Value arg2 = instr.arg2;
 				if (instr.arg1 instanceof Constant && instr.arg2 instanceof Constant && !instr.usedInPhi()) {
-					int value = 0;
+					if (debug) { System.out.print("args = " + arg1.getVal() +  ", " + arg2.getVal() + ";"); }
+					int value   = 0;
+					int arg1Val = arg1.getVal();
+					int arg2Val = arg2.getVal();
 					switch(instr.op) {
 						case Instruction.add:
-							value = arg1.getVal() + arg2.getVal();
+							value = arg1Val + arg2Val;
+							break;
 						case Instruction.sub:
 							value = arg1.getVal() - arg2.getVal();
+							break;
 						case Instruction.mul:
 							value = arg1.getVal() * arg2.getVal();
+							break;
 						case Instruction.div:
 							value = arg1.getVal() / arg2.getVal();
+							break;
 						default:
 							break;
 					}
 					Constant constant = new Constant(value);
-					for (Instruction useSite : instr.uses) {
+					if (debug) { System.out.print("value = " + value + ", " + constant.shortRepr() + "\n"); }
+					ArrayList<Instruction> useSites = new ArrayList<Instruction>(instr.uses);
+					for (Instruction useSite : useSites) {
 						// TODO: fix concurrent modification error
-						// useSite.replace(instr, constant);
+						useSite.replace(instr, constant);
 					}
 				}
 			}

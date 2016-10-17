@@ -15,6 +15,7 @@ public class StringTable {
 	private Hashtable<String, Integer> strings; // Lookup string --> id.
 	private ArrayList<StringData>      ids;     // Lookup id --> string info.
 	private int nextOpenID;
+	private Function currentScope; 
 
 	/* Constructor.
 	 * Adds all reserved words to the string table.
@@ -33,7 +34,7 @@ public class StringTable {
 			id    = nextOpenID;
 			token = reservedID[i];
 			strings.put(name, id);
-			ids.add(id, new StringData(id, name, token));
+			ids.add(id, new StringData(id, name, token, null));
 			nextOpenID++;
 		}
 
@@ -43,6 +44,7 @@ public class StringTable {
 		for (String funcName : builtInFunctions) {
 			funcId = getID(funcName);
 			func = new Function(funcId, funcName);
+			currentScope = func;
 			if (funcName.equals("OutputNum")) {
 				func.setNumParams(1);
 			}
@@ -63,7 +65,7 @@ public class StringTable {
 		int id = nextOpenID;
 		nextOpenID++;
 		strings.put(name, id);
-		ids.add(id, new StringData(id, name, ident));
+		ids.add(id, new StringData(id, name, ident, currentScope));
 	}
 
 	/* Methods related to variables, functions and arrays. */
@@ -128,10 +130,13 @@ public class StringTable {
 		public Array    lastArr;  // The last array associated with this string.
 		public Function lastFunc; // The last function associated with this string.
 
-		public StringData(int id, String name, int token) {
+		public Function scope;    // The scope of the variable.
+
+		public StringData(int id, String name, int token, Function scope) {
 			this.id       = id;
 			this.name     = name;
 			this.token    = token;
+			this.scope    = scope;
 			this.lastVar  = null;
 			this.lastArr  = null;
 			this.lastFunc = null;

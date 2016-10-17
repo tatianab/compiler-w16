@@ -209,6 +209,7 @@ public class Parser {
 	 		String funcName = table.getName(funcId);
 	 		Function function = new Function(funcId, funcName);
 	 		table.declare(function, funcId);
+	 		program.setScope(function);
 
 	 		// Get formal parameters.
 			if (!check(semiToken)) {
@@ -232,12 +233,14 @@ public class Parser {
 		Value variable = typeDecl();   // Get the variable or array.
 		int id = ident();
 		table.declare(variable, id);
+		// program.declare(table.getVar(id));
 		if (debug && variable instanceof Variable) { 
 			System.out.println("Declared variable " + table.getVar(id).shortRepr()); 
 		}
 		while (accept(commaToken)) {
 		    id = ident();
 			table.declare(variable, id);
+			// program.declare(table.getVar(id));
 			if (debug && variable instanceof Variable) { 
 				System.out.println("Declared variable " + table.getVar(id).shortRepr()); 
 			}
@@ -365,8 +368,6 @@ public class Parser {
 		join.addNext(whileBlock, follow);  // Join/compare falls through to inner block, or jumps to follow.
 		join.fix(follow);                  // Branch to follow.
 		endWhileBlock.addNext(join, true); // Jump from inner block to join/compare.
-
-
 	}
 
 	/* ifStatement.
@@ -494,6 +495,7 @@ public class Parser {
 			// Create new move instruction for this Variable.
 			Instruction moveInstr = program.addAssignment((Variable) var, expr);
 			table.reassignVar(((Variable) var).id, (Variable) var);
+			program.declare(var);
 			if (debug) { System.out.println("Generated move instruction " + moveInstr); }
 		} else if (var instanceof Array) {
 			// Create an array store instruction for this array.
