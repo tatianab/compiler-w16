@@ -1013,6 +1013,7 @@ public class InstructionSchedule {
     }*/
 
     public ArrayList<outputInstruction>sumbitVariable(ArrayList<Instruction> parameters, RegAllocator.memorySpace space) {
+        ArrayList<outputInstruction> oi = new ArrayList<outputInstruction>();
         //Reserve space from register 1 to the end
         for (int i = 1; i < RegAllocator.numberOfRegister; i++) {
             //Reserve memory space for context switch
@@ -1023,6 +1024,7 @@ public class InstructionSchedule {
             //Load it to register, then flush it to stack
 
         }
+        return oi;
     }
 
     public ArrayList<outputInstruction> beforeCall(RegAllocator.registerContext ctx) {
