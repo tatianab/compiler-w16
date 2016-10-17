@@ -405,6 +405,7 @@ public class RegAllocator {
             public int address;
             public int size;
             public int count;
+            public boolean stack = true;
             public memoryID identity;
             public InstructionSchedule.InstructionValue actualValue;
         }
@@ -424,6 +425,7 @@ public class RegAllocator {
         }
 
         public HashMap<memoryPosition, InstructionSchedule.InstructionValue> preserve;
+        public HashMap<String, memoryPosition> heap = new HashMap<>();
 
         public InstructionSchedule.InstructionValue fetchEqualvalent(InstructionSchedule.InstructionValue value) {
             for (InstructionSchedule.InstructionValue val: preserve.values()) {
@@ -519,6 +521,7 @@ public class RegAllocator {
             InstructionSchedule c = new InstructionSchedule();
             InstructionSchedule.outputInstruction loadInstr = c.new outputInstruction();
             loadInstr.op = Instruction.load;
+            //Stack pointer
             loadInstr.arg1 = numberOfRegister-2;
             loadInstr.constant2 = position.address;
             loadInstr.outputReg = regNo;
@@ -537,6 +540,17 @@ public class RegAllocator {
             storeInstr.outputReg = regNo;
 
             return storeInstr;
+        }
+
+        public memoryPosition reverseVariable(int size) {
+            int beginAddr = dataTail;
+            dataTail += size;
+            memoryPosition pos = new memoryPosition();
+            pos.address = beginAddr;
+            pos.size = size;
+            pos.count = 1;
+            pos.stack = false;
+            return pos;
         }
     }
     static int regWriteCount = 0;
@@ -703,6 +717,7 @@ public class RegAllocator {
         public Register returnAddrRegister() {
             return registers[numberOfRegister-numberOfReverse+4];
         }
+
         ArrayList<InstructionSchedule.outputInstruction> swapRegister(int regA, int regB) {
             ArrayList<InstructionSchedule.outputInstruction>tmp = new ArrayList();
             InstructionSchedule is = new InstructionSchedule();

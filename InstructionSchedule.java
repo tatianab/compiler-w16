@@ -1,3 +1,7 @@
+import com.sun.org.apache.bcel.internal.generic.InstructionComparator;
+import com.sun.tools.internal.jxc.ap.Const;
+import com.sun.tools.internal.xjc.generator.bean.ImplStructureStrategy;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -149,8 +153,15 @@ public class InstructionSchedule {
             arg1 = -1;
             arg2 = -1;
         }
-        outputInstruction(Instruction instr, int outputRegistetNo) {
+        outputInstruction(Instruction instr, int outputRegistetNo, ArrayList<outputInstruction>intermediateOp) {
             Block b;
+
+            //Oct 14, 2016 - A bypass for adda instruction
+            if (instr.op == Instruction.adda) {
+                //This is an adda instruction
+
+            }
+
             //Search for arg1
             int reg1 = -1;
             if (instr.arg1 instanceof Instruction) {
@@ -163,11 +174,89 @@ public class InstructionSchedule {
             } else if (instr.arg1 instanceof Block) {
                b = (Block)instr.arg1;
                jumpBlock = b;
-           }
+
+           } //Oct 14, 2016 - Arrayload and ArrayStore is deprecated, replace with load/store plus an adda
+            /*else if (instr.arg1 instanceof  Array) {
+                //Memory Op Reg, from RegAllocator->registerContext
+                int memOp = RegAllocator.numberOfRegister-RegAllocator.numberOfReverse;
+                int spReg = memOp+3;
+
+                //Zero-out the memory register, and load the root base of array
+                outputInstruction zeroOut = new outputInstruction();
+                zeroOut.op = Instruction.move;
+                zeroOut.arg1 = 0;
+                zeroOut.outputReg = memOp;
+                arrayIndice.add(zeroOut);
+
+                //Array operation
+                Array a = (Array)instr.arg1;
+                //Calculate the index
+                for (int i = 0; i < instr.params.length; i++) {
+                    Value intermediateVal = instr.params[i];
+                    int step = a.dims[i];
+                    if (intermediateVal instanceof Constant) {
+                        //Just add the instr
+                        outputInstruction addOi = new outputInstruction();
+                        addOi.arg1 = memOp;
+                        addOi.constant2 = ((Constant)intermediateVal).getVal();
+                        addOi.outputReg = memOp;
+                        addOi.op = Instruction.add;
+                        arrayIndice.add(addOi);
+                    } else if (intermediateVal instanceof Instruction) {
+                        Instruction intermediateInstr = (Instruction)intermediateVal;
+                        //Use output register as a temporary store
+                        if (intermediateInstr.state.schedule) {
+                            //It has scheduled, load from memory
+
+                        } else {
+                            //It is not scheduled, so run
+                            //It is null because it should not be array loading operation
+                            outputInstruction indiceInstr = new outputInstruction(intermediateInstr, outputRegistetNo, null);
+                            arrayIndice.add(indiceInstr);
+                        }
+                        outputInstruction addOi = new outputInstruction();
+                        addOi.arg1 = memOp;
+                        addOi.arg2 = outputRegistetNo;
+                        addOi.outputReg = memOp;
+                        addOi.op = Instruction.add;
+                        arrayIndice.add(addOi);
+
+                    }
+
+                    outputInstruction mulOi = new outputInstruction();
+                    mulOi.arg1 = memOp;
+                    mulOi.constant2 = step;
+                    mulOi.outputReg = memOp;
+                    mulOi.op = Instruction.mul;
+                    arrayIndice.add(mulOi);
+                }
+                //Finish all, but need to trim the last multi instruction
+                arrayIndice.remove(arrayIndice.size()-1);
+
+                //Then add the value
+                //Then add the position
+                int addr = a.backstorePos.address;
+                outputInstruction incre = new outputInstruction();
+                incre.arg1 = memOp;
+                incre.constant2 = addr;
+                incre.outputReg = memOp;
+                incre.op = Instruction.add;
+                arrayIndice.add(incre);
+
+                //Add (Sub) the stack register value
+                outputInstruction subMem = new outputInstruction();
+                subMem.arg1 = spReg;
+                subMem.arg2 = memOp;
+                subMem.outputReg = memOp;
+                subMem.op = Instruction.sub;
+                arrayIndice.add(subMem);
+
+                intermediateOp.addAll(arrayIndice);
+            }*/
             //Search for arg2
             int reg2 = -1;
             
-            if (instr.op != Instruction.move) {
+            if (instr.op != Instruction.move && instr.op != Instruction.load) {
                 //If it's not move instruction, it should be have the second argument
                 if (instr.arg2 instanceof Instruction) {
                     //It is instruction, it must have an register
@@ -192,6 +281,9 @@ public class InstructionSchedule {
             int outReg = outputRegistetNo;
             
             op = instr.op;
+            //Override
+            if (op == Instruction.arrayLoad) op = Instruction.load;
+            else if (op == Instruction.arrayStore) op = Instruction.store;
             outputReg = outReg;
             arg1 = reg1;
             arg2 = reg2;
@@ -326,22 +418,23 @@ public class InstructionSchedule {
             }
         }
 
-        public outputInstruction scheduleInstruction(Instruction instr, RegAllocator.registerContext context) {
+        public ArrayList<outputInstruction> scheduleInstruction(Instruction instr, RegAllocator.registerContext context) {
+            ArrayList<outputInstruction> result = new ArrayList<>();
             //Get register, set the value to the register
             if (Compiler.debug) {
-                System.out.println(instr);
+                //System.out.println(instr);
             }
             int nextRegID = -1;
             
             InstructionValue value = new InstructionValue(instr, referenceBlock);
             if (Compiler.debug) {
-                System.out.print("Instr: "+instr+"\n");
+                //System.out.print("Instr: "+instr+"\n");
             }
             instr.state.valueRepr = value;
             
             //Tell the instrcution depended on that it's releasing
             instr.state.scheduled();
-            outputInstruction oi = new outputInstruction(instr, nextRegID);
+            outputInstruction oi = new outputInstruction(instr, nextRegID, result);
             
             if (instructionWouldReturn(instr)) {
                 phiMemoryDeduction(instr, context);
@@ -364,7 +457,8 @@ public class InstructionSchedule {
                 oi.outputReg = nextRegID;
                 
             }
-            return oi;
+            result.add(oi);
+            return result;
         }
         
         //Check if the instruction depend on an instruction that has not scheduled yet (O(n))
@@ -606,11 +700,11 @@ public class InstructionSchedule {
                     Instruction instr = pickInstr(cachedInstruction);
                     
                     
-                    outputInstruction oi = scheduleInstruction(instr, context);
+                    ArrayList<outputInstruction> oi = scheduleInstruction(instr, context);
                     //Transform it to register based instruction
                     //"Solidify" it
                     flushedWithoutSuccess = false;
-                    instrBuffer.add(oi);
+                    instrBuffer.addAll(oi);
                     newlyCalculated.add(instr);
                     unprocessBlock.remove(instr);
                     cachedInstruction.remove(instr);
@@ -659,14 +753,16 @@ public class InstructionSchedule {
                             }
                             flushedWithoutSuccess = true;
                         } else {
-                            //Since there is an existed cached instruction, just pick the one that is not depended
+                            //Since there is an existed cached instruction, just pick the one register that is not depended
                             Instruction instr = cachedInstruction.get(0);
                             Instruction[] dependents = instr.instrsUsed;
                             ArrayList<Integer> nextFlush = context.registerToFlushTo();
-                            for (Instruction dep: dependents) {
-                                if (dep != null && !dep.deleted()) {
-                                    int index = nextFlush.indexOf(dep.state.storage.currentRegister.registerID);
-                                    if (index >= 0) nextFlush.remove(index);
+                            if (dependents != null) {
+                                for (Instruction dep : dependents) {
+                                    if (dep != null && !dep.deleted()) {
+                                        int index = nextFlush.indexOf(dep.state.storage.currentRegister.registerID);
+                                        if (index >= 0) nextFlush.remove(index);
+                                    }
                                 }
                             }
                             flushID = nextFlush.get(0);
@@ -763,8 +859,8 @@ public class InstructionSchedule {
                     }
                 }
                 //It's ready, so load it
-                outputInstruction oi = scheduleInstruction(branch, context);
-                instructions.add(oi);
+                ArrayList<outputInstruction> oi = scheduleInstruction(branch, context);
+                instructions.addAll(oi);
             }
 
             //Get the set of the instructions dependent
@@ -915,6 +1011,19 @@ public class InstructionSchedule {
     /*public ArrayList<outputInstruction> functionCall(Function func, RegAllocator.registerContext ctx) {
 
     }*/
+
+    public ArrayList<outputInstruction>sumbitVariable(ArrayList<Instruction> parameters, RegAllocator.memorySpace space) {
+        //Reserve space from register 1 to the end
+        for (int i = 1; i < RegAllocator.numberOfRegister; i++) {
+            //Reserve memory space for context switch
+            space.reserve();
+        }
+        //Load all value into stack
+        for (Instruction parameter: parameters) {
+            //Load it to register, then flush it to stack
+
+        }
+    }
 
     public ArrayList<outputInstruction> beforeCall(RegAllocator.registerContext ctx) {
         beforeFlush = new ArrayList();
