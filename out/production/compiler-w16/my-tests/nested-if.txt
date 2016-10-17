@@ -1,23 +1,26 @@
 main
+var a; 
 {
 	call OutputNum(4);
-
+	let a <- 10;
 	if 2 == 3 then
-		return 1;
 		if 3 == 4 then
-			return 0
+			let a <- 1;
+			call OutputNum(0)
 		else
-			return 5
+			let a <- 2;
+			call OutputNum(5)
 		fi
 	else
-		return 1;
 		if 3 == 4 then
-			return 0
+			let a <- 3;
+			call OutputNum(0)
 		else
-			return 5
+			let a <- 4;
+			call OutputNum(5)
 		fi
 	fi;
 
-	call OutputNum(2)
+	call OutputNum(a)
 }
 .

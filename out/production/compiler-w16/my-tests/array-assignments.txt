@@ -3,6 +3,12 @@ array [10]a;
 array [1]b;
 array [10][10]c;
 var d;
+function foo( );
+var i;
+{
+	let d <- 0;
+	return d
+};
 {
 	let c[ 1 ][ 2 ] <- 5;
 	let b[ 0 ] <- a[ 0 ] + 2 - 3;
