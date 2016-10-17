@@ -14,6 +14,8 @@ public class Variable extends Value {
 	public Instruction def;              // The instruction that defines this variable.
 	public HashSet<Instruction> uses;    // The instructions that use this variable, but don't re-define it.
 
+	public RegAllocator.memorySpace.memoryPosition position;
+
 	private static int nextAvailableId = 0;
 
 	public Variable() {

@@ -983,7 +983,21 @@ public class InstructionSchedule {
         //Init first register set
         RegAllocator rac = new RegAllocator();
         //Init memory set
-        RegAllocator.memorySpace space = rac.new memorySpace();
+        //Create global variable memory space
+        RegAllocator.memorySpace globalSpace = rac.new memorySpace();
+        {
+            //Inital all the variable first
+            for (Variable var: repr.globalVars) {
+                //Every variable is 1 value size
+                var.position = globalSpace.reverseVariable(1);
+            }
+            //Then, reserve all array
+            for (Array array: repr.globalArrays) {
+                array.backstorePos = globalSpace.reverseVariable(array.totalSize);
+            }
+        }
+
+        RegAllocator.memorySpace space = rac.new memorySpace(globalSpace);
         RegAllocator.registerContext regCtx = rac.new registerContext(space);
 
         mainBlock = new ScheduledBlock(regCtx, repr.MAIN.enter, space, null);
@@ -992,7 +1006,7 @@ public class InstructionSchedule {
         functionBlocks = new HashMap<Function, ScheduledBlock>();
 
         for (Function func : repr.functions) {
-        	RegAllocator.memorySpace _space = rac.new memorySpace();
+        	RegAllocator.memorySpace _space = rac.new memorySpace(globalSpace);
         	RegAllocator.registerContext _regCtx = rac.new registerContext(space);
 
         	ScheduledBlock funcBlock = new ScheduledBlock(_regCtx, func.enter, _space, null);

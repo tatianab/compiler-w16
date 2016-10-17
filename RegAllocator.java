@@ -415,12 +415,13 @@ public class RegAllocator {
         private int dataTail;
         public memorySpace upperSpace;
         public memoryPosition reserveArray(int count) {
-            int size = 32;
-            int beginAddr = dataTail - size;
+            int size = count*4;
+            int beginAddr = dataHead;
+            dataHead += size;
             memoryPosition pos = new memoryPosition();
             pos.address = beginAddr;
             pos.size = size;
-            pos.count = 1;
+            pos.count = count;
             return pos;
         }
 
@@ -542,13 +543,15 @@ public class RegAllocator {
             return storeInstr;
         }
 
-        public memoryPosition reverseVariable(int size) {
+        public memoryPosition reverseVariable(int numberOfValue) {
+            //A 32 bit value has 4 byes
+            int memorySize = numberOfValue * 4;
             int beginAddr = dataTail;
-            dataTail += size;
+            dataTail += memorySize;
             memoryPosition pos = new memoryPosition();
             pos.address = beginAddr;
-            pos.size = size;
-            pos.count = 1;
+            pos.size = memorySize;
+            pos.count = numberOfValue;
             pos.stack = false;
             return pos;
         }
