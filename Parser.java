@@ -233,14 +233,18 @@ public class Parser {
 		Value variable = typeDecl();   // Get the variable or array.
 		int id = ident();
 		table.declare(variable, id);
-		// program.declare(table.getVar(id));
+		if (variable instanceof Array) {
+			program.declare(variable);
+		}
 		if (debug && variable instanceof Variable) { 
 			System.out.println("Declared variable " + table.getVar(id).shortRepr()); 
 		}
 		while (accept(commaToken)) {
 		    id = ident();
 			table.declare(variable, id);
-			// program.declare(table.getVar(id));
+			if (variable instanceof Array) {
+				program.declare(variable);
+			}
 			if (debug && variable instanceof Variable) { 
 				System.out.println("Declared variable " + table.getVar(id).shortRepr()); 
 			}
@@ -489,7 +493,7 @@ public class Parser {
 
 		Value var = designator(true);  // Name of variable.
 		expect(becomesToken);
-		Value expr = expression();	   // Value of variable.
+		Value expr = expression();	   // Value of variable
 
 		if (var instanceof Variable) {
 			// Create new move instruction for this Variable.
