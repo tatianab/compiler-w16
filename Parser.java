@@ -209,6 +209,7 @@ public class Parser {
 	 		String funcName = table.getName(funcId);
 	 		Function function = new Function(funcId, funcName);
 	 		table.declare(function, funcId);
+	 		program.setScope(function);
 
 	 		// Get formal parameters.
 			if (!check(semiToken)) {
@@ -232,12 +233,14 @@ public class Parser {
 		Value variable = typeDecl();   // Get the variable or array.
 		int id = ident();
 		table.declare(variable, id);
+		// program.declare(table.getVar(id));
 		if (debug && variable instanceof Variable) { 
 			System.out.println("Declared variable " + table.getVar(id).shortRepr()); 
 		}
 		while (accept(commaToken)) {
 		    id = ident();
 			table.declare(variable, id);
+			// program.declare(table.getVar(id));
 			if (debug && variable instanceof Variable) { 
 				System.out.println("Declared variable " + table.getVar(id).shortRepr()); 
 			}
@@ -365,8 +368,6 @@ public class Parser {
 		join.addNext(whileBlock, follow);  // Join/compare falls through to inner block, or jumps to follow.
 		join.fix(follow);                  // Branch to follow.
 		endWhileBlock.addNext(join, true); // Jump from inner block to join/compare.
-
-
 	}
 
 	/* ifStatement.
@@ -494,11 +495,18 @@ public class Parser {
 			// Create new move instruction for this Variable.
 			Instruction moveInstr = program.addAssignment((Variable) var, expr);
 			table.reassignVar(((Variable) var).id, (Variable) var);
+			program.declare(var);
 			if (debug) { System.out.println("Generated move instruction " + moveInstr); }
 		} else if (var instanceof Array) {
 			// Create an array store instruction for this array.
-			Instruction arrayInstr = program.addArrayInstr(Instruction.arrayStore, (Array) var, ((Array) var).currentIndices, expr);
-			if (debug) { System.out.println("Generated array instruction " + arrayInstr); }
+			// Generate instructions to compute offset.
+			Value offset = arrayOffset(((Array) var).currentIndices, ((Array) var).dims);
+			// Adda and store instructions.
+			Instruction addaInstr  = program.addInstr(adda, (Array) var, offset);
+			Instruction storeInstr = program.addInstr(store, expr, addaInstr);
+			addaInstr.linkTo(storeInstr);
+			// Instruction arrayInstr = program.addArrayInstr(Instruction.arrayStore, (Array) var, ((Array) var).currentIndices, expr);
+			if (debug) { System.out.println("Generated array instruction " /* + arrayInstr */); }
 		}
 	}
 
@@ -528,7 +536,14 @@ public class Parser {
 					array.setCurrentIndices(indices);
 					return array;
 				} else {
-					return program.addArrayInstr(Instruction.arrayLoad, array, indices);
+					// Generate load instruction for an array.
+					Value offset = arrayOffset(indices, array.dims);
+					// Adda and store instructions.
+					Instruction addaInstr  = program.addInstr(adda, array, offset);
+					Instruction loadInstr  = program.addInstr(load, addaInstr);
+					addaInstr.linkTo(loadInstr);
+					return loadInstr;
+					// return program.addArrayInstr(Instruction.arrayLoad, array, indices);
 				}
 			}
 		}
@@ -732,6 +747,28 @@ public class Parser {
 	}
 
 	/* End token validity checks. */
+
+	// Calculate array offset.
+	private Value arrayOffset(Value[] indices, int[] dims) {
+		Value total   = null;
+		Value current = null;
+
+		for (int i = 0; i < indices.length; i++) {
+			// The current term is index multiplied by all following dimensions.
+			current = indices[i];
+			for (int d = i + 1; d < dims.length; d++) {
+				current = program.addInstr(mul, current, new Constant(dims[d]) );
+			}
+			// Add the current term to the running sum.
+			if (total != null) {
+				total = program.addInstr(add, total, current);
+			} else {
+				total = current;
+			}
+		}
+
+		return total;
+	}
 
 	// Print an error message and exit the program.
 	private void error(String message) {

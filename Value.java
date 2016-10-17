@@ -23,6 +23,10 @@ public class Value {
 	public boolean isLocal() {
 		return !global;
 	}
+
+	public boolean equals(Value other) {
+		return (this == other);
+	}
 	
 	// This should be overridden.
 	public String shortRepr() {

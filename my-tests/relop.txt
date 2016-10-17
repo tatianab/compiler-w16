@@ -1,2 +1,15 @@
-<= 
-mm
+main
+var a, b, c, d;
+{
+	let c <- 5 + 1;
+	let d <- 5 + 1;
+
+	let a <- c + d;
+	let b <- c + d;
+
+	call OutputNum(a);
+	call OutputNewLine();
+
+	call OutputNum(b);
+	call OutputNewLine()
+}.

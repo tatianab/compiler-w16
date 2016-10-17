@@ -36,6 +36,9 @@ public class IntermedRepr {
 	public ArrayList<Instruction> mainInstrs; // Just the instructions in the main program.
 	public ArrayList<Function>    functions;  // All compiled user-defined functions.
 
+	public ArrayList<Variable> globalVars;    // All global variables.
+	public ArrayList<Array>    globalArrays;  // All global arrays.
+
 	// Constructor.
 	public IntermedRepr(boolean debug) {
 		this.debug    = debug;
@@ -48,6 +51,8 @@ public class IntermedRepr {
         functions     = new ArrayList<Function>();
         currentFunction = MAIN;
         mainInstrs    = new ArrayList<Instruction>();
+        globalVars    = new ArrayList<Variable>();
+        globalArrays  = new ArrayList<Array>();
 	}
 
 	public Block begin() {
@@ -60,9 +65,13 @@ public class IntermedRepr {
 		return (currentFunction == MAIN);
 	}
 
+	public void setScope(Function function) {
+		this.currentFunction = function;
+	}
+
 	// Begin compiling a function.
 	public void beginFunction(Function function) {
-		this.currentFunction = function;
+		setScope(function);
 		Block enter = addBlock("Enter function " + function.shortRepr());
 		endBlock();
 		function.begin(enter);
@@ -151,6 +160,7 @@ public class IntermedRepr {
 	public Instruction addInstr() {
 		Instruction instr = new Instruction(nextOpenInstr);
 		nextOpenInstr++;
+		instr.function = currentFunction;
 		insertInstr(instr);
 		return instr;
 	}
@@ -194,19 +204,30 @@ public class IntermedRepr {
 		return instr;
 	}
 
-	public Instruction addArrayInstr(int op, Array array, Value[] indices, Value expr) {
-		Instruction instr = addInstr(op, array, expr);
-		instr.params = indices;
-		// Add indices to usedAt
-		return instr;
-	}
+	// public Instruction addArrayInstr(int op, Array array, Value[] indices, Value expr) {
+	// 	Instruction instr = addInstr(op, array, expr);
+	// 	addIndexUsage(instr, array, indices);
+	// 	return instr;
+	// }
 
-	public Instruction addArrayInstr(int op, Array array, Value[] indices) {
-		Instruction instr = addInstr(op, array);
-		instr.params = indices;
-		// Add indices to usedAt
-		return instr;
-	}
+	// public Instruction addArrayInstr(int op, Array array, Value[] indices) {
+	// 	Instruction instr = addInstr(op, array);
+	// 	addIndexUsage(instr, array, indices);
+	// 	return instr;
+	// }
+
+	// // Update usage information for indices of an array.
+	// public void addIndexUsage(Instruction instr, Array array, Value[] indices) {
+	// 	// Ensure that all indices are instructions. TODO
+
+	// 	// Associate the instruction with the indices.
+	// 	instr.params = indices;
+
+	// 	// Update usage info for indices and the instruction.
+	// 	// for (Instruction index : indices) {
+	// 	// 	index.usedIn(instr);
+	// 	// }
+	// }
 
 	// Add assignment (move) instruction.
 	public Instruction addAssignment(Variable var, Value expr) {
@@ -214,7 +235,25 @@ public class IntermedRepr {
 		moveInstr.defines(var);
         var.definedAt(moveInstr);
         currentBlock().addReturnValue(var);
+        checkGlobal(var, moveInstr);
 		return moveInstr;
+	}
+
+	public void declare(Value val) {
+		if (inMainFunction()) {
+			if (val instanceof Variable) {
+				globalVars.add( (Variable) val );
+			} else if (val instanceof Array) {
+				globalArrays.add( (Array) val );
+			}
+		}
+	}
+
+	// If the 
+	private void checkGlobal(Variable var, Instruction instr) {
+		if (var.isGlobal() && !inMainFunction() ) {
+			currentFunction.addGlobalModification(var, instr);
+		}
 	}
 
 	// Signal that the current block is finished.

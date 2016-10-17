@@ -33,14 +33,14 @@ public class Optimizer {
 	}
 
 	public IntermedRepr optimize() {
-		if (debug) { System.out.println("Eliminating dead code..."); }
-		deadCodeElim();
-		if (debug) { System.out.println("Eliminating common subexpressions..."); }
-		commonSubexprElim();
 		if (debug) { System.out.println("Copy propagation..."); }
 		copyPropagation();
 		if (debug) { System.out.println("Precomputing constant values..."); }
 		constantPrecompuation();
+		if (debug) { System.out.println("Eliminating common subexpressions..."); }
+		commonSubexprElim();
+		if (debug) { System.out.println("Eliminating dead code..."); }
+		deadCodeElim();
 		// if (debug) { System.out.println("Collapsing empty blocks..."); }
 		return program;
 	}
@@ -52,14 +52,22 @@ public class Optimizer {
 	public void deadCodeElim() {
 		Stack<Instruction> workList = new Stack<Instruction>();
 		Instruction current;
+
+		// Set up work list.
 		for (Instruction instr : program.instrs) {
 			instr.visited = false;
 			workList.push(instr);
 		}
+
+		// Handle work list.
 		while (workList.size() != 0) {
 			current = workList.pop();
 			if (!current.visited) {
 				current.visited = true;
+
+				// Delete any deletable instructions that are not used,
+				// and add any instructions that they use to the work list
+				// for possible deletion.
 				if (deletable(current)) {
 					if (current.uses == null || current.uses.size() == 0) { 
 						current.delete();
@@ -84,6 +92,8 @@ public class Optimizer {
 			return false;
 		} else if (instr.op == move && instr.arg1 instanceof Constant && instr.usedInPhi()) {
 			return false;
+		} else if (instr.isLinked()) { // Don't delete array instrs for now.
+			return false;
 		} else { return true; }
 	}
 
@@ -94,17 +104,15 @@ public class Optimizer {
 		Instruction equivInstr;
 		// If instruction Y dominates instruction X and Y = X, replace all
 		// occurrences of X with Y and delete X.
-		// // for (int i = program.instrs.size() - 1; i >= 0; i--) {
-		// 	currentInstr = program.instrs.get(i);
 		for (Instruction currentInstr : program.instrs) {
-			if (deletable(currentInstr)) {
+			// if (deletable(currentInstr)) {
 				equivInstr   = currentInstr.equivDominatingInstr();
 				if (equivInstr != null) {
 					for (Instruction useSite : currentInstr.uses) {
 						useSite.replace(currentInstr, equivInstr);
 					}
-					currentInstr.delete();
-				}
+					//currentInstr.delete();
+			//	}
 			}
 		}
 	}
@@ -141,7 +149,7 @@ public class Optimizer {
 						}
 						if (debug) { System.out.println("	Replacing value in instruction " + useSite); }
 					}
-					oldInstr.delete();
+					// oldInstr.delete();
 				}
 			}
 		}
@@ -150,25 +158,36 @@ public class Optimizer {
 	/* Get rid of instructions like add #1 #3 that can be precomputed. */
 	public void constantPrecompuation() {
 		for (Instruction instr : program.instrs) {
-			if (instr.op <= add && instr.op >= div) {
+			if (instr.op >= add && instr.op <= div) {
+				if (debug) { System.out.print("Cons. Precomp: testing " + instr); }
 				Value arg1 = instr.arg1;
 				Value arg2 = instr.arg2;
 				if (instr.arg1 instanceof Constant && instr.arg2 instanceof Constant && !instr.usedInPhi()) {
-					int value = 0;
+					if (debug) { System.out.print("args = " + arg1.getVal() +  ", " + arg2.getVal() + ";"); }
+					int value   = 0;
+					int arg1Val = arg1.getVal();
+					int arg2Val = arg2.getVal();
 					switch(instr.op) {
 						case Instruction.add:
-							value = arg1.getVal() + arg2.getVal();
+							value = arg1Val + arg2Val;
+							break;
 						case Instruction.sub:
 							value = arg1.getVal() - arg2.getVal();
+							break;
 						case Instruction.mul:
 							value = arg1.getVal() * arg2.getVal();
+							break;
 						case Instruction.div:
 							value = arg1.getVal() / arg2.getVal();
+							break;
 						default:
 							break;
 					}
 					Constant constant = new Constant(value);
-					for (Instruction useSite : instr.uses) {
+					if (debug) { System.out.print("value = " + value + ", " + constant.shortRepr() + "\n"); }
+					ArrayList<Instruction> useSites = new ArrayList<Instruction>(instr.uses);
+					for (Instruction useSite : useSites) {
+						// TODO: fix concurrent modification error
 						useSite.replace(instr, constant);
 					}
 				}
