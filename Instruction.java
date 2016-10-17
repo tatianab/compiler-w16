@@ -82,7 +82,7 @@ public class Instruction extends Value {
 	/* End operation codes. */
 
 	/* Constructor. */
-	public Instruction(int id) {
+	public Instruction(int id, Function function) {
 		this.id = id;
 		this.block    = null;
 		this.varDefd  = null;
@@ -95,6 +95,7 @@ public class Instruction extends Value {
 		this.link     = null;
 		this.arg1     = null;
 		this.arg2     = null;
+		this.function = function;
 	}
 
 	public void delete() {

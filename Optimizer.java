@@ -35,10 +35,10 @@ public class Optimizer {
 	public IntermedRepr optimize() {
 		if (debug) { System.out.println("Copy propagation..."); }
 		copyPropagation();
-		if (debug) { System.out.println("Precomputing constant values..."); }
-		constantPrecompuation();
 		if (debug) { System.out.println("Eliminating common subexpressions..."); }
 		commonSubexprElim();
+		if (debug) { System.out.println("Precomputing constant values..."); }
+		constantPrecompuation();
 		if (debug) { System.out.println("Eliminating dead code..."); }
 		deadCodeElim();
 		// if (debug) { System.out.println("Collapsing empty blocks..."); }

@@ -481,8 +481,20 @@ public class Parser {
 			expect(closeparenToken);
 		}
 
+		// // Load globals.
+		// for (Variable global : func.globalsUsed) {
+
+		// }
+
 		// Add function call to program and return the instruction.
-        return program.addFunctionCall(function, parameters);
+        Instruction callInstr = program.addFunctionCall(function, parameters);
+
+        // // Store globals.
+        // for (Variable global : func.globalsModified) {
+        // 	// Get instruction where last modified
+        // }
+
+        return callInstr;
 	}
 
 	/* assignment.

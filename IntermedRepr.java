@@ -136,7 +136,7 @@ public class IntermedRepr {
 	// Create a new instruction without adding it to the current block.
     public Instruction createInstr() {
         try {
-            Instruction instr = new Instruction(nextOpenInstr);
+            Instruction instr = new Instruction(nextOpenInstr, currentFunction);
             nextOpenInstr++;
             addToInstructionList(instr); // Add instruction to list of instructions.
             return instr;
@@ -158,7 +158,7 @@ public class IntermedRepr {
 
 	// Add a new instruction to the current block.
 	public Instruction addInstr() {
-		Instruction instr = new Instruction(nextOpenInstr);
+		Instruction instr = new Instruction(nextOpenInstr, currentFunction);
 		nextOpenInstr++;
 		instr.function = currentFunction;
 		insertInstr(instr);
