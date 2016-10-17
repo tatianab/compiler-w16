@@ -989,11 +989,11 @@ public class InstructionSchedule {
             //Inital all the variable first
             for (Variable var: repr.globalVars) {
                 //Every variable is 1 value size
-                var.position = globalSpace.reverseVariable(1);
+                var.position = globalSpace.reverseVariable(1, var.ident);
             }
             //Then, reserve all array
             for (Array array: repr.globalArrays) {
-                array.backstorePos = globalSpace.reverseVariable(array.totalSize);
+                array.backstorePos = globalSpace.reverseVariable(array.totalSize, array.ident);
             }
         }
 

@@ -427,6 +427,7 @@ public class RegAllocator {
 
         public HashMap<memoryPosition, InstructionSchedule.InstructionValue> preserve;
         public HashMap<String, memoryPosition> heap = new HashMap<>();
+        public HashMap<String, memoryPosition> global= new HashMap<>();
 
         public InstructionSchedule.InstructionValue fetchEqualvalent(InstructionSchedule.InstructionValue value) {
             for (InstructionSchedule.InstructionValue val: preserve.values()) {
@@ -543,7 +544,7 @@ public class RegAllocator {
             return storeInstr;
         }
 
-        public memoryPosition reverseVariable(int numberOfValue) {
+        public memoryPosition reverseVariable(int numberOfValue, String name) {
             //A 32 bit value has 4 byes
             int memorySize = numberOfValue * 4;
             int beginAddr = dataTail;
@@ -553,6 +554,7 @@ public class RegAllocator {
             pos.size = memorySize;
             pos.count = numberOfValue;
             pos.stack = false;
+            global.put(name, pos);
             return pos;
         }
     }
