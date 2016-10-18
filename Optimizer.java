@@ -88,7 +88,7 @@ public class Optimizer {
 	/* True if it is OK to delete an instruction of this type.
 	 */
 	public boolean deletable(Instruction instr) {
-		if (instr.op >= write || instr.op == phi || instr.op == end || instr.op == bra) {
+		if (instr.op >= write || instr.op == phi || instr.op == end || instr.op == bra || instr.op == load || instr.op == store) {
 			return false;
 		} else if (instr.op == move && instr.arg1 instanceof Constant && instr.usedInPhi()) {
 			return false;

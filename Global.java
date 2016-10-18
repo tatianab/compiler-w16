@@ -15,6 +15,8 @@ public class Global extends Value {
 
 	private static int nextAvailableId = 0;
 
+	public RegAllocator.memorySpace.memoryPosition position;
+
 	public Global(int id, String ident) {
 		this.id       = id;
 		this.ident    = ident;

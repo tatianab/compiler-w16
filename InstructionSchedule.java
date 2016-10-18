@@ -998,9 +998,9 @@ public class InstructionSchedule {
         RegAllocator.memorySpace globalSpace = rac.new memorySpace();
         {
             //Inital all the variable first
-            for (Variable var: repr.globalVars) {
+            for (Global g: repr.globals) {
                 //Every variable is 1 value size
-                var.position = globalSpace.reverseVariable(1, var.ident);
+                g.position = globalSpace.reverseVariable(1, g.ident);
             }
             //Then, reserve all array
             for (Array array: repr.globalArrays) {

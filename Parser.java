@@ -248,6 +248,7 @@ public class Parser {
 		int id = ident();
 		Global g = table.declare(variable, id);
 		program.addGlobal(g);
+		program.declare(variable);
 		if (debug && variable instanceof Variable) { 
 			System.out.println("Declared variable " + table.getVar(id).shortRepr()); 
 		}
@@ -256,6 +257,7 @@ public class Parser {
 			table.declare(variable, id);
 			Global g2 = table.declare(variable, id);
 		    program.addGlobal(g2);
+		    program.declare(variable);
 			if (debug && variable instanceof Variable) { 
 				System.out.println("Declared variable " + table.getVar(id).shortRepr()); 
 			}
@@ -492,6 +494,12 @@ public class Parser {
 			expect(closeparenToken);
 		}
 
+		// Store all globals that are used by the function.
+		for (Global g : function.globalsUsed) {
+			if (g.modified) {
+				program.addInstr(store, g.lastDef, g);
+			}
+		}
 
 		// Add function call to program and return the instruction.
         Instruction callInstr = program.addFunctionCall(function, parameters);
