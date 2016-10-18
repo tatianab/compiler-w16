@@ -215,6 +215,22 @@ public class RegAllocator {
             Instruction instr2 = request.value2;
             Register reg1 = instr1.state.storage.currentRegister;
             Register reg2 = instr2.state.storage.currentRegister;
+
+
+            //Phi will be handle, so just release
+            for (Instruction child: request.actualStmt.basedInstr.uses) {
+                //A depended value is calculated->add it back
+                child.state.unresolveArgument--;
+            }
+            request.actualStmt.basedInstr.state.scheduled();
+
+            /*if (request.value1 != null)
+                request.value1.state.valueRepr.instructionCalled(request.actualStmt.basedInstr);
+
+            if (request.value2 != null)
+                request.value2.state.valueRepr.instructionCalled(request.actualStmt.basedInstr);*/
+
+
             if (reg1 != null && reg2 != null) {
                 //Both values are loaded in the register
                 if (reg1.registerID == reg2.registerID) {
@@ -239,7 +255,59 @@ public class RegAllocator {
                         edge2Instr.add(instr);
                     }
                 } else {
-                    if (mergedCtx.registers[reg1.registerID].isAvailable()) {
+                    //Un-equal register ID, so move on one side
+                    //First check overwrite
+                    int reg1Contain1 = a1.regIDForInstr(instr1);
+                    int reg2Contain1 = a2.regIDForInstr(instr1);
+                    int reg1Contain2 = a1.regIDForInstr(instr2);
+                    int reg2Contain2 = a2.regIDForInstr(instr2);
+                    boolean instr1Overwrite = (reg1Contain1 > 0) && (reg2Contain1 == reg1Contain1);
+                    boolean instr2Overwrite = (reg1Contain2 > 0) && (reg2Contain2 == reg1Contain2);
+                    if (instr1Overwrite) {
+                        if (reg1Contain2 > 0) {
+                            //Register 1 need to overwrite value of instr1 with instr2
+                            InstructionSchedule.outputInstruction instr = insch.new outputInstruction();
+                            instr.op = Instruction.move;
+                            instr.arg1 = reg1Contain2;
+                            instr.outputReg = reg1Contain1;
+                            edge1Instr.add(instr);
+                            mergedCtx.registers[reg1Contain1].updateValue(request.actualStmt);
+                        } else if (reg2Contain2 > 0) {
+                            //Register 2 need to overwrite value of instr1 with instr2
+                            InstructionSchedule.outputInstruction instr = insch.new outputInstruction();
+                            instr.op = Instruction.move;
+                            instr.arg1 = reg2Contain2;
+                            instr.outputReg = reg2Contain1;
+                            edge2Instr.add(instr);
+                            mergedCtx.registers[reg2Contain1].updateValue(request.actualStmt);
+                        }
+                    } else if (instr2Overwrite) {
+                        if (reg1Contain1 > 0) {
+                            //Register 1 need to overwrite value of instr2 with instr1
+                            InstructionSchedule.outputInstruction instr = insch.new outputInstruction();
+                            instr.op = Instruction.move;
+                            instr.arg1 = reg1Contain1;
+                            instr.outputReg = reg1Contain2;
+                            edge1Instr.add(instr);
+                            mergedCtx.registers[reg1Contain2].updateValue(request.actualStmt);
+                        } else if (reg2Contain1 > 0) {
+                            //Register 2 need to overwrite value of instr2 with instr1
+                            InstructionSchedule.outputInstruction instr = insch.new outputInstruction();
+                            instr.op = Instruction.move;
+                            instr.arg1 = reg2Contain1;
+                            instr.outputReg = reg2Contain2;
+                            edge2Instr.add(instr);
+                            mergedCtx.registers[reg2Contain2].updateValue(request.actualStmt);
+                        }
+                    } else if (mergedCtx.registers[reg2.registerID].isAvailable()) {
+                        //If not, try register 2
+                        InstructionSchedule.outputInstruction instr = insch.new outputInstruction();
+                        instr.op = Instruction.move;
+                        instr.arg1 = reg1.registerID;
+                        instr.outputReg = reg2.registerID;
+                        edge1Instr.add(instr);
+                        mergedCtx.registers[reg2.registerID].updateValue(request.actualStmt);
+                    } else if (mergedCtx.registers[reg1.registerID].isAvailable()) {
                         //Test if register 1 is available
                         InstructionSchedule.outputInstruction instr = insch.new outputInstruction();
                         instr.op = Instruction.move;
@@ -280,18 +348,6 @@ public class RegAllocator {
                     //TODO
                 }
             }
-            //Phi has been handle, so just release
-            for (Instruction child: request.actualStmt.basedInstr.uses) {
-                //A depended value is calculated->add it back
-                child.state.unresolveArgument--;
-            }
-            request.actualStmt.basedInstr.state.scheduled();
-
-            if (request.value1 != null)
-                request.value1.state.valueRepr.instructionCalled(request.actualStmt.basedInstr);
-
-            if (request.value2 != null)
-                request.value2.state.valueRepr.instructionCalled(request.actualStmt.basedInstr);
         }
         merger.resultContext = mergedCtx;
         merger.edge1 = edge1Instr;
@@ -723,6 +779,12 @@ public class RegAllocator {
             return registers[numberOfRegister-numberOfReverse+4];
         }
 
+        int regIDForInstr(Instruction instr) {
+            for (Register reg: registers) {
+                if (reg.currentValue != null && reg.currentValue.basedInstr == instr) return reg.registerID;
+            }
+            return -1;
+        }
         ArrayList<InstructionSchedule.outputInstruction> swapRegister(int regA, int regB) {
             ArrayList<InstructionSchedule.outputInstruction>tmp = new ArrayList();
             InstructionSchedule is = new InstructionSchedule();

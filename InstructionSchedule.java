@@ -289,6 +289,10 @@ public class InstructionSchedule {
         public String toString() {
             String result = Instruction.ops[op] + " ";
             result += "R" + outputReg + " ";
+            if (jumpBlock != null) {
+                result += "B" + jumpBlock.id;
+                return result;
+            }
             if (arg1 >= 0)
                 result += "R" + arg1 + " ";
             else result += "C" + constant1 + " ";
@@ -522,12 +526,12 @@ public class InstructionSchedule {
 
             boolean ifJoin = false;
 
+            //Repleace the register context with new memory space
+            previousContext.space = space;
+
             //Solve the if memory space split problem
             if (inputBlock.in1!=null && inputBlock.in2!=null && inputBlock.in1.id < inputBlock.id && inputBlock.in2.id < inputBlock.id) {
                 //We are at a merge section, so merge
-                RegAllocator.memorySpace space1 = inputBlock.in1.schedule.scheduledSpace;
-                RegAllocator.memorySpace space2 = inputBlock.in2.schedule.scheduledSpace;
-                space = space.upperSpace;
                 ifJoin = true;
             }
 
@@ -607,6 +611,13 @@ public class InstructionSchedule {
                     inputBlock.in1.schedule.insertPhiTransfer(result.edge1);
                     inputBlock.in2.schedule.insertPhiTransfer(result.edge2);
                     context = result.resultContext;
+
+                    //Memory Space merge
+
+                    RegAllocator.memorySpace space1 = inputBlock.in1.schedule.scheduledSpace;
+                    RegAllocator.memorySpace space2 = inputBlock.in2.schedule.scheduledSpace;
+                    space = space.upperSpace;
+
                 } else {
                     //This is the join block (loop header)
                     if (inputBlock.in1.schedule != null && inputBlock.in2.schedule != null) {
@@ -896,7 +907,9 @@ public class InstructionSchedule {
                             //This is a if branch, scheudling the fall through
                             //So create a sub-memory space
                             RegAllocator.memorySpace subSpace = rc.new memorySpace(space);
-                            next1 = new ScheduledBlock(context, inputBlock.fallThrough, subSpace, lastPhiReg);
+                            //And a copy of register
+                            RegAllocator.registerContext ctx = rc.new registerContext(context);
+                            next1 = new ScheduledBlock(ctx, inputBlock.fallThrough, subSpace, lastPhiReg);
                         } else {
                             next1 = new ScheduledBlock(context, inputBlock.fallThrough, space, lastPhiReg);
                         }
@@ -928,7 +941,9 @@ public class InstructionSchedule {
                             //This is a if branch, scheudling the fall through
                             //So create a sub-memory space
                             RegAllocator.memorySpace subSpace = rc.new memorySpace(space);
-                            next2 = new ScheduledBlock(context, inputBlock.branch, subSpace, lastPhiReg);
+                            //And a copy of register
+                            RegAllocator.registerContext ctx = rc.new registerContext(context);
+                            next2 = new ScheduledBlock(ctx, inputBlock.branch, subSpace, lastPhiReg);
                         } else {
                             next2 = new ScheduledBlock(context, inputBlock.branch, space, lastPhiReg);
                         }

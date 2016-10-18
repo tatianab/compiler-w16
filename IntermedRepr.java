@@ -398,9 +398,15 @@ public class IntermedRepr {
 
 	public void phify() {
 		for (Instruction instr: instrs) {
-			if (instr.op == Instruction.phi && instr.arg1 instanceof Block.phiPatcher) {
-				Block.phiPatcher patcher = (Block.phiPatcher)instr.arg1;
-				patcher.patch();
+			if (instr.op == Instruction.phi) {
+				if (instr.arg1 instanceof Block.phiPatcher) {
+					Block.phiPatcher patcher = (Block.phiPatcher) instr.arg1;
+					patcher.patch();
+				}
+				if (instr.arg2 instanceof Block.phiPatcher) {
+					Block.phiPatcher patcher = (Block.phiPatcher) instr.arg2;
+					patcher.patch();
+				}
 			}
 		}
 	}

@@ -273,6 +273,52 @@ public class Block extends Value {
 					fallThrough.fixLoopingPhi(var2, var);
 					inner.fixLoopingPhi(var2, var);
 				}
+			} else if (var1 != var2 && var1 != null) {
+				//Var 2 is null, so create a dummy phi variable
+				var2 = new phiPatcher();
+				((phiPatcher)var2).variableName = varianceName;
+				((phiPatcher)var2).origBlock = this;
+				((phiPatcher)var2).inner = inner;
+				((phiPatcher)var2).traceBlock = in2;
+
+				patchers.add((phiPatcher)var2);
+
+				instr = inpr.createInstr();
+				((phiPatcher)var2).phiInstr = instr;
+
+				//this.addInstr(instr); // Add instruction to current block.
+
+				instr.setArgs(var1, var2);
+				instr.setOp(Instruction.phi);
+
+				instr.setBlock(this);
+				this.current = instr;
+
+				// Reassign for this Variable.
+				Variable var = new Variable(var1.id, table.getName(var1.id));
+				table.reassignVar(var2.id, var);
+
+				((phiPatcher)var2).replacementVar = var;
+
+				instr.defines(var);
+				var.definedAt(instr);
+				inpr.currentBlock().addReturnValue(var);
+
+				if (phiBegin == null) {
+					phiBegin = instr;
+				} else {
+					phiEnd.next = instr;
+				}
+
+				phiEnd = instr;
+
+				if (inner != null) {
+					//Go back to the inside of loop, replace the the old value with the phi version, such that the value
+					//Example: a3 = phi(a1, a2), if a[x] is the upstream, replace a[x] with a3 ([x] = 1 or 2)
+					this.fixLoopingPhi(var1, var);
+					fallThrough.fixLoopingPhi(var1, var);
+					inner.fixLoopingPhi(var1, var);
+				}
 			}
         }
         
@@ -291,7 +337,8 @@ public class Block extends Value {
 		public Instruction phiInstr;
 		void patch() {
 			Variable origVar = traceBlock.fetchLastDefinedInstance(variableName);
-			phiInstr.updateArg(phiInstr.arg1, origVar);
+			if (this == phiInstr.arg1) phiInstr.updateArg(phiInstr.arg1, origVar);
+			if (this == phiInstr.arg2) phiInstr.updateArg(phiInstr.arg2, origVar);
 			if (inner != null) {
 				//Go back to the inside of loop, replace the the old value with the phi version, such that the value
 				//Example: a3 = phi(a1, a2), if a[x] is the upstream, replace a[x] with a3 ([x] = 1 or 2)

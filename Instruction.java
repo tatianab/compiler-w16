@@ -284,7 +284,7 @@ public class Instruction extends Value {
             	((Instruction)original).uses.remove(this);
             } else if (original instanceof Variable) {
 				((Variable)original).uses.remove(this);
-				((Variable)original).def.uses.remove(this);
+				if (((Variable)original).def != null) ((Variable)original).def.uses.remove(this);
             }
         }
         if (instrsUsed != null) {
@@ -574,6 +574,8 @@ public class Instruction extends Value {
 			return id + " : " + ops[op] + " " + arg1.shortRepr() + " " + arg2.shortRepr() + " " + Array.indicesToString(params);
 		} else if (op == arrayLoad) {
 			return id + " : " + ops[op] + " " + arg1.shortRepr() + " " + Array.indicesToString(params);
+		} else if (op == bra) {
+			return id + " : BRA " + block.id;
 		} else if (arg1 != null && arg2 != null) {
 			return id + " : " + ops[op] + " " + arg1.shortRepr() 
 				   + " " + arg2.shortRepr();

@@ -4,6 +4,8 @@
  * CS 241 - Advanced Compiler Design
  */
 
+import java.util.HashSet;
+
 public class Addr extends Value {
 	public int id;                       // ID for this address
 	public HashSet<Instruction> uses;    // The instructions that use this address.
