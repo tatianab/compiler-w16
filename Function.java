@@ -24,16 +24,21 @@ public class Function extends Value {
 
 	public ArrayList<Array> arrays; // Arrays in this function.
 
-	public ArrayList<Variable> globalsUsed;
-	public ArrayList<Variable> globalsModified;
+	public ArrayList<Global> globalsUsed;
+	public ArrayList<Global> globalsModified;
+
+	public boolean isProc;
 
 	
-	public Function(int id, String ident) {
+	public Function(int id, String ident, boolean isProc) {
 		this.id = id;
 		this.ident = ident;
 		numParams = 0;
 		this.instrs = new ArrayList<Instruction>();
 		this.arrays = new ArrayList<Array>();
+		this.isProc = isProc;
+		this.globalsUsed     = new ArrayList<Global>();
+		this.globalsModified = new ArrayList<Global>();
 	}
 
 	public Function(int id, String ident, int numParams) {
@@ -42,6 +47,8 @@ public class Function extends Value {
 		this.numParams = numParams;
 		this.instrs = new ArrayList<Instruction>();
 		this.arrays = new ArrayList<Array>();
+		this.globalsUsed     = new ArrayList<Global>();
+		this.globalsModified = new ArrayList<Global>();
 	}
 
 	public boolean isMain() {
@@ -71,6 +78,24 @@ public class Function extends Value {
 
 	public void end(Block exit) {
 		this.exit = exit;
+
+		// // Load globals.
+		// for (Variable global : globalsUsed) {
+	 //        Instruction instr = program.createInstr();
+		// 	instr.setOp(Instruction.load);
+		// 	instr.setArgs(global);
+		// 	enter.addToEnd(instr);
+		// 	// global.replaceUses(this, instr);
+		// }
+		
+  //       // Store globals.
+  //       for (Variable global : globalsModified) {
+	 //        Instruction instr = program.createInstr();
+	 //        Value lastMod = null;
+		// 	instr.setOp(Instruction.store);
+		// 	instr.setArgs(lastMod, global);
+		// 	exit.addToEnd(instr);
+  //       }
 	}
 
 	// Generate a call to this function.
@@ -106,35 +131,19 @@ public class Function extends Value {
 	}
 
 	// Handle globals that are MODIFIED by this function.
-	public void addGlobalModification(Variable var, Instruction instr) {
-		// If this global has already been modified,
-		// change the store entry.
-		if (false) {
-			// TODO
-		}
-		// If this global has not already been modified,
-		// store it back in the EXIT block of the function.
-		else {
-			// TODO
-		}
+	public void addGlobalModification(Global g, Instruction instr) {
+		globalsModified.add(g);
+		g.modified = true;
 	}
 
 	// Handle globals that are USED by this function.
-	public void addGlobalUse(Variable var) {
-		// If this variable has already been loaded,
-		// do nothing.
-		if (false) {
-			// TODO
+	public Instruction addGlobalUse(Global g) {
+		// TODO
+		globalsUsed.add(g);	
+		if (!g.modified) {
+			// Add a load instruction and return it
 		}
-		// Otherwise, load it into the ENTER block of the
-		// function.
-		else {
-			// Instruction instr = program.createInstr();
-			// instr.setOp(Instruction.move);
-			// instr.setArgs(var, instr);
-			// enter.addToEnd(instr);
-		}
-		
+		return null;
 	}
 
 	@Override

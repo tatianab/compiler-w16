@@ -99,6 +99,7 @@ public class Parser {
 		scanner = new Tokenizer(filename);
 		program = new IntermedRepr(debug);
 		table   = scanner.getTable();
+		table.setScope(program.MAIN);
 	}
 
 	/* Return the program in SSA form. */
@@ -202,14 +203,27 @@ public class Parser {
 	 * funcDecl = ("function" | "procedure") ident [formalParam] ";" funcBody ";".
 	 */
 	private void funcDecl() {
-		if (accept(funcToken) || accept(procToken)) {
+		if (check(funcToken) || check(procToken)) {
+
+			// Determine if this function is a procedure.
+			// Procedure = no return value.
+			boolean isProc;
+			if (accept(funcToken)) {
+				isProc = false;
+			} else if (accept(procToken)) {
+				isProc = true;
+			} else {
+				return;
+			}
+
 			int funcId = ident(); // Procedure/function id.
 
 			// Add function/procedure to string table.
 	 		String funcName = table.getName(funcId);
-	 		Function function = new Function(funcId, funcName);
+	 		Function function = new Function(funcId, funcName, isProc);
 	 		table.declare(function, funcId);
 	 		program.setScope(function);
+	 		table.setScope(function);
 
 	 		// Get formal parameters.
 			if (!check(semiToken)) {
@@ -232,19 +246,16 @@ public class Parser {
 	private void varDecl() {
 		Value variable = typeDecl();   // Get the variable or array.
 		int id = ident();
-		table.declare(variable, id);
-		if (variable instanceof Array) {
-			program.declare(variable);
-		}
+		Global g = table.declare(variable, id);
+		program.addGlobal(g);
 		if (debug && variable instanceof Variable) { 
 			System.out.println("Declared variable " + table.getVar(id).shortRepr()); 
 		}
 		while (accept(commaToken)) {
 		    id = ident();
 			table.declare(variable, id);
-			if (variable instanceof Array) {
-				program.declare(variable);
-			}
+			Global g2 = table.declare(variable, id);
+		    program.addGlobal(g2);
 			if (debug && variable instanceof Variable) { 
 				System.out.println("Declared variable " + table.getVar(id).shortRepr()); 
 			}
@@ -481,19 +492,9 @@ public class Parser {
 			expect(closeparenToken);
 		}
 
-		// // Load globals.
-		// for (Variable global : func.globalsUsed) {
-
-		// }
 
 		// Add function call to program and return the instruction.
         Instruction callInstr = program.addFunctionCall(function, parameters);
-
-        // // Store globals.
-        // for (Variable global : func.globalsModified) {
-        // 	// Get instruction where last modified
-        // }
-
         return callInstr;
 	}
 
@@ -510,8 +511,8 @@ public class Parser {
 		if (var instanceof Variable) {
 			// Create new move instruction for this Variable.
 			Instruction moveInstr = program.addAssignment((Variable) var, expr);
-			table.reassignVar(((Variable) var).id, (Variable) var);
-			program.declare(var);
+			Global g = table.reassignVar(((Variable) var).id, (Variable) var);
+			program.updateGlobal(g, var);
 			if (debug) { System.out.println("Generated move instruction " + moveInstr); }
 		} else if (var instanceof Array) {
 			// Create an array store instruction for this array.

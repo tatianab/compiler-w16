@@ -26,7 +26,7 @@ public class IntermedRepr {
 
 	public InterferenceGraph ifg;          // Interference graph.
 
-	public final Function MAIN = new Function(-1, "MAIN");
+	public final Function MAIN = new Function(-1, "MAIN", true);
 
 	// Function compilation.
 	public Function currentFunction;
@@ -36,7 +36,7 @@ public class IntermedRepr {
 	public ArrayList<Instruction> mainInstrs; // Just the instructions in the main program.
 	public ArrayList<Function>    functions;  // All compiled user-defined functions.
 
-	public ArrayList<Variable> globalVars;    // All global variables.
+	public ArrayList<Global> globals;
 	public ArrayList<Array>    globalArrays;  // All global arrays.
 
 	// Constructor.
@@ -51,7 +51,7 @@ public class IntermedRepr {
         functions     = new ArrayList<Function>();
         currentFunction = MAIN;
         mainInstrs    = new ArrayList<Instruction>();
-        globalVars    = new ArrayList<Variable>();
+        globals       = new ArrayList<Global>();
         globalArrays  = new ArrayList<Array>();
 	}
 
@@ -199,6 +199,7 @@ public class IntermedRepr {
 
 	// Add function call instruction.
 	public Instruction addFunctionCall(Function function, Value[] params) {
+		// TODO: reset modifed marker on all globals
 		Instruction instr = addInstr();
 		function.generateCall(instr, params);
 		return instr;
@@ -235,24 +236,39 @@ public class IntermedRepr {
 		moveInstr.defines(var);
         var.definedAt(moveInstr);
         currentBlock().addReturnValue(var);
-        checkGlobal(var, moveInstr);
+        checkGlobal(var.getGlobal(), moveInstr);
 		return moveInstr;
 	}
 
 	public void declare(Value val) {
 		if (inMainFunction()) {
 			if (val instanceof Variable) {
-				globalVars.add( (Variable) val );
+				// globalVars.add( (Variable) val );
 			} else if (val instanceof Array) {
 				globalArrays.add( (Array) val );
 			}
 		}
 	}
 
+	public void addGlobal(Global g) {
+		if (inMainFunction() && g != null) {
+			globals.add(g);
+		}
+	}
+
+	public void updateGlobal(Global g, Value v) {
+		if (inMainFunction() && g != null)  {
+			g.modified = true;
+			g.lastDef  = v;
+		} else {
+			// TODO
+		}
+	}
+
 	// If the 
-	private void checkGlobal(Variable var, Instruction instr) {
-		if (var.isGlobal() && !inMainFunction() ) {
-			currentFunction.addGlobalModification(var, instr);
+	private void checkGlobal(Global g, Instruction instr) {
+		if (g != null && !inMainFunction() ) {
+			currentFunction.addGlobalModification(g, instr);
 		}
 	}
 

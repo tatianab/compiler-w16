@@ -43,7 +43,7 @@ public class StringTable {
 		int funcId;
 		for (String funcName : builtInFunctions) {
 			funcId = getID(funcName);
-			func = new Function(funcId, funcName);
+			func = new Function(funcId, funcName, false);
 			currentScope = func;
 			if (funcName.equals("OutputNum")) {
 				func.setNumParams(1);
@@ -90,17 +90,28 @@ public class StringTable {
 
 	// Reset the "lastVar" data on the given id.
 	// Used when there is a new assignment to a variable.
-	public void reassignVar(int id, Variable var) {
+	public Global reassignVar(int id, Variable var) {
 		get(id).lastVar = var;
+		return get(id).global;
+	}
+
+	public void setScope(Function scope) {
+		this.currentScope = scope;
 	}
 
 	// Declare a variable, array, or function.
-	public void declare(Value value, int id) {
+	public Global declare(Value value, int id) {
 		StringData data = get(id);
 		if (value instanceof Variable) {
 			data.lastVar = (Variable) value;
 		    ((Variable) value).instance = -1;
 		    ((Variable) value).ident = data.name;
+
+		    if (currentScope.isMain()) {
+				Global g = new Global(id, data.name);
+				data.global = g;	
+				return g;
+			}		
 		} else if (value instanceof Array) {
 			data.lastArr = (Array) value;
 			// ((Array) value).instance = -1;
@@ -108,6 +119,7 @@ public class StringTable {
 		} else if (value instanceof Function) {
 			data.lastFunc = (Function) value;
 		}
+		return null;
 	}
 
 	public void declareFormalParam(int id) {
@@ -132,6 +144,8 @@ public class StringTable {
 
 		public Function scope;    // The scope of the variable.
 
+		public Global global;     // If a global variable.
+
 		public StringData(int id, String name, int token, Function scope) {
 			this.id       = id;
 			this.name     = name;
@@ -140,6 +154,7 @@ public class StringTable {
 			this.lastVar  = null;
 			this.lastArr  = null;
 			this.lastFunc = null;
+			this.global   = null;
 		}
 	}
 

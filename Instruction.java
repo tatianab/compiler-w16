@@ -209,17 +209,30 @@ public class Instruction extends Value {
 	}
 
 	public void setArgs(Value arg1, Value arg2) {
+		Instruction globalLoad1 = checkGlobal(arg1);
+		Instruction globalLoad2 = checkGlobal(arg2);
+
+		if (globalLoad1 != null) {
+			arg1 = globalLoad1;
+		}
+
+		if (globalLoad2 != null) {
+			arg2 = globalLoad2;
+		}
+
 		this.arg1 = arg1;
 		this.arg2 = arg2;
 
 		setUsage(arg1);
 		setUsage(arg2);
-
-		checkGlobal(arg1);
-		checkGlobal(arg2);
 	}
 
 	public void setArgs(Value arg) {
+		Instruction globalLoad = checkGlobal(arg);
+
+		if (globalLoad != null) {
+			arg = globalLoad;
+		}
 		if (arg1 != null) {
 			this.arg2 = arg;
 		}
@@ -229,17 +242,19 @@ public class Instruction extends Value {
 		}
 
 		setUsage(arg);
-		checkGlobal(arg);
+
 	}
 
 	// If the value is global, and we are in a
 	// non-main function, make sure that the
 	// value has been loaded at the beginning of
 	// the function.
-	private void checkGlobal(Value value) {
-		if ( (value instanceof Variable) && value.isGlobal() && !function.isMain()) {
-			function.addGlobalUse((Variable) value);
+	private Instruction checkGlobal(Value value) {
+		Global g = value.getGlobal();
+		if (g != null) {
+			return function.addGlobalUse(g);
 		}
+		return null;
 	}
 
 	// Should only be called for call instructions.
