@@ -6,7 +6,7 @@
 
 public class Value {
 	// Represents an SSA value.
-	private boolean global;
+	protected boolean global;
 
 	public void setGlobal() {
 		global = true;
@@ -24,7 +24,7 @@ public class Value {
 		return !global;
 	}
 
-	public Global getGlobal() {
+	public Global getGlobalVar() {
 		return null;
 	}
 

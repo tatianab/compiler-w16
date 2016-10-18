@@ -220,7 +220,7 @@ public class Parser {
 
 			// Add function/procedure to string table.
 	 		String funcName = table.getName(funcId);
-	 		Function function = new Function(funcId, funcName, isProc);
+	 		Function function = new Function(funcId, funcName, isProc, program);
 	 		table.declare(function, funcId);
 	 		program.setScope(function);
 	 		table.setScope(function);
@@ -252,7 +252,15 @@ public class Parser {
 		if (debug && variable instanceof Variable) { 
 			System.out.println("Declared variable " + table.getVar(id).shortRepr()); 
 		}
+		if (program.inMainFunction()) {
+			variable.setGlobal();
+		} else {
+			variable.setLocal();
+		}
 		while (accept(commaToken)) {
+			if (variable instanceof Variable) {
+				variable = new Variable();
+			}
 		    id = ident();
 			table.declare(variable, id);
 			Global g2 = table.declare(variable, id);
@@ -261,14 +269,16 @@ public class Parser {
 			if (debug && variable instanceof Variable) { 
 				System.out.println("Declared variable " + table.getVar(id).shortRepr()); 
 			}
+
+			if (program.inMainFunction()) {
+				variable.setGlobal();
+			} else {
+				variable.setLocal();
+			}
 		}
 		expect(semiToken);
 
-		if (program.inMainFunction()) {
-			variable.setGlobal();
-		} else {
-			variable.setLocal();
-		}
+
 	}
 
 	/* typeDecl - type declaration.
@@ -501,6 +511,11 @@ public class Parser {
 			}
 		}
 
+		// Zero out modified flags for all globals.
+		for (Global g : program.globals) {
+			g.modified = false;
+		}
+
 		// Add function call to program and return the instruction.
         Instruction callInstr = program.addFunctionCall(function, parameters);
         return callInstr;
@@ -518,9 +533,9 @@ public class Parser {
 
 		if (var instanceof Variable) {
 			// Create new move instruction for this Variable.
-			Instruction moveInstr = program.addAssignment((Variable) var, expr);
 			Global g = table.reassignVar(((Variable) var).id, (Variable) var);
 			program.updateGlobal(g, var);
+			Instruction moveInstr = program.addAssignment((Variable) var, expr);
 			if (debug) { System.out.println("Generated move instruction " + moveInstr); }
 		} else if (var instanceof Array) {
 			// Create an array store instruction for this array.
@@ -587,7 +602,7 @@ public class Parser {
 				newVar.setLocal();
 			}
 			return newVar;
-		} else if (var.uninit() && (program.inMainFunction() || var.isLocal()) ) {
+		} else if ( var.uninit() && (program.inMainFunction() || var.isLocal()) ) {
 			error("Uninitialized variable " + table.getName(id)); 
 		} else {
 			return var;

@@ -5,6 +5,8 @@ var c,d;
 {
 	let d <- 2;
 	let c <- a + d;
+	let a <- 3;
+	let c <- c + a;
 	call OutputNum(c)
 };
 {

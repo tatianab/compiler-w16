@@ -26,7 +26,7 @@ public class IntermedRepr {
 
 	public InterferenceGraph ifg;          // Interference graph.
 
-	public final Function MAIN = new Function(-1, "MAIN", true);
+	public final Function MAIN = new Function(-1, "MAIN", true, this);
 
 	// Function compilation.
 	public Function currentFunction;
@@ -236,7 +236,7 @@ public class IntermedRepr {
 		moveInstr.defines(var);
         var.definedAt(moveInstr);
         currentBlock().addReturnValue(var);
-        checkGlobal(var.getGlobal(), moveInstr);
+        checkGlobal(var.getGlobalVar(), moveInstr);
 		return moveInstr;
 	}
 
@@ -257,11 +257,12 @@ public class IntermedRepr {
 	}
 
 	public void updateGlobal(Global g, Value v) {
+
 		if (inMainFunction() && g != null)  {
 			g.modified = true;
 			g.lastDef  = v;
-		} else {
-			// TODO
+		} else if (g != null) {
+			currentFunction.addGlobalModification(g, v);
 		}
 	}
 

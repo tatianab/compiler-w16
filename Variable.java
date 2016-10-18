@@ -13,7 +13,7 @@ public class Variable extends Value {
 	public int uid;                      // Variable's unique id.
 	public Instruction def;              // The instruction that defines this variable.
 	public HashSet<Instruction> uses;    // The instructions that use this variable, but don't re-define it.
-	private Global global; 
+	private Global globalVar; 
 
 	public RegAllocator.memorySpace.memoryPosition position;
 
@@ -74,13 +74,16 @@ public class Variable extends Value {
 		return (instance == -1);
 	}
 
-	public void setGlobal(Global g) {
-		this.global = g;
+	public void setGlobalVar(Global g) {
+		this.globalVar = g;
 	}
 
 	@Override
-	public Global getGlobal() {
-		return global;
+	public Global getGlobalVar() {
+		if (globalVar == null && global) {
+			Compiler.error("Global var not assigned to " + shortRepr() + ".");
+		}
+		return globalVar;
 	}
 
 	// Print out ident_id, e.g, a_1, a_2 etc.

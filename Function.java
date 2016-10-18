@@ -30,7 +30,7 @@ public class Function extends Value {
 	public boolean isProc;
 
 	
-	public Function(int id, String ident, boolean isProc) {
+	public Function(int id, String ident, boolean isProc, IntermedRepr program) {
 		this.id = id;
 		this.ident = ident;
 		numParams = 0;
@@ -39,9 +39,10 @@ public class Function extends Value {
 		this.isProc = isProc;
 		this.globalsUsed     = new ArrayList<Global>();
 		this.globalsModified = new ArrayList<Global>();
+		this.program = program;
 	}
 
-	public Function(int id, String ident, int numParams) {
+	public Function(int id, String ident, int numParams, IntermedRepr program) {
 		this.id = id;
 		this.ident = ident;
 		this.numParams = numParams;
@@ -49,6 +50,7 @@ public class Function extends Value {
 		this.arrays = new ArrayList<Array>();
 		this.globalsUsed     = new ArrayList<Global>();
 		this.globalsModified = new ArrayList<Global>();
+		this.program = program;
 	}
 
 	public boolean isMain() {
@@ -88,14 +90,14 @@ public class Function extends Value {
 		// 	// global.replaceUses(this, instr);
 		// }
 		
-  //       // Store globals.
-  //       for (Variable global : globalsModified) {
-	 //        Instruction instr = program.createInstr();
-	 //        Value lastMod = null;
-		// 	instr.setOp(Instruction.store);
-		// 	instr.setArgs(lastMod, global);
-		// 	exit.addToEnd(instr);
-  //       }
+        // Store globals.
+        for (Global g : globalsModified) {
+	        Instruction instr = program.createInstr();
+	        Value lastMod = g.getLastDef();
+			instr.setOp(Instruction.store);
+			instr.setArgs(lastMod, g);
+			exit.addToEnd(instr);
+        }
 	}
 
 	// Generate a call to this function.
@@ -131,17 +133,27 @@ public class Function extends Value {
 	}
 
 	// Handle globals that are MODIFIED by this function.
-	public void addGlobalModification(Global g, Instruction instr) {
-		globalsModified.add(g);
-		g.modified = true;
+	public void addGlobalModification(Global g, Value v) {
+		if (!globalsModified.contains(g)) {
+			globalsModified.add(g);
+		}
+		g.lastDef = v;
 	}
 
 	// Handle globals that are USED by this function.
 	public Instruction addGlobalUse(Global g) {
 		// TODO
 		globalsUsed.add(g);	
-		if (!g.modified) {
+		if (true) {//!g.modified) {
+			if (true) {
 			// Add a load instruction and return it
+			// Instruction instr = new Instruction(200, null);
+			Instruction instr = program.createInstr();
+			instr.setOp(Instruction.load);
+			instr.setArgs(g);
+			enter.addToEnd(instr);
+			return instr;
+			}
 		}
 		return null;
 	}

@@ -43,7 +43,7 @@ public class StringTable {
 		int funcId;
 		for (String funcName : builtInFunctions) {
 			funcId = getID(funcName);
-			func = new Function(funcId, funcName, false);
+			func = new Function(funcId, funcName, false, null);
 			currentScope = func;
 			if (funcName.equals("OutputNum")) {
 				func.setNumParams(1);
@@ -91,8 +91,10 @@ public class StringTable {
 	// Reset the "lastVar" data on the given id.
 	// Used when there is a new assignment to a variable.
 	public Global reassignVar(int id, Variable var) {
-		get(id).lastVar = var;
-		return get(id).global;
+		StringData data = get(id);
+		data.lastVar = var;
+		var.setGlobalVar(data.global);	
+		return data.global;
 	}
 
 	public void setScope(Function scope) {
@@ -109,7 +111,8 @@ public class StringTable {
 
 		    if (currentScope.isMain()) {
 				Global g = new Global(id, data.name);
-				data.global = g;	
+				data.global = g;
+				((Variable) value).setGlobalVar(g);	
 				return g;
 			}		
 		} else if (value instanceof Array) {

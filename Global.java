@@ -29,6 +29,10 @@ public class Global extends Value {
 		return "[Global " + ident + "]";
 	}
 
+	public Value getLastDef() {
+		return lastDef;
+	}
+
 	private class FunctionData {
 
 		Function function;

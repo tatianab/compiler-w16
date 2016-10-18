@@ -210,14 +210,17 @@ public class Instruction extends Value {
 
 	public void setArgs(Value arg1, Value arg2) {
 		Instruction globalLoad1 = checkGlobal(arg1);
-		Instruction globalLoad2 = checkGlobal(arg2);
 
 		if (globalLoad1 != null) {
 			arg1 = globalLoad1;
 		}
 
-		if (globalLoad2 != null) {
-			arg2 = globalLoad2;
+		// If we aren't assigning to the global var.
+		if (op != move) {
+			Instruction globalLoad2 = checkGlobal(arg2);
+			if (globalLoad2 != null) {
+				arg2 = globalLoad2;
+			}
 		}
 
 		this.arg1 = arg1;
@@ -250,9 +253,11 @@ public class Instruction extends Value {
 	// value has been loaded at the beginning of
 	// the function.
 	private Instruction checkGlobal(Value value) {
-		Global g = value.getGlobal();
-		if (g != null) {
-			return function.addGlobalUse(g);
+		if (value != null && value instanceof Variable) {
+			Global g = value.getGlobalVar();
+			if (g != null && !function.isMain()) {
+				return function.addGlobalUse(g);
+			}
 		}
 		return null;
 	}
