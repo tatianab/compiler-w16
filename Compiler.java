@@ -170,8 +170,8 @@ public class Compiler {
 
 		if (debug) {
 			System.out.print("Global vars and arrays \n");
-			for (Variable v : program.globalVars) {
-				System.out.print(v.shortRepr() + " ");
+			for (Global g : program.globals) {
+				System.out.print(g.shortRepr() + " ");
 			}
 			System.out.print("\n");
 			for (Array a : program.globalArrays) {

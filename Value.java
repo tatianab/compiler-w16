@@ -24,6 +24,10 @@ public class Value {
 		return !global;
 	}
 
+	public Global getGlobal() {
+		return null;
+	}
+
 	public boolean equals(Value other) {
 		return (this == other);
 	}
