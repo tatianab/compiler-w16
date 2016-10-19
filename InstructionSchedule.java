@@ -277,22 +277,24 @@ public class InstructionSchedule {
 
             //Search for arg1
             int reg1 = -1;
-            if (instr.arg1 instanceof Instruction) {
-                //It is instruction, it must have an register
-                Instruction instr1 = (Instruction)instr.arg1;
-                reg1 = instr1.state.storage.currentRegister.registerID;
-            } else if (instr.arg1 instanceof Constant) {
-                Constant c = (Constant)instr.arg1;
-                constant1 = c.getVal();
-            } else if (instr.arg1 instanceof Block) {
-               b = (Block)instr.arg1;
-               jumpBlock = b;
+            if (instr.op != Instruction.read) {
+                if (instr.arg1 instanceof Instruction) {
+                    //It is instruction, it must have an register
+                    Instruction instr1 = (Instruction) instr.arg1;
+                    reg1 = instr1.state.storage.currentRegister.registerID;
+                } else if (instr.arg1 instanceof Constant) {
+                    Constant c = (Constant) instr.arg1;
+                    constant1 = c.getVal();
+                } else if (instr.arg1 instanceof Block) {
+                    b = (Block) instr.arg1;
+                    jumpBlock = b;
 
-           }
+                }
+            }
             //Search for arg2
             int reg2 = -1;
             
-            if (instr.op != Instruction.move && instr.op != Instruction.store) {
+            if (instr.op != Instruction.move && instr.op != Instruction.store&& instr.op != Instruction.write&& instr.op != Instruction.writeNL&& instr.op != Instruction.read) {
                 //If it's not move instruction, it should be have the second argument
                 if (instr.arg2 instanceof Instruction) {
                     //It is instruction, it must have an register
@@ -592,9 +594,16 @@ public class InstructionSchedule {
             result.add(oi);
 
             if (instr.op == Instruction.call) {
+                //Function
+                Function func = (Function)instr.arg1;
+                if (!func.isProc) {
+                    //Not a procedure, copy the value back to target register
+
+                }
                 //Function call, so pop one space
                 context.space = context.space.upperSpace;
             }
+
 
             return result;
         }
@@ -1271,6 +1280,23 @@ public class InstructionSchedule {
             for (Array array: repr.globalArrays) {
                 array.backstorePos = globalSpace.reverseVariable(array.totalSize, array.ident);
             }
+        }
+
+        for (Instruction f: repr.instrs) {
+            if (!f.deleted()) {
+                f.state.unresolveArgument = 0;
+                if (f.arg1 instanceof Instruction && f.arg1 != f.instrsUsed[0] && f.arg2 != f.instrsUsed[1]) {
+                    if (f.instrsUsed[0] == null) f.instrsUsed[0] = (Instruction)f.arg1;
+                    else f.instrsUsed[1] = (Instruction)f.arg1;
+                }
+                if ( f.arg1 instanceof  Instruction && !((Instruction)f.arg1).state.schedule ) f.state.unresolveArgument++;
+                if (f.arg2 instanceof Instruction && f.arg2 != f.instrsUsed[0] && f.arg2 != f.instrsUsed[1]) {
+                    if (f.instrsUsed[0] == null) f.instrsUsed[0] = (Instruction)f.arg2;
+                    else f.instrsUsed[1] = (Instruction)f.arg2;
+                }
+                if ( f.arg2 instanceof  Instruction && !((Instruction)f.arg2).state.schedule ) f.state.unresolveArgument++;
+            }
+
         }
 
         //Reserve register space

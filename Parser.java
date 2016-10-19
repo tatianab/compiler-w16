@@ -20,6 +20,8 @@ public class Parser {
 	public Tokenizer    scanner; // Reads file and breaks it into tokens.
 	public IntermedRepr program; // Intermediate representation of the program in SSA form, after parsing.
 
+	public Instruction lastUI_IO;
+
 	boolean debug;		         // Debugging flag.
 
 	/* Token values. */
@@ -503,6 +505,7 @@ public class Parser {
 		if (function == null) {
 			error("No function " + table.getName(id) + " exists.");
 		}
+
 		int numParams     = function.numParams;
 		Value[] parameters  = new Value[numParams];
 		if (debug) { System.out.println("Function " + function.shortRepr() + " with " + numParams + " params.");}
@@ -541,6 +544,12 @@ public class Parser {
 
 		// Add function call to program and return the instruction.
         Instruction callInstr = program.addFunctionCall(function, parameters);
+
+		if (function.ident == "InputNum" || function.ident == "OutputNum") {
+			if (lastUI_IO!=null) callInstr.setArgs(lastUI_IO);
+			lastUI_IO = callInstr;
+		}
+
         return callInstr;
 	}
 

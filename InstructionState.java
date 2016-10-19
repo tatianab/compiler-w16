@@ -24,11 +24,16 @@ public class InstructionState{
 			}
 		}
 		storage = new storageState();
+		storage.instr = instr;
 	}
 	public class storageState {
+		public Instruction instr;
 		public RegAllocator.Register currentRegister = null;
 		public RegAllocator.memorySpace.memoryPosition backstore = null;
-		public boolean loaded() { return currentRegister!=null; }
+		public boolean loaded() {
+			if ((instr.op == Instruction.writeNL||instr.op == Instruction.write || instr.op == Instruction.read)&&instr.state.schedule) return true;
+			return currentRegister!=null;
+		}
 		public ArrayList<InstructionSchedule.outputInstruction> load(RegAllocator.Register reg, RegAllocator.memorySpace space) {
 			if (loaded()) return null;
 			else {
@@ -86,7 +91,6 @@ public class InstructionState{
 		if (instr.arg1 == instr.arg2 && instr.arg1 != null) {
 			((Instruction)instr.arg2).state.valueRepr.referenceCount += 1;
 			((Instruction)instr.arg2).state.valueRepr.upcomingReferenceCount += 1;
-
 		}
 		schedule = true;
 	}
