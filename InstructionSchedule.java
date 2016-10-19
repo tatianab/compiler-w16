@@ -167,8 +167,14 @@ public class InstructionSchedule {
             //Overridee for return value
             if (instr.op == Instruction.arrayStore) {
                 //Return value
-                ArrayList load = ((Instruction)instr.arg1).state.storage.load(ctx.registers[1], ctx.space);
-                if (load!= null) intermediateOp.addAll( load );
+                if (instr.arg1 instanceof Instruction) {
+                    ArrayList load = ((Instruction) instr.arg1).state.storage.load(ctx.registers[1], ctx.space);
+                    if (load != null) intermediateOp.addAll(load);
+                } else {
+                    outputInstruction add = new outputInstruction();
+                    add.arg1 = 0;   add.arg2 = -1;  add.constant2 = ((Constant)instr.arg1).getVal();    add.op = Instruction.add;
+                    intermediateOp.add(add);
+                }
                 outputReg = 1;    arg1 = RegAllocator.framePtrRegisterID(); arg2 = -1; constant2 = 0;   op = Instruction.store;
                 return;
             }
@@ -240,6 +246,12 @@ public class InstructionSchedule {
                     store.op = Instruction.store;
                     intermediateOp.add(store);
                 }
+
+                //Raise stack
+                outputInstruction store = new outputInstruction();
+                store.arg1 = RegAllocator.framePtrRegisterID();  store.arg2 = -1; store.constant2 = space.dataHead;   store.outputReg = RegAllocator.framePtrRegisterID();
+                store.op = Instruction.add;
+                intermediateOp.add(store);
 
             }
 

@@ -547,7 +547,7 @@ public class RegAllocator {
         }
         private int memoryHead;
         private int memoryTail;
-        private int dataHead;
+        public int dataHead;
         private int dataTail;
         public memorySpace upperSpace;
         public memoryPosition reserveArray(int count) {
@@ -928,7 +928,7 @@ public class RegAllocator {
             return registers[numberOfRegister-numberOfReverse+2];
         }
         public Register stackPtrRegister() {
-            return registers[numberOfRegister-numberOfReverse+3];
+            return registers[numberOfRegister-numberOfReverse+2];
         }
         public Register returnAddrRegister() {
             return registers[numberOfRegister-numberOfReverse+4];
