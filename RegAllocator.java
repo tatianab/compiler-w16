@@ -538,6 +538,10 @@ public class RegAllocator {
         public ArrayList<memoryPosition> contextReserve;
         public memoryPosition returnAddr;
         public void raPosReserve() { returnAddr = reserve(); }
+        public memoryPosition getRaPosReserve() {
+            if (returnAddr == null && upperSpace != null) return upperSpace.getRaPosReserve();
+            else return returnAddr;
+        }
         public void offset(int o) {
             memoryHead += o;
             dataHead += o;

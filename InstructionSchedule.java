@@ -1,4 +1,5 @@
 import com.sun.org.apache.bcel.internal.classfile.Code;
+import com.sun.tools.internal.jxc.ap.Const;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -154,8 +155,84 @@ public class InstructionSchedule {
             arg1 = -1;
             arg2 = -1;
         }
-        outputInstruction(Instruction instr, int outputRegistetNo, ArrayList<outputInstruction>intermediateOp) {
+
+        public Instruction nextNonDelete(Instruction instr) {
+            if (instr.next.deleted()) return nextNonDelete(instr.next);
+            else return instr.next;
+        }
+
+        outputInstruction(Instruction instr, int outputRegistetNo, ArrayList<outputInstruction>intermediateOp, RegAllocator.registerContext ctx) {
             Block b;
+
+            //Oct 19, 2016 - A bypass for call instruction
+            if (instr.op == Instruction.call) {
+                RegAllocator.memorySpace space = ctx.space;
+                //Load parameter
+                //Load parameter in reverse
+                for (int i = instr.params.length-1; i >= 0; i--) {
+                    Value p = instr.params[i];
+                    if (p instanceof Constant) {
+                        Constant c = (Constant)p;
+                        outputInstruction load = new outputInstruction();
+                        load.arg1 = 0;  load.arg2 = -1; load.constant2 = c.getVal();    load.outputReg = RegAllocator.memoryOpRegisterID();
+                        load.op = Instruction.add;
+                        intermediateOp.add(load);
+                        outputInstruction store = new outputInstruction();
+                        RegAllocator.memorySpace.memoryPosition pos = space.reserve();
+                        store.arg1 = RegAllocator.stackPtrRegisterID();  store.arg2 = -1; store.constant2 = pos.address;   store.outputReg = RegAllocator.memoryOpRegisterID();
+                        store.op = Instruction.store;
+                        intermediateOp.add(store);
+                    } else if (p instanceof Instruction) {
+                        Instruction instrP = (Instruction)p;
+                        if (instrP.state.storage.loaded()) {
+                            outputInstruction store = new outputInstruction();
+                            RegAllocator.memorySpace.memoryPosition pos = space.reserve();
+                            store.arg1 = RegAllocator.stackPtrRegisterID();  store.arg2 = -1; store.constant2 = pos.address;   store.outputReg = RegAllocator.memoryOpRegisterID();
+                            store.op = Instruction.store;
+                            intermediateOp.add(store);
+                        } else {
+                            ArrayList<outputInstruction> loads = instrP.state.storage.load(ctx.memoryOpRegister(), ctx.space);
+                            intermediateOp.addAll(loads);
+                            outputInstruction store = new outputInstruction();
+                            RegAllocator.memorySpace.memoryPosition pos = space.reserve();
+                            store.arg1 = RegAllocator.stackPtrRegisterID();  store.arg2 = -1; store.constant2 = pos.address;   store.outputReg = RegAllocator.memoryOpRegisterID();
+                            store.op = Instruction.store;
+                            intermediateOp.add(store);
+                        }
+                    }
+                }
+                //After parameter, store register
+                ArrayList<RegAllocator.Register> regs = ctx.regToPreserve();
+                for (int i = 0; i < regs.size(); i++) {
+                    outputInstruction oi = new outputInstruction();
+                    oi.arg1 = RegAllocator.stackPtrRegisterID();    oi.constant2 = ctx.space.positionForIndex(i).address;   oi.arg2 = -1;   oi.op = Instruction.store;
+                    intermediateOp.add(oi);
+                }
+
+                {
+                    //Save Return address
+                    outputInstruction store = new outputInstruction();
+                    RegAllocator.memorySpace.memoryPosition pos = space.getRaPosReserve();
+                    store.arg1 = RegAllocator.stackPtrRegisterID();  store.arg2 = -1; store.constant2 = pos.address;   store.outputReg = RegAllocator.returnAddrRegisterID();
+                    store.op = Instruction.store;
+                    intermediateOp.add(store);
+                }
+
+                {
+                    //Reserve space for next RA
+                    RegAllocator.memorySpace.memoryPosition pos = space.reserve();
+                }
+
+                {
+                    //Save frame pointer
+                    outputInstruction store = new outputInstruction();
+                    RegAllocator.memorySpace.memoryPosition pos = space.reserve();
+                    store.arg1 = RegAllocator.stackPtrRegisterID();  store.arg2 = -1; store.constant2 = pos.address;   store.outputReg = RegAllocator.framePtrRegisterID();
+                    store.op = Instruction.store;
+                    intermediateOp.add(store);
+                }
+
+            }
 
             //Oct 14, 2016 - A bypass for adda instruction
             if (instr.op == Instruction.adda) {
@@ -481,8 +558,14 @@ public class InstructionSchedule {
             instr.state.valueRepr = value;
             
             //Tell the instrcution depended on that it's releasing
+            if (instr.op == Instruction.call) {
+                //Function call, sub one space here
+                RegAllocator ra = new RegAllocator();
+                context.space = ra.new memorySpace(context.space);
+            }
+
             instr.state.scheduled();
-            outputInstruction oi = new outputInstruction(instr, nextRegID, result);
+            outputInstruction oi = new outputInstruction(instr, nextRegID, result, context);
             
             if (instructionWouldReturn(instr)) {
                 nextRegID = phiableRegister(instr, context);
@@ -507,6 +590,12 @@ public class InstructionSchedule {
                 
             }
             result.add(oi);
+
+            if (instr.op == Instruction.call) {
+                //Function call, so pop one space
+                context.space = context.space.upperSpace;
+            }
+
             return result;
         }
         
@@ -777,7 +866,7 @@ public class InstructionSchedule {
                 boolean allInstrNeedSpace = needSpace(cachedInstruction);
 
                 boolean readWriteConflict = false;
-                while (context.hasSpace()||existNonReturnCond(cachedInstruction, context) && cachedInstruction.size() > 0 && !readWriteConflict) {
+                while ( (context.hasSpace()||existNonReturnCond(cachedInstruction, context)) && cachedInstruction.size() > 0 && !readWriteConflict) {
                     readWriteConflict = false;
                     //As long as there is instruction available:
                     //If there is space in the register, use it to do the instruction that has the largest impact:
@@ -1186,21 +1275,23 @@ public class InstructionSchedule {
 
         //Reserve register space
 
-
-        RegAllocator.memorySpace space = rac.new memorySpace(globalSpace);
-        RegAllocator.registerContext regCtx = rac.new registerContext(space);
-
-        space.offset(-4);
-        space.reserveForRegister(regCtx.regToPreserve().size());
-
-        mainBlock = new ScheduledBlock(regCtx, repr.MAIN.enter, space, null);
         {
-            outputInstruction oi = new outputInstruction();
-            oi.arg1 = RegAllocator.framePtrRegisterID();
-            oi.constant2 = 4;
-            oi.outputReg = RegAllocator.framePtrRegisterID();
-            oi.op = Instruction.add;
-            mainBlock.instructions.add(0, oi);
+            RegAllocator.memorySpace space = rac.new memorySpace(globalSpace);
+            RegAllocator.registerContext regCtx = rac.new registerContext(space);
+
+            space.offset(-8);
+            space.raPosReserve();
+            space.reserveForRegister(regCtx.regToPreserve().size());
+
+            mainBlock = new ScheduledBlock(regCtx, repr.MAIN.enter, space, null);
+            {
+                outputInstruction oi = new outputInstruction();
+                oi.arg1 = RegAllocator.framePtrRegisterID();
+                oi.constant2 = 4;
+                oi.outputReg = RegAllocator.framePtrRegisterID();
+                oi.op = Instruction.add;
+                mainBlock.instructions.add(0, oi);
+            }
         }
 
         //Init functions
@@ -1225,7 +1316,7 @@ public class InstructionSchedule {
 
             }
             RegAllocator.memorySpace _space = rac.new memorySpace(globalSpace);
-        	RegAllocator.registerContext _regCtx = rac.new registerContext(space);
+        	RegAllocator.registerContext _regCtx = rac.new registerContext(_space);
             //Frame+RA
             _space.offset(-8);
 
@@ -1237,7 +1328,7 @@ public class InstructionSchedule {
             }
 
             _space.raPosReserve();
-            _space.reserveForRegister(regCtx.regToPreserve().size());
+            _space.reserveForRegister(_regCtx.regToPreserve().size());
 
             ScheduledBlock funcBlock = new ScheduledBlock(_regCtx, func.enter, _space, null);
 
