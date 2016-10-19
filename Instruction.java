@@ -120,7 +120,7 @@ public class Instruction extends Value {
 				}
 			}
 		}
-		if (Compiler.debug) { System.out.println("Deleting instruction " + this); }
+		//if (Compiler.debug) { System.out.println("Deleting instruction " + this); }
 		if (this.prev == null && this.next == null) { 
 			block.begin = null;
 			block.end   = null;

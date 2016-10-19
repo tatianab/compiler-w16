@@ -31,7 +31,9 @@ public class InstructionState{
 		public RegAllocator.Register currentRegister = null;
 		public RegAllocator.memorySpace.memoryPosition backstore = null;
 		public boolean loaded() {
-			if ((instr.op == Instruction.writeNL||instr.op == Instruction.write || instr.op == Instruction.read)&&instr.state.schedule) return true;
+			if (
+					((instr.op == Instruction.writeNL)||(instr.op == Instruction.write) ||( instr.op == Instruction.read)||(instr.op == Instruction.phi))
+					&&instr.state.schedule) return true;
 			return currentRegister!=null;
 		}
 		public ArrayList<InstructionSchedule.outputInstruction> load(RegAllocator.Register reg, RegAllocator.memorySpace space) {

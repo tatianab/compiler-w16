@@ -772,7 +772,7 @@ public class InstructionSchedule {
                 }
                 if (ifJoin) {
                     //This is a merge block
-                    RegAllocator.phiMergerResult result = RegAllocator.phiMerger(inputBlock.in1.schedule.context, inputBlock.in2.schedule.context, phiInstructions);
+                    RegAllocator.phiMergerResult result = RegAllocator.phiMerger(previousContext, inputBlock.in2.schedule.context, phiInstructions);
                     //TODO: Do something to the blocks
                     inputBlock.in1.schedule.insertPhiTransfer(result.edge1);
                     inputBlock.in2.schedule.insertPhiTransfer(result.edge2);
@@ -780,7 +780,7 @@ public class InstructionSchedule {
 
                     //Memory Space merge
 
-                    RegAllocator.memorySpace space1 = inputBlock.in1.schedule.context.space;
+                    RegAllocator.memorySpace space1 = previousContext.space;
                     RegAllocator.memorySpace space2 = inputBlock.in2.schedule.context.space;
                     assert (space1.upperSpace == space2.upperSpace);
                     space = space1.upperSpace;
@@ -844,8 +844,10 @@ public class InstructionSchedule {
                                     if (Compiler.debug) {
                                         //System.out.print("Parent: "+parent+"\n");
                                     }
-                                if (parent != null && (!parent.deleted() && !parent.state.storage.loaded()))
+                                if (parent != null && (!parent.deleted() && !parent.state.storage.loaded())) {
+                                    boolean l = parent.state.storage.loaded();
                                     cached = false;
+                                }
                             }
                         }
                         boolean canCarryOut = true;

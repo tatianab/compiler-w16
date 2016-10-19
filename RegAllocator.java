@@ -214,10 +214,40 @@ public class RegAllocator {
         for (phiRequest request : requests) {
             //Handle case
             Instruction instr1 = request.value1;
-            Register reg1 = instr1.state.storage.currentRegister;
+            Register reg1 = null;
+            for (Register reg: a1.registers) {
+                if (reg.currentValue != null && reg.currentValue.basedInstr == instr1) {
+                    reg1 = reg;
+                    break;
+                }
+            }
 
             Instruction instr2 = request.value2;
-            Register reg2 = instr2.state.storage.currentRegister;
+            Register reg2 = null;
+            for (Register reg: a2.registers) {
+                if (reg.currentValue != null && reg.currentValue.basedInstr == instr2) {
+                    reg2 = reg;
+                    break;
+                }
+            }
+
+            if (reg1 == null || reg2 == null) {
+                instr1 = request.value2;
+                for (Register reg: a1.registers) {
+                    if (reg.currentValue != null && reg.currentValue.basedInstr == instr1) {
+                        reg1 = reg;
+                        break;
+                    }
+                }
+
+                instr2 = request.value1;
+                for (Register reg: a2.registers) {
+                    if (reg.currentValue != null && reg.currentValue.basedInstr == instr2) {
+                        reg2 = reg;
+                        break;
+                    }
+                }
+            }
 
             /*if (request.value1 != null)
                 request.value1.state.valueRepr.instructionCalled(request.actualStmt.basedInstr);
