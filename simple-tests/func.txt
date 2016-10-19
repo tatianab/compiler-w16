@@ -1,0 +1,17 @@
+main
+var a,b;
+
+procedure go();
+var c,d;
+{
+	let d <- 2;
+	let c <- a + d;
+	return c;
+};
+
+{
+	let a <- call InputNum();
+	let b <- call go();
+
+	call OutputNum(b)
+}.

@@ -1,0 +1,11 @@
+main
+var a;
+{
+	let a <- call InputNum();
+
+	if a < 10 then
+		let a <- a - 1
+	fi;
+
+	call OutputNum(a)
+}.

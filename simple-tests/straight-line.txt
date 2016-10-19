@@ -1,0 +1,11 @@
+main
+var a,b,c;
+{
+	let a <- call InputNum();
+	let b <- a + 5;
+	let c <- 13 - 3;
+	let a <- c * 3;
+
+	call OutputNum(a);
+	call OutputNum(b)
+}.

@@ -1,0 +1,8 @@
+main
+array[5] a;
+{
+	let a[1] <- call InputNum();
+	let a[3] <- a[1] + 10;
+
+	call OutputNum(a[3])
+}.

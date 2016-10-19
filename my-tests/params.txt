@@ -1,0 +1,12 @@
+main
+var a,b;
+procedure go(c, d);
+{
+	call OutputNum(c);
+	call OutputNum(d)
+};
+{
+	let a <- 5;
+	let b <- 2;
+	call go(a, b)
+}.
