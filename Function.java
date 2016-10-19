@@ -4,6 +4,8 @@
  * CS 241 - Advanced Compiler Design
  */
 import java.util.ArrayList;
+import java.util.HashSet;
+
 public class Function extends Value {
 
 	public int id;
@@ -24,8 +26,8 @@ public class Function extends Value {
 
 	public ArrayList<Array> arrays; // Arrays in this function.
 
-	public ArrayList<Global> globalsUsed;
-	public ArrayList<Global> globalsModified;
+	public HashSet<Global> globalsUsed;
+	public HashSet<Global> globalsModified;
 
 	public boolean isProc;
 
@@ -37,8 +39,8 @@ public class Function extends Value {
 		this.instrs = new ArrayList<Instruction>();
 		this.arrays = new ArrayList<Array>();
 		this.isProc = isProc;
-		this.globalsUsed     = new ArrayList<Global>();
-		this.globalsModified = new ArrayList<Global>();
+		this.globalsUsed     = new HashSet<Global>();
+		this.globalsModified = new HashSet<Global>();
 		this.program = program;
 	}
 
@@ -48,8 +50,8 @@ public class Function extends Value {
 		this.numParams = numParams;
 		this.instrs = new ArrayList<Instruction>();
 		this.arrays = new ArrayList<Array>();
-		this.globalsUsed     = new ArrayList<Global>();
-		this.globalsModified = new ArrayList<Global>();
+		this.globalsUsed     = new HashSet<Global>();
+		this.globalsModified = new HashSet<Global>();
 		this.program = program;
 	}
 
@@ -143,8 +145,7 @@ public class Function extends Value {
 	// Handle globals that are USED by this function.
 	public Instruction addGlobalUse(Global g) {
 		// TODO
-		globalsUsed.add(g);	
-		if (true) {//!g.modified) {
+		if (globalsUsed.add(g)) {//!g.modified) {
 			if (true) {
 			// Add a load instruction and return it
 			// Instruction instr = new Instruction(200, null);

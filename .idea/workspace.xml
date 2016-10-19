@@ -3,10 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="d7a861de-cca6-4af2-a799-fe56525dd417" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Global.java" afterPath="$PROJECT_DIR$/Global.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/InstructionSchedule.java" afterPath="$PROJECT_DIR$/InstructionSchedule.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/my-tests/array-assignments.txt" afterPath="$PROJECT_DIR$/my-tests/array-assignments.txt" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/compiler-w16/my-tests/array-assignments.txt" afterPath="$PROJECT_DIR$/out/production/compiler-w16/my-tests/array-assignments.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Function.java" afterPath="$PROJECT_DIR$/Function.java" />
     </list>
     <ignored path="compiler-w16.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -28,7 +25,7 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="InstructionSchedule.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="InstructionSchedule.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/InstructionSchedule.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="225">
@@ -89,8 +86,8 @@
       <file leaf-file-name="Parser.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Parser.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="230">
-              <caret line="546" column="40" selection-start-line="546" selection-start-column="40" selection-end-line="546" selection-end-column="43" />
+            <state relative-caret-position="605">
+              <caret line="511" column="33" selection-start-line="511" selection-start-column="16" selection-end-line="511" selection-end-column="33" />
               <folding>
                 <element signature="method#Parser#0;class#Parser#0" expanded="false" />
                 <element signature="method#parse#0;class#Parser#0" expanded="false" />
@@ -107,8 +104,6 @@
                 <element signature="method#ifStatement#0;class#Parser#0" expanded="false" />
                 <element signature="e#14255#14285#0" expanded="false" />
                 <element signature="e#14690#14723#0" expanded="false" />
-                <element signature="method#funcCall#0;class#Parser#0" expanded="false" />
-                <element signature="e#17166#17218#0" expanded="false" />
                 <element signature="method#relation#0;class#Parser#0" expanded="false" />
                 <element signature="method#expression#0;class#Parser#0" expanded="false" />
                 <element signature="method#term#0;class#Parser#0" expanded="false" />
@@ -120,6 +115,18 @@
                 <element signature="method#accept#0;class#Parser#0" expanded="false" />
                 <element signature="method#arrayOffset#0;class#Parser#0" expanded="false" />
                 <element signature="method#error#0;class#Parser#0" expanded="false" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Function.java" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Function.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="405">
+              <caret line="147" column="30" selection-start-line="147" selection-start-column="30" selection-end-line="147" selection-end-column="30" />
+              <folding>
+                <element signature="imports" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -283,6 +290,7 @@
         <option value="$PROJECT_DIR$/Global.java" />
         <option value="$PROJECT_DIR$/CodeGenerator.java" />
         <option value="$PROJECT_DIR$/InstructionSchedule.java" />
+        <option value="$PROJECT_DIR$/Function.java" />
       </list>
     </option>
   </component>
@@ -631,7 +639,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1920" height="1200" extended-state="0" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -690,7 +698,7 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="471" />
+      <option name="time" value="473" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -1191,8 +1199,6 @@
             <element signature="method#ifStatement#0;class#Parser#0" expanded="false" />
             <element signature="e#14255#14285#0" expanded="false" />
             <element signature="e#14690#14723#0" expanded="false" />
-            <element signature="method#funcCall#0;class#Parser#0" expanded="false" />
-            <element signature="e#17166#17218#0" expanded="false" />
             <element signature="method#relation#0;class#Parser#0" expanded="false" />
             <element signature="method#expression#0;class#Parser#0" expanded="false" />
             <element signature="method#term#0;class#Parser#0" expanded="false" />
@@ -1425,8 +1431,6 @@
             <element signature="method#ifStatement#0;class#Parser#0" expanded="false" />
             <element signature="e#14255#14285#0" expanded="false" />
             <element signature="e#14690#14723#0" expanded="false" />
-            <element signature="method#funcCall#0;class#Parser#0" expanded="false" />
-            <element signature="e#17166#17218#0" expanded="false" />
             <element signature="method#relation#0;class#Parser#0" expanded="false" />
             <element signature="method#expression#0;class#Parser#0" expanded="false" />
             <element signature="method#term#0;class#Parser#0" expanded="false" />
@@ -1716,43 +1720,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Parser.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="230">
-          <caret line="546" column="40" selection-start-line="546" selection-start-column="40" selection-end-line="546" selection-end-column="43" />
-          <folding>
-            <element signature="method#Parser#0;class#Parser#0" expanded="false" />
-            <element signature="method#parse#0;class#Parser#0" expanded="false" />
-            <element signature="method#computation#0;class#Parser#0" expanded="false" />
-            <element signature="method#funcBody#0;class#Parser#0" expanded="false" />
-            <element signature="method#formalParam#0;class#Parser#0" expanded="false" />
-            <element signature="method#funcDecl#0;class#Parser#0" expanded="false" />
-            <element signature="e#6733#6778#0" expanded="false" />
-            <element signature="method#typeDecl#0;class#Parser#0" expanded="false" />
-            <element signature="method#statSequence#0;class#Parser#0" expanded="false" />
-            <element signature="method#statement#0;class#Parser#0" expanded="false" />
-            <element signature="method#returnStatement#0;class#Parser#0" expanded="false" />
-            <element signature="method#whileStatement#0;class#Parser#0" expanded="false" />
-            <element signature="method#ifStatement#0;class#Parser#0" expanded="false" />
-            <element signature="e#14255#14285#0" expanded="false" />
-            <element signature="e#14690#14723#0" expanded="false" />
-            <element signature="method#funcCall#0;class#Parser#0" expanded="false" />
-            <element signature="e#17166#17218#0" expanded="false" />
-            <element signature="method#relation#0;class#Parser#0" expanded="false" />
-            <element signature="method#expression#0;class#Parser#0" expanded="false" />
-            <element signature="method#term#0;class#Parser#0" expanded="false" />
-            <element signature="method#factor#0;class#Parser#0" expanded="false" />
-            <element signature="method#number#0;class#Parser#0" expanded="false" />
-            <element signature="method#ident#0;class#Parser#0" expanded="false" />
-            <element signature="method#relOp#0;class#Parser#0" expanded="false" />
-            <element signature="method#expect#0;class#Parser#0" expanded="false" />
-            <element signature="method#accept#0;class#Parser#0" expanded="false" />
-            <element signature="method#arrayOffset#0;class#Parser#0" expanded="false" />
-            <element signature="method#error#0;class#Parser#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Instruction.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="810">
@@ -1898,14 +1865,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Function.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="6" column="13" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Global.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="300">
@@ -1954,6 +1913,51 @@
             <element signature="e#55910#55927#0" expanded="false" />
             <element signature="method#sumbitVariable#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#beforeCall#0;class#InstructionSchedule#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Parser.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="605">
+          <caret line="511" column="33" selection-start-line="511" selection-start-column="16" selection-end-line="511" selection-end-column="33" />
+          <folding>
+            <element signature="method#Parser#0;class#Parser#0" expanded="false" />
+            <element signature="method#parse#0;class#Parser#0" expanded="false" />
+            <element signature="method#computation#0;class#Parser#0" expanded="false" />
+            <element signature="method#funcBody#0;class#Parser#0" expanded="false" />
+            <element signature="method#formalParam#0;class#Parser#0" expanded="false" />
+            <element signature="method#funcDecl#0;class#Parser#0" expanded="false" />
+            <element signature="e#6733#6778#0" expanded="false" />
+            <element signature="method#typeDecl#0;class#Parser#0" expanded="false" />
+            <element signature="method#statSequence#0;class#Parser#0" expanded="false" />
+            <element signature="method#statement#0;class#Parser#0" expanded="false" />
+            <element signature="method#returnStatement#0;class#Parser#0" expanded="false" />
+            <element signature="method#whileStatement#0;class#Parser#0" expanded="false" />
+            <element signature="method#ifStatement#0;class#Parser#0" expanded="false" />
+            <element signature="e#14255#14285#0" expanded="false" />
+            <element signature="e#14690#14723#0" expanded="false" />
+            <element signature="method#relation#0;class#Parser#0" expanded="false" />
+            <element signature="method#expression#0;class#Parser#0" expanded="false" />
+            <element signature="method#term#0;class#Parser#0" expanded="false" />
+            <element signature="method#factor#0;class#Parser#0" expanded="false" />
+            <element signature="method#number#0;class#Parser#0" expanded="false" />
+            <element signature="method#ident#0;class#Parser#0" expanded="false" />
+            <element signature="method#relOp#0;class#Parser#0" expanded="false" />
+            <element signature="method#expect#0;class#Parser#0" expanded="false" />
+            <element signature="method#accept#0;class#Parser#0" expanded="false" />
+            <element signature="method#arrayOffset#0;class#Parser#0" expanded="false" />
+            <element signature="method#error#0;class#Parser#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Function.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="405">
+          <caret line="147" column="30" selection-start-line="147" selection-start-column="30" selection-end-line="147" selection-end-column="30" />
+          <folding>
+            <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
