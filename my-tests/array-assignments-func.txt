@@ -3,11 +3,11 @@ array [10]a;
 array [1]b;
 array [10][10]c;
 var d;
-function foo( );
+function foo( b );
 var i;
 {
 	let i <- d;
-	let d <- d+1;
+	let d <- d+b;
 	let i <- 1;
 	return d
 };
@@ -19,5 +19,5 @@ var i;
 	let b[ 0 ] <- b[ 0 ] * a[ 1 ] + 9;
 	let a[ 5 ] <- 7;
 	let b[ 0 ] <- a[ 5 ];
-	call foo()
+	call foo(d)
 }.

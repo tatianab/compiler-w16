@@ -410,7 +410,7 @@ public class InstructionSchedule {
                 }
                 if (instr.instrsUsed != null) {
                     for (Instruction parent : instr.instrsUsed) {
-                        if (parent.state.storage.loaded() && parent.state.remainingAvailableChildSize == 0.5)
+                        if (parent != null && !parent.deleted() && parent.state.storage.loaded() && parent.state.remainingAvailableChildSize == 0.5)
                             return instr;
                     }
                 }
@@ -639,7 +639,7 @@ public class InstructionSchedule {
                         unprocessBlock.add(currentInstr);
                         if (currentInstr.instrsUsed != null)
                             for (Instruction instr : currentInstr.instrsUsed)
-                                if (instr != null) dependencyList.add(instr);
+                                if (instr != null && !instr.deleted() && !instr.state.schedule) dependencyList.add(instr);
                     }
                 } else if (currentInstr.op == Instruction.phi) {
                     RegAllocator.phiRequest req = rc.new phiRequest();
@@ -1189,16 +1189,56 @@ public class InstructionSchedule {
         RegAllocator.memorySpace space = rac.new memorySpace(globalSpace);
         RegAllocator.registerContext regCtx = rac.new registerContext(space);
 
+        space.offset(-4);
+        space.reserveForRegister(regCtx.regToPreserve().size());
+
         mainBlock = new ScheduledBlock(regCtx, repr.MAIN.enter, space, null);
+        {
+            outputInstruction oi = new outputInstruction();
+            oi.arg1 = RegAllocator.framePtrRegisterID();
+            oi.constant2 = 4;
+            oi.outputReg = RegAllocator.framePtrRegisterID();
+            oi.op = Instruction.add;
+            mainBlock.instructions.add(0, oi);
+        }
 
         //Init functions
         functionBlocks = new HashMap<Function, ScheduledBlock>();
 
         for (Function func : repr.functions) {
-        	RegAllocator.memorySpace _space = rac.new memorySpace(globalSpace);
-        	RegAllocator.registerContext _regCtx = rac.new registerContext(space);
+            //Lame patch for instrsUsed
+            for (Instruction f: func.instrs) {
+                if (!f.deleted()) {
+                    f.state.unresolveArgument = 0;
+                    if (f.arg1 instanceof Instruction && f.arg1 != f.instrsUsed[0] && f.arg2 != f.instrsUsed[1]) {
+                        if (f.instrsUsed[0] == null) f.instrsUsed[0] = (Instruction)f.arg1;
+                        else f.instrsUsed[1] = (Instruction)f.arg1;
+                    }
+                    if ( f.arg1 instanceof  Instruction && !((Instruction)f.arg1).state.schedule ) f.state.unresolveArgument++;
+                    if (f.arg2 instanceof Instruction && f.arg2 != f.instrsUsed[0] && f.arg2 != f.instrsUsed[1]) {
+                        if (f.instrsUsed[0] == null) f.instrsUsed[0] = (Instruction)f.arg2;
+                        else f.instrsUsed[1] = (Instruction)f.arg2;
+                    }
+                    if ( f.arg2 instanceof  Instruction && !((Instruction)f.arg2).state.schedule ) f.state.unresolveArgument++;
+                }
 
-        	ScheduledBlock funcBlock = new ScheduledBlock(_regCtx, func.enter, _space, null);
+            }
+            RegAllocator.memorySpace _space = rac.new memorySpace(globalSpace);
+        	RegAllocator.registerContext _regCtx = rac.new registerContext(space);
+            //Frame+RA
+            _space.offset(-8);
+
+            //Reserve for variable
+            _space.offset(-4 * func.numParams);
+            for (Instruction loadI: func.paraLoad) {
+                RegAllocator.memorySpace.memoryPosition pos = _space.reserve();
+                loadI.arg1 = new Constant(pos.address);
+            }
+
+            _space.raPosReserve();
+            _space.reserveForRegister(regCtx.regToPreserve().size());
+
+            ScheduledBlock funcBlock = new ScheduledBlock(_regCtx, func.enter, _space, null);
 
         	functionBlocks.put(func, funcBlock);
         }

@@ -150,6 +150,15 @@ public class Parser {
 
 		// Begin function and set up.
 		program.beginFunction(function);
+
+		//Load para
+
+		for (Variable p: function.paras) {
+			Instruction l = program.addInstr(load);
+			Instruction i = program.addAssignment(p, l);
+			function.paraLoad.add(l);
+		}
+
 		Block body = program.addBlock("Body of function " + function.shortRepr());
 		function.enter.addNext(body, false); // Connect blocks - fall through.
 
@@ -192,6 +201,8 @@ public class Parser {
 				table.declareFormalParam(id);
 				formalParams.add(table.getName(id));
 			}
+			Variable p = table.getVar(id);
+			function.paras.add(p);
 		}
 
 		function.setFormalParams(formalParams.toArray(new String[formalParams.size()]));

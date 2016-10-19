@@ -74,6 +74,7 @@ public class IntermedRepr {
 		setScope(function);
 		Block enter = addBlock("Enter function " + function.shortRepr());
 		endBlock();
+		currentBlocks.add(enter);
 		function.begin(enter);
 	}
 
@@ -84,6 +85,7 @@ public class IntermedRepr {
 		endBlock();
 		functions.add(currentFunction);
 		currentFunction = MAIN;
+		currentBlocks.removeAllElements();
 	}
 
 	// Return the current block.

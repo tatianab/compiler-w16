@@ -4,6 +4,7 @@
  * CS 241 - Advanced Compiler Design
  */
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class Function extends Value {
@@ -21,6 +22,9 @@ public class Function extends Value {
 	public IntermedRepr program; // The program that contains this function.
 
 	public Instruction returnInstr;
+
+	public  ArrayList<Variable> paras = new ArrayList<>();
+	public ArrayList<Instruction> paraLoad = new ArrayList<>();
 
 	public ArrayList<Instruction> instrs;
 
@@ -142,6 +146,8 @@ public class Function extends Value {
 		g.lastDef = v;
 	}
 
+	public HashMap<Global, Instruction> globalLoad = new HashMap<>();
+
 	// Handle globals that are USED by this function.
 	public Instruction addGlobalUse(Global g) {
 		// TODO
@@ -153,10 +159,11 @@ public class Function extends Value {
 			instr.setOp(Instruction.load);
 			instr.setArgs(g);
 			enter.addToEnd(instr);
+				globalLoad.put(g, instr);
 			return instr;
 			}
 		}
-		return null;
+		return globalLoad.get(g);
 	}
 
 	@Override

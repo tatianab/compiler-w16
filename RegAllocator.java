@@ -535,6 +535,27 @@ public class RegAllocator {
         public HashMap<String, memoryPosition> heap = new HashMap<>();
         public HashMap<String, memoryPosition> global= new HashMap<>();
 
+        public ArrayList<memoryPosition> contextReserve;
+        public memoryPosition returnAddr;
+        public void raPosReserve() { returnAddr = reserve(); }
+        public void offset(int o) {
+            memoryHead += o;
+            dataHead += o;
+        }
+        //The first one is used as frame pointer storage
+        public void reserveForRegister(int numberOfRegister) {
+            contextReserve = new ArrayList<>();
+            for (int i = 0; i < numberOfRegister; i++) {
+                memoryPosition pos = reserve();
+                contextReserve.add(pos);
+            }
+        }
+        public memoryPosition positionForIndex(int index) {
+            if (contextReserve == null) return upperSpace.positionForIndex(index);
+            return contextReserve.get(index);
+        };
+
+
         public InstructionSchedule.InstructionValue fetchEqualvalent(InstructionSchedule.InstructionValue value) {
             for (InstructionSchedule.InstructionValue val: preserve.values()) {
                 if (val.basedInstr.memorySpaceEqual(value.basedInstr)) { return val; }
@@ -877,6 +898,19 @@ public class RegAllocator {
         }
         public Register returnAddrRegister() {
             return registers[numberOfRegister-numberOfReverse+4];
+        }
+
+        public ArrayList<Register> regToPreserve() {
+            ArrayList<Register> regs = new ArrayList<>();
+            regs.add(framePtrRegister());
+            for (int i = 1; i < numberOfRegister-numberOfReverse; i++) {
+                regs.add(registers[i]);
+            }
+            //Add special reg
+            regs.add(memoryOpRegister());
+            regs.add(globalPtrRegister());
+            regs.add(stackPtrRegister());
+            return regs;
         }
 
         int regIDForInstr(Instruction instr) {

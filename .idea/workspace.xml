@@ -4,6 +4,11 @@
     <list default="true" id="d7a861de-cca6-4af2-a799-fe56525dd417" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Function.java" afterPath="$PROJECT_DIR$/Function.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/InstructionSchedule.java" afterPath="$PROJECT_DIR$/InstructionSchedule.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/IntermedRepr.java" afterPath="$PROJECT_DIR$/IntermedRepr.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Parser.java" afterPath="$PROJECT_DIR$/Parser.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/RegAllocator.java" afterPath="$PROJECT_DIR$/RegAllocator.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/my-tests/array-assignments-func.txt" afterPath="$PROJECT_DIR$/my-tests/array-assignments-func.txt" />
     </list>
     <ignored path="compiler-w16.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -25,11 +30,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="InstructionSchedule.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="InstructionSchedule.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/InstructionSchedule.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="259" column="0" selection-start-line="259" selection-start-column="0" selection-end-line="259" selection-end-column="0" />
+            <state relative-caret-position="212">
+              <caret line="1245" column="0" selection-start-line="1245" selection-start-column="0" selection-end-line="1245" selection-end-column="0" />
               <folding>
                 <element signature="method#evaluateBlockFlow#0;class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
                 <element signature="method#instructionCalled#0;class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
@@ -40,25 +45,35 @@
                 <element signature="method#phiMemoryRestore#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
                 <element signature="method#instructionDependOnInstr#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
                 <element signature="method#needSpace#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-                <element signature="e#28667#28693#0" expanded="false" />
-                <element signature="e#31009#31046#0" expanded="false" />
-                <element signature="e#38017#38075#0" expanded="false" />
-                <element signature="e#41526#41548#0" expanded="false" />
-                <element signature="e#43559#43616#0" expanded="false" />
-                <element signature="e#47080#47150#0" expanded="false" />
-                <element signature="e#47767#47810#0" expanded="false" />
-                <element signature="e#49347#49432#0" expanded="false" />
-                <element signature="e#50152#50202#0" expanded="false" />
-                <element signature="e#51047#51081#0" expanded="false" />
-                <element signature="e#51436#51458#0" expanded="false" />
-                <element signature="e#52268#52318#0" expanded="false" />
+                <element signature="e#28751#28777#0" expanded="false" />
+                <element signature="e#31093#31130#0" expanded="false" />
+                <element signature="e#38101#38159#0" expanded="false" />
+                <element signature="e#41610#41632#0" expanded="false" />
+                <element signature="e#43643#43700#0" expanded="false" />
+                <element signature="e#47164#47234#0" expanded="false" />
+                <element signature="e#47851#47894#0" expanded="false" />
+                <element signature="e#49431#49516#0" expanded="false" />
+                <element signature="e#50236#50286#0" expanded="false" />
+                <element signature="e#51131#51165#0" expanded="false" />
+                <element signature="e#51520#51542#0" expanded="false" />
+                <element signature="e#52352#52402#0" expanded="false" />
                 <element signature="method#insertPhiTransfer#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
                 <element signature="method#InstructionSchedule#0;class#InstructionSchedule#0" expanded="false" />
-                <element signature="e#55769#55820#0" expanded="false" />
-                <element signature="e#55910#55927#0" expanded="false" />
+                <element signature="e#55853#55904#0" expanded="false" />
+                <element signature="e#55994#56011#0" expanded="false" />
                 <element signature="method#sumbitVariable#0;class#InstructionSchedule#0" expanded="false" />
                 <element signature="method#beforeCall#0;class#InstructionSchedule#0" expanded="false" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="FileOutputStream.java" pinned="false" current-in-tab="false">
+        <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_20.jdk/Contents/Home/src.zip!/java/io/FileOutputStream.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="221">
+              <caret line="290" column="24" selection-start-line="290" selection-start-column="24" selection-end-line="290" selection-end-column="24" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -83,118 +98,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Parser.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Parser.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="605">
-              <caret line="511" column="33" selection-start-line="511" selection-start-column="16" selection-end-line="511" selection-end-column="33" />
-              <folding>
-                <element signature="method#Parser#0;class#Parser#0" expanded="false" />
-                <element signature="method#parse#0;class#Parser#0" expanded="false" />
-                <element signature="method#computation#0;class#Parser#0" expanded="false" />
-                <element signature="method#funcBody#0;class#Parser#0" expanded="false" />
-                <element signature="method#formalParam#0;class#Parser#0" expanded="false" />
-                <element signature="method#funcDecl#0;class#Parser#0" expanded="false" />
-                <element signature="e#6733#6778#0" expanded="false" />
-                <element signature="method#typeDecl#0;class#Parser#0" expanded="false" />
-                <element signature="method#statSequence#0;class#Parser#0" expanded="false" />
-                <element signature="method#statement#0;class#Parser#0" expanded="false" />
-                <element signature="method#returnStatement#0;class#Parser#0" expanded="false" />
-                <element signature="method#whileStatement#0;class#Parser#0" expanded="false" />
-                <element signature="method#ifStatement#0;class#Parser#0" expanded="false" />
-                <element signature="e#14255#14285#0" expanded="false" />
-                <element signature="e#14690#14723#0" expanded="false" />
-                <element signature="method#relation#0;class#Parser#0" expanded="false" />
-                <element signature="method#expression#0;class#Parser#0" expanded="false" />
-                <element signature="method#term#0;class#Parser#0" expanded="false" />
-                <element signature="method#factor#0;class#Parser#0" expanded="false" />
-                <element signature="method#number#0;class#Parser#0" expanded="false" />
-                <element signature="method#ident#0;class#Parser#0" expanded="false" />
-                <element signature="method#relOp#0;class#Parser#0" expanded="false" />
-                <element signature="method#expect#0;class#Parser#0" expanded="false" />
-                <element signature="method#accept#0;class#Parser#0" expanded="false" />
-                <element signature="method#arrayOffset#0;class#Parser#0" expanded="false" />
-                <element signature="method#error#0;class#Parser#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Function.java" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/Function.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="405">
-              <caret line="147" column="30" selection-start-line="147" selection-start-column="30" selection-end-line="147" selection-end-column="30" />
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="IntermedRepr.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/IntermedRepr.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="557">
-              <caret line="238" column="38" selection-start-line="238" selection-start-column="38" selection-end-line="238" selection-end-column="38" />
-              <folding>
-                <element signature="e#239#293#0" expanded="false" />
-                <element signature="method#IntermedRepr#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#beginFunction#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#endFunction#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#currentBlock#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#createBlock#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#createBlock#1;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#addBlock#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#addBlock#1;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#insertBlock#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#createInstr#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#addToInstructionList#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#addInstr#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#addInstr#1;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#addInstr#2;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#addInstr#3;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#insertInstr#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="e#5333#5406#0" expanded="false" />
-                <element signature="method#addFunctionCall#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="e#5679#5766#0" expanded="false" />
-                <element signature="method#declare#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#addGlobal#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#updateGlobal#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#checkGlobal#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#endBlock#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#varsToInstrs#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="e#7817#7863#0" expanded="false" />
-                <element signature="method#end#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#cfgToString#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="e#8483#8521#0" expanded="false" />
-                <element signature="method#domTreeToString#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#instrsToString#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#error#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="docComment;method#setInstrDominators#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#setInstrDominators#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#visit#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#phify#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#clean#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="docComment;method#dumbRegAlloc#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#dumbRegAlloc#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#eliminatePhi#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#replacePhi#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#topoSort#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#visit#1;class#IntermedRepr#0" expanded="false" />
-                <element signature="method#createInterferenceGraph#0;class#IntermedRepr#0" expanded="false" />
-                <element signature="e#14631#14659#0" expanded="false" />
-                <element signature="docComment;field#neg#0;class#IntermedRepr#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="Instruction.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Instruction.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="810">
-              <caret line="86" column="50" selection-start-line="86" selection-start-column="50" selection-end-line="86" selection-end-column="50" />
+            <state relative-caret-position="251">
+              <caret line="215" column="0" selection-start-line="215" selection-start-column="0" selection-end-line="215" selection-end-column="0" />
               <folding>
                 <element signature="method#Instruction#0;class#Instruction#0" expanded="false" />
                 <element signature="method#delete#0;class#Instruction#0" expanded="false" />
@@ -202,9 +110,7 @@
                 <element signature="method#uses#1;class#Instruction#0" expanded="false" />
                 <element signature="method#deleteUse#0;class#Instruction#0" expanded="false" />
                 <element signature="e#5485#5521#0" expanded="false" />
-                <element signature="method#setArgs#0;class#Instruction#0" expanded="false" />
                 <element signature="method#setArgs#1;class#Instruction#0" expanded="false" />
-                <element signature="method#checkGlobal#0;class#Instruction#0" expanded="false" />
                 <element signature="method#setParams#0;class#Instruction#0" expanded="false" />
                 <element signature="method#updateArg#0;class#Instruction#0" expanded="false" />
                 <element signature="method#setUsage#0;class#Instruction#0" expanded="false" />
@@ -228,32 +134,201 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Array.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Array.java">
+      <file leaf-file-name="Function.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Function.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="245">
-              <caret line="46" column="187" selection-start-line="46" selection-start-column="187" selection-end-line="46" selection-end-column="187" />
+            <state relative-caret-position="347">
+              <caret line="153" column="0" selection-start-line="153" selection-start-column="0" selection-end-line="153" selection-end-column="0" />
               <folding>
-                <element signature="e#339#340#0" expanded="true" />
-                <element signature="e#355#356#0" expanded="true" />
-                <marker date="1476864793000" expanded="false" signature="2416:2421" ph=" { " />
-                <marker date="1476864793000" expanded="false" signature="2466:2469" ph=" }" />
-                <marker date="1476864793000" expanded="false" signature="2939:2978" ph="&lt;~&gt;" />
-                <marker date="1476864793000" expanded="false" signature="4274:4313" ph="&lt;~&gt;" />
+                <element signature="imports" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="InstructionState.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/InstructionState.java">
+      <file leaf-file-name="Parser.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Parser.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="435">
-              <caret line="72" column="0" selection-start-line="72" selection-start-column="0" selection-end-line="72" selection-end-column="0" />
+            <state relative-caret-position="407">
+              <caret line="170" column="0" selection-start-line="170" selection-start-column="0" selection-end-line="170" selection-end-column="0" />
               <folding>
-                <element signature="method#InstructionState#0;class#InstructionState#0" expanded="false" />
-                <element signature="method#parentReleaseScore#0;class#InstructionState#0" expanded="false" />
-                <element signature="e#1626#1683#0" expanded="false" />
+                <element signature="method#Parser#0;class#Parser#0" expanded="false" />
+                <element signature="method#parse#0;class#Parser#0" expanded="false" />
+                <element signature="method#computation#0;class#Parser#0" expanded="false" />
+                <element signature="e#6971#7016#0" expanded="false" />
+                <element signature="method#varDecl#0;class#Parser#0" expanded="false" />
+                <element signature="method#typeDecl#0;class#Parser#0" expanded="false" />
+                <element signature="method#statSequence#0;class#Parser#0" expanded="false" />
+                <element signature="method#statement#0;class#Parser#0" expanded="false" />
+                <element signature="method#returnStatement#0;class#Parser#0" expanded="false" />
+                <element signature="method#whileStatement#0;class#Parser#0" expanded="false" />
+                <element signature="method#ifStatement#0;class#Parser#0" expanded="false" />
+                <element signature="e#14493#14523#0" expanded="false" />
+                <element signature="e#14928#14961#0" expanded="false" />
+                <element signature="method#funcCall#0;class#Parser#0" expanded="false" />
+                <element signature="method#designator#0;class#Parser#0" expanded="false" />
+                <element signature="method#relation#0;class#Parser#0" expanded="false" />
+                <element signature="method#expression#0;class#Parser#0" expanded="false" />
+                <element signature="method#term#0;class#Parser#0" expanded="false" />
+                <element signature="method#factor#0;class#Parser#0" expanded="false" />
+                <element signature="method#number#0;class#Parser#0" expanded="false" />
+                <element signature="method#ident#0;class#Parser#0" expanded="false" />
+                <element signature="method#relOp#0;class#Parser#0" expanded="false" />
+                <element signature="method#expect#0;class#Parser#0" expanded="false" />
+                <element signature="method#accept#0;class#Parser#0" expanded="false" />
+                <element signature="method#arrayOffset#0;class#Parser#0" expanded="false" />
+                <element signature="method#error#0;class#Parser#0" expanded="false" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="IntermedRepr.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/IntermedRepr.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="218">
+              <caret line="184" column="0" selection-start-line="184" selection-start-column="0" selection-end-line="184" selection-end-column="0" />
+              <folding>
+                <element signature="e#239#293#0" expanded="false" />
+                <element signature="method#IntermedRepr#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#createBlock#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#createBlock#1;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#addBlock#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#addBlock#1;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#insertBlock#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#createInstr#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#addToInstructionList#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#addInstr#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#addInstr#1;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#addInstr#2;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#insertInstr#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="e#5398#5471#0" expanded="false" />
+                <element signature="method#addFunctionCall#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="e#5744#5831#0" expanded="false" />
+                <element signature="method#declare#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#addGlobal#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#updateGlobal#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#checkGlobal#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#endBlock#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#varsToInstrs#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="e#7882#7928#0" expanded="false" />
+                <element signature="method#end#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#cfgToString#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="e#8548#8586#0" expanded="false" />
+                <element signature="method#domTreeToString#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#instrsToString#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#error#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="docComment;method#setInstrDominators#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#setInstrDominators#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#visit#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#phify#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#clean#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="docComment;method#dumbRegAlloc#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#dumbRegAlloc#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#eliminatePhi#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#replacePhi#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#topoSort#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#visit#1;class#IntermedRepr#0" expanded="false" />
+                <element signature="method#createInterferenceGraph#0;class#IntermedRepr#0" expanded="false" />
+                <element signature="e#14696#14724#0" expanded="false" />
+                <element signature="docComment;field#neg#0;class#IntermedRepr#0" expanded="false" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="StringTable.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/StringTable.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="915">
+              <caret line="132" column="16" selection-start-line="132" selection-start-column="8" selection-end-line="132" selection-end-column="16" />
+              <folding>
+                <element signature="method#StringTable#0;class#StringTable#0" expanded="false" />
+                <element signature="method#getSym#0;class#StringTable#0" expanded="false" />
+                <element signature="method#symToString#0;class#StringTable#0" expanded="false" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="RegAllocator.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/RegAllocator.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="352">
+              <caret line="542" column="26" selection-start-line="542" selection-start-column="26" selection-end-line="542" selection-end-column="26" />
+              <folding>
+                <element signature="class#phiRequest#0;class#RegAllocator#0" expanded="false" />
+                <element signature="class#phiMergerResult#0;class#RegAllocator#0" expanded="false" />
+                <element signature="e#1043#1093#0" expanded="false" />
+                <element signature="e#1592#1624#0" expanded="false" />
+                <element signature="e#2499#2531#0" expanded="false" />
+                <element signature="method#freezePhiForReg#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#requestForValue#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#regIDForValue#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#phiTransform#0;class#RegAllocator#0" expanded="false" />
+                <element signature="e#4920#4936#0" expanded="false" />
+                <element signature="e#6256#6291#0" expanded="false" />
+                <element signature="method#phiMerger#0;class#RegAllocator#0" expanded="false" />
+                <element signature="e#11642#11685#0" expanded="false" />
+                <element signature="e#17212#17238#0" expanded="false" />
+                <element signature="e#19609#19634#0" expanded="false" />
+                <element signature="e#19798#19817#0" expanded="false" />
+                <element signature="e#19906#19939#0" expanded="false" />
+                <element signature="e#20590#20614#0" expanded="false" />
+                <element signature="method#RegAllocator#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#RegAllocator#1;class#RegAllocator#0" expanded="false" />
+                <element signature="method#allocateRegisters#0;class#RegAllocator#0" expanded="false" />
+                <element signature="e#21125#21143#0" expanded="false" />
+                <element signature="method#createStates#0;class#RegAllocator#0" expanded="false" />
+                <element signature="class#LiveRange#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#variableLiveRange#0;class#RegAllocator#0" expanded="false" />
+                <element signature="e#22857#22939#0" expanded="false" />
+                <element signature="class#RegisterConf#0;class#RegAllocator#0" expanded="false" />
+                <element signature="class#VariableAllocation#0;class#RegAllocator#0" expanded="false" />
+                <element signature="class#memoryID#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#memoryID#0;class#memoryID#0;class#RegAllocator#0" expanded="false" />
+                <element signature="class#memoryPosition#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#reserveArray#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#fetchEqualvalent#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#fetchExistedValue#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#fetchMemorySpace#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
+                <element signature="e#26486#26521#0" expanded="false" />
+                <element signature="method#fetchValue#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#releaseMemorySpace#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#memorySpace#1;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#memorySpace#2;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#store#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#release#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
+                <element signature="e#29762#29827#0" expanded="false" />
+                <element signature="method#reverseVariable#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#fetchWriteCount#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#Register#1;class#Register#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#phiValue#0;class#Register#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#updateValue#1;class#Register#0;class#RegAllocator#0" expanded="false" />
+                <element signature="e#36139#36148#0" expanded="false" />
+                <element signature="e#36451#36481#0" expanded="false" />
+                <element signature="method#toString#0;class#Register#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#memoryOpRegisterIndex#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#globalPtrRegisterIndex#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#framePtrRegisterIndex#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#stackPtrRegisterIndex#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#returnAddrRegisterIndex#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#memoryOpRegisterID#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#globalPtrRegisterID#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#framePtrRegisterID#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#stackPtrRegisterID#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#returnAddrRegisterID#0;class#RegAllocator#0" expanded="false" />
+                <element signature="e#39697#39721#0" expanded="false" />
+                <element signature="method#regIDForInstr#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#swapRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#emptyRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
+                <element signature="e#43907#43995#0" expanded="false" />
+                <element signature="method#toString#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
+                <element signature="class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
+                <element signature="class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
+                <element signature="method#dependencyNode#0;class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
+                <element signature="e#46594#46650#0" expanded="false" />
+                <element signature="e#46767#46785#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -281,17 +356,24 @@
         <option value="$PROJECT_DIR$/InstructionSchedule.java.bak" />
         <option value="$PROJECT_DIR$/Variable.java" />
         <option value="$PROJECT_DIR$/Addr.java" />
-        <option value="$PROJECT_DIR$/IntermedRepr.java" />
         <option value="$PROJECT_DIR$/Block.java" />
         <option value="$PROJECT_DIR$/Instruction.java" />
-        <option value="$PROJECT_DIR$/Parser.java" />
-        <option value="$PROJECT_DIR$/RegAllocator.java" />
         <option value="$PROJECT_DIR$/Array.java" />
-        <option value="$PROJECT_DIR$/Global.java" />
         <option value="$PROJECT_DIR$/CodeGenerator.java" />
-        <option value="$PROJECT_DIR$/InstructionSchedule.java" />
+        <option value="$PROJECT_DIR$/Global.java" />
+        <option value="$PROJECT_DIR$/RegAllocator.java" />
+        <option value="$PROJECT_DIR$/Parser.java" />
+        <option value="$PROJECT_DIR$/IntermedRepr.java" />
         <option value="$PROJECT_DIR$/Function.java" />
+        <option value="$PROJECT_DIR$/InstructionSchedule.java" />
       </list>
+    </option>
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="mavenHome" value="Bundled (Maven 3)" />
+      </MavenGeneralSettings>
     </option>
   </component>
   <component name="ProjectFrameBounds">
@@ -639,7 +721,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1920" height="1200" extended-state="0" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -681,11 +763,17 @@
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint type="java-line">
+        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/InstructionSchedule.java</url>
-          <line>591</line>
+          <line>1225</line>
           <properties />
-          <option name="timeStamp" value="458" />
+          <option name="timeStamp" value="488" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/InstructionSchedule.java</url>
+          <line>1245</line>
+          <properties />
+          <option name="timeStamp" value="489" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
@@ -698,7 +786,7 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="473" />
+      <option name="time" value="506" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -761,44 +849,43 @@
             <element signature="method#fetchEqualvalent#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#fetchExistedValue#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#fetchMemorySpace#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#25682#25717#0" expanded="false" />
+            <element signature="e#26486#26521#0" expanded="false" />
             <element signature="method#fetchValue#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#releaseMemorySpace#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#memorySpace#1;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#memorySpace#2;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#store#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#release#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#28958#29023#0" expanded="false" />
+            <element signature="e#29762#29827#0" expanded="false" />
             <element signature="method#reverseVariable#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#fetchWriteCount#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#Register#1;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#phiValue#0;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#updateValue#1;class#Register#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#35335#35344#0" expanded="false" />
-            <element signature="e#35647#35677#0" expanded="false" />
+            <element signature="e#36139#36148#0" expanded="false" />
+            <element signature="e#36451#36481#0" expanded="false" />
             <element signature="method#toString#0;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#memoryOpRegisterIndex#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#globalPtrRegisterIndex#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#framePtrRegisterIndex#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#stackPtrRegisterIndex#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#returnAddrRegisterIndex#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#38893#38917#0" expanded="false" />
+            <element signature="method#memoryOpRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="method#globalPtrRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="method#framePtrRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="method#stackPtrRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="method#returnAddrRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="e#39697#39721#0" expanded="false" />
             <element signature="method#regIDForInstr#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#swapRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#emptyRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#trimRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#42630#42718#0" expanded="false" />
+            <element signature="e#43907#43995#0" expanded="false" />
             <element signature="method#toString#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
             <element signature="class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#dependencyNode#0;class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#45317#45373#0" expanded="false" />
-            <element signature="e#45490#45508#0" expanded="false" />
-            <marker date="1476854068000" expanded="false" signature="37739:37753" ph="{...}" />
-            <marker date="1476854068000" expanded="false" signature="37798:37812" ph="{...}" />
-            <marker date="1476854068000" expanded="false" signature="37856:37870" ph="{...}" />
-            <marker date="1476854068000" expanded="false" signature="37914:37928" ph="{...}" />
-            <marker date="1476854068000" expanded="false" signature="37974:37988" ph="{...}" />
+            <element signature="e#46594#46650#0" expanded="false" />
+            <element signature="e#46767#46785#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -844,9 +931,7 @@
             <element signature="method#uses#1;class#Instruction#0" expanded="false" />
             <element signature="method#deleteUse#0;class#Instruction#0" expanded="false" />
             <element signature="e#5485#5521#0" expanded="false" />
-            <element signature="method#setArgs#0;class#Instruction#0" expanded="false" />
             <element signature="method#setArgs#1;class#Instruction#0" expanded="false" />
-            <element signature="method#checkGlobal#0;class#Instruction#0" expanded="false" />
             <element signature="method#setParams#0;class#Instruction#0" expanded="false" />
             <element signature="method#updateArg#0;class#Instruction#0" expanded="false" />
             <element signature="method#setUsage#0;class#Instruction#0" expanded="false" />
@@ -921,22 +1006,22 @@
             <element signature="method#phiMemoryRestore#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#instructionDependOnInstr#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#needSpace#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="e#28667#28693#0" expanded="false" />
-            <element signature="e#31009#31046#0" expanded="false" />
-            <element signature="e#38017#38075#0" expanded="false" />
-            <element signature="e#41526#41548#0" expanded="false" />
-            <element signature="e#43559#43616#0" expanded="false" />
-            <element signature="e#47080#47150#0" expanded="false" />
-            <element signature="e#47767#47810#0" expanded="false" />
-            <element signature="e#49347#49432#0" expanded="false" />
-            <element signature="e#50152#50202#0" expanded="false" />
-            <element signature="e#51047#51081#0" expanded="false" />
-            <element signature="e#51436#51458#0" expanded="false" />
-            <element signature="e#52268#52318#0" expanded="false" />
+            <element signature="e#28751#28777#0" expanded="false" />
+            <element signature="e#31093#31130#0" expanded="false" />
+            <element signature="e#38101#38159#0" expanded="false" />
+            <element signature="e#41610#41632#0" expanded="false" />
+            <element signature="e#43643#43700#0" expanded="false" />
+            <element signature="e#47164#47234#0" expanded="false" />
+            <element signature="e#47851#47894#0" expanded="false" />
+            <element signature="e#49431#49516#0" expanded="false" />
+            <element signature="e#50236#50286#0" expanded="false" />
+            <element signature="e#51131#51165#0" expanded="false" />
+            <element signature="e#51520#51542#0" expanded="false" />
+            <element signature="e#52352#52402#0" expanded="false" />
             <element signature="method#insertPhiTransfer#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#InstructionSchedule#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="e#55769#55820#0" expanded="false" />
-            <element signature="e#55910#55927#0" expanded="false" />
+            <element signature="e#55853#55904#0" expanded="false" />
+            <element signature="e#55994#56011#0" expanded="false" />
             <element signature="method#sumbitVariable#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#beforeCall#0;class#InstructionSchedule#0" expanded="false" />
           </folding>
@@ -1004,44 +1089,43 @@
             <element signature="method#fetchEqualvalent#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#fetchExistedValue#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#fetchMemorySpace#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#25682#25717#0" expanded="false" />
+            <element signature="e#26486#26521#0" expanded="false" />
             <element signature="method#fetchValue#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#releaseMemorySpace#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#memorySpace#1;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#memorySpace#2;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#store#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#release#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#28958#29023#0" expanded="false" />
+            <element signature="e#29762#29827#0" expanded="false" />
             <element signature="method#reverseVariable#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#fetchWriteCount#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#Register#1;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#phiValue#0;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#updateValue#1;class#Register#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#35335#35344#0" expanded="false" />
-            <element signature="e#35647#35677#0" expanded="false" />
+            <element signature="e#36139#36148#0" expanded="false" />
+            <element signature="e#36451#36481#0" expanded="false" />
             <element signature="method#toString#0;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#memoryOpRegisterIndex#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#globalPtrRegisterIndex#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#framePtrRegisterIndex#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#stackPtrRegisterIndex#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#returnAddrRegisterIndex#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#38893#38917#0" expanded="false" />
+            <element signature="method#memoryOpRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="method#globalPtrRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="method#framePtrRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="method#stackPtrRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="method#returnAddrRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="e#39697#39721#0" expanded="false" />
             <element signature="method#regIDForInstr#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#swapRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#emptyRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#trimRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#42630#42718#0" expanded="false" />
+            <element signature="e#43907#43995#0" expanded="false" />
             <element signature="method#toString#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
             <element signature="class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#dependencyNode#0;class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#45317#45373#0" expanded="false" />
-            <element signature="e#45490#45508#0" expanded="false" />
-            <marker date="1476854068000" expanded="false" signature="37739:37753" ph="{...}" />
-            <marker date="1476854068000" expanded="false" signature="37798:37812" ph="{...}" />
-            <marker date="1476854068000" expanded="false" signature="37856:37870" ph="{...}" />
-            <marker date="1476854068000" expanded="false" signature="37914:37928" ph="{...}" />
-            <marker date="1476854068000" expanded="false" signature="37974:37988" ph="{...}" />
+            <element signature="e#46594#46650#0" expanded="false" />
+            <element signature="e#46767#46785#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1060,22 +1144,22 @@
             <element signature="method#phiMemoryRestore#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#instructionDependOnInstr#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#needSpace#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="e#28667#28693#0" expanded="false" />
-            <element signature="e#31009#31046#0" expanded="false" />
-            <element signature="e#38017#38075#0" expanded="false" />
-            <element signature="e#41526#41548#0" expanded="false" />
-            <element signature="e#43559#43616#0" expanded="false" />
-            <element signature="e#47080#47150#0" expanded="false" />
-            <element signature="e#47767#47810#0" expanded="false" />
-            <element signature="e#49347#49432#0" expanded="false" />
-            <element signature="e#50152#50202#0" expanded="false" />
-            <element signature="e#51047#51081#0" expanded="false" />
-            <element signature="e#51436#51458#0" expanded="false" />
-            <element signature="e#52268#52318#0" expanded="false" />
+            <element signature="e#28751#28777#0" expanded="false" />
+            <element signature="e#31093#31130#0" expanded="false" />
+            <element signature="e#38101#38159#0" expanded="false" />
+            <element signature="e#41610#41632#0" expanded="false" />
+            <element signature="e#43643#43700#0" expanded="false" />
+            <element signature="e#47164#47234#0" expanded="false" />
+            <element signature="e#47851#47894#0" expanded="false" />
+            <element signature="e#49431#49516#0" expanded="false" />
+            <element signature="e#50236#50286#0" expanded="false" />
+            <element signature="e#51131#51165#0" expanded="false" />
+            <element signature="e#51520#51542#0" expanded="false" />
+            <element signature="e#52352#52402#0" expanded="false" />
             <element signature="method#insertPhiTransfer#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#InstructionSchedule#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="e#55769#55820#0" expanded="false" />
-            <element signature="e#55910#55927#0" expanded="false" />
+            <element signature="e#55853#55904#0" expanded="false" />
+            <element signature="e#55994#56011#0" expanded="false" />
             <element signature="method#sumbitVariable#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#beforeCall#0;class#InstructionSchedule#0" expanded="false" />
           </folding>
@@ -1122,44 +1206,43 @@
             <element signature="method#fetchEqualvalent#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#fetchExistedValue#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#fetchMemorySpace#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#25682#25717#0" expanded="false" />
+            <element signature="e#26486#26521#0" expanded="false" />
             <element signature="method#fetchValue#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#releaseMemorySpace#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#memorySpace#1;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#memorySpace#2;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#store#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#release#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#28958#29023#0" expanded="false" />
+            <element signature="e#29762#29827#0" expanded="false" />
             <element signature="method#reverseVariable#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#fetchWriteCount#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#Register#1;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#phiValue#0;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#updateValue#1;class#Register#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#35335#35344#0" expanded="false" />
-            <element signature="e#35647#35677#0" expanded="false" />
+            <element signature="e#36139#36148#0" expanded="false" />
+            <element signature="e#36451#36481#0" expanded="false" />
             <element signature="method#toString#0;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#memoryOpRegisterIndex#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#globalPtrRegisterIndex#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#framePtrRegisterIndex#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#stackPtrRegisterIndex#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#returnAddrRegisterIndex#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#38893#38917#0" expanded="false" />
+            <element signature="method#memoryOpRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="method#globalPtrRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="method#framePtrRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="method#stackPtrRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="method#returnAddrRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="e#39697#39721#0" expanded="false" />
             <element signature="method#regIDForInstr#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#swapRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#emptyRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#trimRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#42630#42718#0" expanded="false" />
+            <element signature="e#43907#43995#0" expanded="false" />
             <element signature="method#toString#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
             <element signature="class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#dependencyNode#0;class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#45317#45373#0" expanded="false" />
-            <element signature="e#45490#45508#0" expanded="false" />
-            <marker date="1476854068000" expanded="false" signature="37739:37753" ph="{...}" />
-            <marker date="1476854068000" expanded="false" signature="37798:37812" ph="{...}" />
-            <marker date="1476854068000" expanded="false" signature="37856:37870" ph="{...}" />
-            <marker date="1476854068000" expanded="false" signature="37914:37928" ph="{...}" />
-            <marker date="1476854068000" expanded="false" signature="37974:37988" ph="{...}" />
+            <element signature="e#46594#46650#0" expanded="false" />
+            <element signature="e#46767#46785#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1187,18 +1270,18 @@
             <element signature="method#Parser#0;class#Parser#0" expanded="false" />
             <element signature="method#parse#0;class#Parser#0" expanded="false" />
             <element signature="method#computation#0;class#Parser#0" expanded="false" />
-            <element signature="method#funcBody#0;class#Parser#0" expanded="false" />
-            <element signature="method#formalParam#0;class#Parser#0" expanded="false" />
-            <element signature="method#funcDecl#0;class#Parser#0" expanded="false" />
-            <element signature="e#6733#6778#0" expanded="false" />
+            <element signature="e#6971#7016#0" expanded="false" />
+            <element signature="method#varDecl#0;class#Parser#0" expanded="false" />
             <element signature="method#typeDecl#0;class#Parser#0" expanded="false" />
             <element signature="method#statSequence#0;class#Parser#0" expanded="false" />
             <element signature="method#statement#0;class#Parser#0" expanded="false" />
             <element signature="method#returnStatement#0;class#Parser#0" expanded="false" />
             <element signature="method#whileStatement#0;class#Parser#0" expanded="false" />
             <element signature="method#ifStatement#0;class#Parser#0" expanded="false" />
-            <element signature="e#14255#14285#0" expanded="false" />
-            <element signature="e#14690#14723#0" expanded="false" />
+            <element signature="e#14493#14523#0" expanded="false" />
+            <element signature="e#14928#14961#0" expanded="false" />
+            <element signature="method#funcCall#0;class#Parser#0" expanded="false" />
+            <element signature="method#designator#0;class#Parser#0" expanded="false" />
             <element signature="method#relation#0;class#Parser#0" expanded="false" />
             <element signature="method#expression#0;class#Parser#0" expanded="false" />
             <element signature="method#term#0;class#Parser#0" expanded="false" />
@@ -1268,9 +1351,7 @@
             <element signature="method#uses#1;class#Instruction#0" expanded="false" />
             <element signature="method#deleteUse#0;class#Instruction#0" expanded="false" />
             <element signature="e#5485#5521#0" expanded="false" />
-            <element signature="method#setArgs#0;class#Instruction#0" expanded="false" />
             <element signature="method#setArgs#1;class#Instruction#0" expanded="false" />
-            <element signature="method#checkGlobal#0;class#Instruction#0" expanded="false" />
             <element signature="method#setParams#0;class#Instruction#0" expanded="false" />
             <element signature="method#updateArg#0;class#Instruction#0" expanded="false" />
             <element signature="method#setUsage#0;class#Instruction#0" expanded="false" />
@@ -1307,22 +1388,22 @@
             <element signature="method#phiMemoryRestore#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#instructionDependOnInstr#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#needSpace#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="e#28667#28693#0" expanded="false" />
-            <element signature="e#31009#31046#0" expanded="false" />
-            <element signature="e#38017#38075#0" expanded="false" />
-            <element signature="e#41526#41548#0" expanded="false" />
-            <element signature="e#43559#43616#0" expanded="false" />
-            <element signature="e#47080#47150#0" expanded="false" />
-            <element signature="e#47767#47810#0" expanded="false" />
-            <element signature="e#49347#49432#0" expanded="false" />
-            <element signature="e#50152#50202#0" expanded="false" />
-            <element signature="e#51047#51081#0" expanded="false" />
-            <element signature="e#51436#51458#0" expanded="false" />
-            <element signature="e#52268#52318#0" expanded="false" />
+            <element signature="e#28751#28777#0" expanded="false" />
+            <element signature="e#31093#31130#0" expanded="false" />
+            <element signature="e#38101#38159#0" expanded="false" />
+            <element signature="e#41610#41632#0" expanded="false" />
+            <element signature="e#43643#43700#0" expanded="false" />
+            <element signature="e#47164#47234#0" expanded="false" />
+            <element signature="e#47851#47894#0" expanded="false" />
+            <element signature="e#49431#49516#0" expanded="false" />
+            <element signature="e#50236#50286#0" expanded="false" />
+            <element signature="e#51131#51165#0" expanded="false" />
+            <element signature="e#51520#51542#0" expanded="false" />
+            <element signature="e#52352#52402#0" expanded="false" />
             <element signature="method#insertPhiTransfer#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#InstructionSchedule#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="e#55769#55820#0" expanded="false" />
-            <element signature="e#55910#55927#0" expanded="false" />
+            <element signature="e#55853#55904#0" expanded="false" />
+            <element signature="e#55994#56011#0" expanded="false" />
             <element signature="method#sumbitVariable#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#beforeCall#0;class#InstructionSchedule#0" expanded="false" />
           </folding>
@@ -1369,44 +1450,43 @@
             <element signature="method#fetchEqualvalent#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#fetchExistedValue#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#fetchMemorySpace#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#25682#25717#0" expanded="false" />
+            <element signature="e#26486#26521#0" expanded="false" />
             <element signature="method#fetchValue#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#releaseMemorySpace#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#memorySpace#1;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#memorySpace#2;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#store#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#release#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#28958#29023#0" expanded="false" />
+            <element signature="e#29762#29827#0" expanded="false" />
             <element signature="method#reverseVariable#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#fetchWriteCount#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#Register#1;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#phiValue#0;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#updateValue#1;class#Register#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#35335#35344#0" expanded="false" />
-            <element signature="e#35647#35677#0" expanded="false" />
+            <element signature="e#36139#36148#0" expanded="false" />
+            <element signature="e#36451#36481#0" expanded="false" />
             <element signature="method#toString#0;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#memoryOpRegisterIndex#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#globalPtrRegisterIndex#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#framePtrRegisterIndex#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#stackPtrRegisterIndex#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#returnAddrRegisterIndex#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#38893#38917#0" expanded="false" />
+            <element signature="method#memoryOpRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="method#globalPtrRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="method#framePtrRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="method#stackPtrRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="method#returnAddrRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="e#39697#39721#0" expanded="false" />
             <element signature="method#regIDForInstr#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#swapRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#emptyRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#trimRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#42630#42718#0" expanded="false" />
+            <element signature="e#43907#43995#0" expanded="false" />
             <element signature="method#toString#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
             <element signature="class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#dependencyNode#0;class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#45317#45373#0" expanded="false" />
-            <element signature="e#45490#45508#0" expanded="false" />
-            <marker date="1476854068000" expanded="false" signature="37739:37753" ph="{...}" />
-            <marker date="1476854068000" expanded="false" signature="37798:37812" ph="{...}" />
-            <marker date="1476854068000" expanded="false" signature="37856:37870" ph="{...}" />
-            <marker date="1476854068000" expanded="false" signature="37914:37928" ph="{...}" />
-            <marker date="1476854068000" expanded="false" signature="37974:37988" ph="{...}" />
+            <element signature="e#46594#46650#0" expanded="false" />
+            <element signature="e#46767#46785#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1419,18 +1499,18 @@
             <element signature="method#Parser#0;class#Parser#0" expanded="false" />
             <element signature="method#parse#0;class#Parser#0" expanded="false" />
             <element signature="method#computation#0;class#Parser#0" expanded="false" />
-            <element signature="method#funcBody#0;class#Parser#0" expanded="false" />
-            <element signature="method#formalParam#0;class#Parser#0" expanded="false" />
-            <element signature="method#funcDecl#0;class#Parser#0" expanded="false" />
-            <element signature="e#6733#6778#0" expanded="false" />
+            <element signature="e#6971#7016#0" expanded="false" />
+            <element signature="method#varDecl#0;class#Parser#0" expanded="false" />
             <element signature="method#typeDecl#0;class#Parser#0" expanded="false" />
             <element signature="method#statSequence#0;class#Parser#0" expanded="false" />
             <element signature="method#statement#0;class#Parser#0" expanded="false" />
             <element signature="method#returnStatement#0;class#Parser#0" expanded="false" />
             <element signature="method#whileStatement#0;class#Parser#0" expanded="false" />
             <element signature="method#ifStatement#0;class#Parser#0" expanded="false" />
-            <element signature="e#14255#14285#0" expanded="false" />
-            <element signature="e#14690#14723#0" expanded="false" />
+            <element signature="e#14493#14523#0" expanded="false" />
+            <element signature="e#14928#14961#0" expanded="false" />
+            <element signature="method#funcCall#0;class#Parser#0" expanded="false" />
+            <element signature="method#designator#0;class#Parser#0" expanded="false" />
             <element signature="method#relation#0;class#Parser#0" expanded="false" />
             <element signature="method#expression#0;class#Parser#0" expanded="false" />
             <element signature="method#term#0;class#Parser#0" expanded="false" />
@@ -1500,9 +1580,7 @@
             <element signature="method#uses#1;class#Instruction#0" expanded="false" />
             <element signature="method#deleteUse#0;class#Instruction#0" expanded="false" />
             <element signature="e#5485#5521#0" expanded="false" />
-            <element signature="method#setArgs#0;class#Instruction#0" expanded="false" />
             <element signature="method#setArgs#1;class#Instruction#0" expanded="false" />
-            <element signature="method#checkGlobal#0;class#Instruction#0" expanded="false" />
             <element signature="method#setParams#0;class#Instruction#0" expanded="false" />
             <element signature="method#updateArg#0;class#Instruction#0" expanded="false" />
             <element signature="method#setUsage#0;class#Instruction#0" expanded="false" />
@@ -1550,18 +1628,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="371" column="0" selection-start-line="371" selection-start-column="0" selection-end-line="371" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/StringTable.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="55" column="31" selection-start-line="55" selection-start-column="22" selection-end-line="55" selection-end-column="31" />
-          <folding>
-            <element signature="method#StringTable#0;class#StringTable#0" expanded="false" />
-            <element signature="method#getSym#0;class#StringTable#0" expanded="false" />
-            <element signature="method#symToString#0;class#StringTable#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1648,14 +1714,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_20.jdk/Contents/Home/src.zip!/java/io/FileOutputStream.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="635">
-          <caret line="290" column="24" selection-start-line="290" selection-start-column="24" selection-end-line="290" selection-end-column="24" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Addr.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="90">
@@ -1664,16 +1722,103 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/InstructionState.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="435">
+          <caret line="72" column="0" selection-start-line="72" selection-start-column="0" selection-end-line="72" selection-end-column="0" />
+          <folding>
+            <element signature="method#InstructionState#0;class#InstructionState#0" expanded="false" />
+            <element signature="method#parentReleaseScore#0;class#InstructionState#0" expanded="false" />
+            <element signature="e#1626#1683#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Array.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="245">
+          <caret line="46" column="187" selection-start-line="46" selection-start-column="187" selection-end-line="46" selection-end-column="187" />
+          <folding>
+            <element signature="e#339#340#0" expanded="true" />
+            <element signature="e#355#356#0" expanded="true" />
+            <marker date="1476864793000" expanded="false" signature="2416:2421" ph=" { " />
+            <marker date="1476864793000" expanded="false" signature="2466:2469" ph=" }" />
+            <marker date="1476864793000" expanded="false" signature="2939:2978" ph="&lt;~&gt;" />
+            <marker date="1476864793000" expanded="false" signature="4274:4313" ph="&lt;~&gt;" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CodeGenerator.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="212">
+          <caret line="310" column="36" selection-start-line="310" selection-start-column="32" selection-end-line="310" selection-end-column="36" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Global.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="300">
+          <caret line="24" column="22" selection-start-line="24" selection-start-column="22" selection-end-line="24" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Parser.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="407">
+          <caret line="170" column="0" selection-start-line="170" selection-start-column="0" selection-end-line="170" selection-end-column="0" />
+          <folding>
+            <element signature="method#Parser#0;class#Parser#0" expanded="false" />
+            <element signature="method#parse#0;class#Parser#0" expanded="false" />
+            <element signature="method#computation#0;class#Parser#0" expanded="false" />
+            <element signature="e#6971#7016#0" expanded="false" />
+            <element signature="method#varDecl#0;class#Parser#0" expanded="false" />
+            <element signature="method#typeDecl#0;class#Parser#0" expanded="false" />
+            <element signature="method#statSequence#0;class#Parser#0" expanded="false" />
+            <element signature="method#statement#0;class#Parser#0" expanded="false" />
+            <element signature="method#returnStatement#0;class#Parser#0" expanded="false" />
+            <element signature="method#whileStatement#0;class#Parser#0" expanded="false" />
+            <element signature="method#ifStatement#0;class#Parser#0" expanded="false" />
+            <element signature="e#14493#14523#0" expanded="false" />
+            <element signature="e#14928#14961#0" expanded="false" />
+            <element signature="method#funcCall#0;class#Parser#0" expanded="false" />
+            <element signature="method#designator#0;class#Parser#0" expanded="false" />
+            <element signature="method#relation#0;class#Parser#0" expanded="false" />
+            <element signature="method#expression#0;class#Parser#0" expanded="false" />
+            <element signature="method#term#0;class#Parser#0" expanded="false" />
+            <element signature="method#factor#0;class#Parser#0" expanded="false" />
+            <element signature="method#number#0;class#Parser#0" expanded="false" />
+            <element signature="method#ident#0;class#Parser#0" expanded="false" />
+            <element signature="method#relOp#0;class#Parser#0" expanded="false" />
+            <element signature="method#expect#0;class#Parser#0" expanded="false" />
+            <element signature="method#accept#0;class#Parser#0" expanded="false" />
+            <element signature="method#arrayOffset#0;class#Parser#0" expanded="false" />
+            <element signature="method#error#0;class#Parser#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/StringTable.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="915">
+          <caret line="132" column="16" selection-start-line="132" selection-start-column="8" selection-end-line="132" selection-end-column="16" />
+          <folding>
+            <element signature="method#StringTable#0;class#StringTable#0" expanded="false" />
+            <element signature="method#getSym#0;class#StringTable#0" expanded="false" />
+            <element signature="method#symToString#0;class#StringTable#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/IntermedRepr.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="557">
-          <caret line="238" column="38" selection-start-line="238" selection-start-column="38" selection-end-line="238" selection-end-column="38" />
+        <state relative-caret-position="218">
+          <caret line="184" column="0" selection-start-line="184" selection-start-column="0" selection-end-line="184" selection-end-column="0" />
           <folding>
             <element signature="e#239#293#0" expanded="false" />
             <element signature="method#IntermedRepr#0;class#IntermedRepr#0" expanded="false" />
-            <element signature="method#beginFunction#0;class#IntermedRepr#0" expanded="false" />
-            <element signature="method#endFunction#0;class#IntermedRepr#0" expanded="false" />
-            <element signature="method#currentBlock#0;class#IntermedRepr#0" expanded="false" />
             <element signature="method#createBlock#0;class#IntermedRepr#0" expanded="false" />
             <element signature="method#createBlock#1;class#IntermedRepr#0" expanded="false" />
             <element signature="method#addBlock#0;class#IntermedRepr#0" expanded="false" />
@@ -1684,21 +1829,20 @@
             <element signature="method#addInstr#0;class#IntermedRepr#0" expanded="false" />
             <element signature="method#addInstr#1;class#IntermedRepr#0" expanded="false" />
             <element signature="method#addInstr#2;class#IntermedRepr#0" expanded="false" />
-            <element signature="method#addInstr#3;class#IntermedRepr#0" expanded="false" />
             <element signature="method#insertInstr#0;class#IntermedRepr#0" expanded="false" />
-            <element signature="e#5333#5406#0" expanded="false" />
+            <element signature="e#5398#5471#0" expanded="false" />
             <element signature="method#addFunctionCall#0;class#IntermedRepr#0" expanded="false" />
-            <element signature="e#5679#5766#0" expanded="false" />
+            <element signature="e#5744#5831#0" expanded="false" />
             <element signature="method#declare#0;class#IntermedRepr#0" expanded="false" />
             <element signature="method#addGlobal#0;class#IntermedRepr#0" expanded="false" />
             <element signature="method#updateGlobal#0;class#IntermedRepr#0" expanded="false" />
             <element signature="method#checkGlobal#0;class#IntermedRepr#0" expanded="false" />
             <element signature="method#endBlock#0;class#IntermedRepr#0" expanded="false" />
             <element signature="method#varsToInstrs#0;class#IntermedRepr#0" expanded="false" />
-            <element signature="e#7817#7863#0" expanded="false" />
+            <element signature="e#7882#7928#0" expanded="false" />
             <element signature="method#end#0;class#IntermedRepr#0" expanded="false" />
             <element signature="method#cfgToString#0;class#IntermedRepr#0" expanded="false" />
-            <element signature="e#8483#8521#0" expanded="false" />
+            <element signature="e#8548#8586#0" expanded="false" />
             <element signature="method#domTreeToString#0;class#IntermedRepr#0" expanded="false" />
             <element signature="method#instrsToString#0;class#IntermedRepr#0" expanded="false" />
             <element signature="method#error#0;class#IntermedRepr#0" expanded="false" />
@@ -1714,7 +1858,7 @@
             <element signature="method#topoSort#0;class#IntermedRepr#0" expanded="false" />
             <element signature="method#visit#1;class#IntermedRepr#0" expanded="false" />
             <element signature="method#createInterferenceGraph#0;class#IntermedRepr#0" expanded="false" />
-            <element signature="e#14631#14659#0" expanded="false" />
+            <element signature="e#14696#14724#0" expanded="false" />
             <element signature="docComment;field#neg#0;class#IntermedRepr#0" expanded="false" />
           </folding>
         </state>
@@ -1722,8 +1866,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Instruction.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="810">
-          <caret line="86" column="50" selection-start-line="86" selection-start-column="50" selection-end-line="86" selection-end-column="50" />
+        <state relative-caret-position="251">
+          <caret line="215" column="0" selection-start-line="215" selection-start-column="0" selection-end-line="215" selection-end-column="0" />
           <folding>
             <element signature="method#Instruction#0;class#Instruction#0" expanded="false" />
             <element signature="method#delete#0;class#Instruction#0" expanded="false" />
@@ -1731,9 +1875,7 @@
             <element signature="method#uses#1;class#Instruction#0" expanded="false" />
             <element signature="method#deleteUse#0;class#Instruction#0" expanded="false" />
             <element signature="e#5485#5521#0" expanded="false" />
-            <element signature="method#setArgs#0;class#Instruction#0" expanded="false" />
             <element signature="method#setArgs#1;class#Instruction#0" expanded="false" />
-            <element signature="method#checkGlobal#0;class#Instruction#0" expanded="false" />
             <element signature="method#setParams#0;class#Instruction#0" expanded="false" />
             <element signature="method#updateArg#0;class#Instruction#0" expanded="false" />
             <element signature="method#setUsage#0;class#Instruction#0" expanded="false" />
@@ -1756,22 +1898,28 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/InstructionState.java">
+    <entry file="file://$PROJECT_DIR$/Function.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="435">
-          <caret line="72" column="0" selection-start-line="72" selection-start-column="0" selection-end-line="72" selection-end-column="0" />
+        <state relative-caret-position="347">
+          <caret line="153" column="0" selection-start-line="153" selection-start-column="0" selection-end-line="153" selection-end-column="0" />
           <folding>
-            <element signature="method#InstructionState#0;class#InstructionState#0" expanded="false" />
-            <element signature="method#parentReleaseScore#0;class#InstructionState#0" expanded="false" />
-            <element signature="e#1626#1683#0" expanded="false" />
+            <element signature="imports" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_20.jdk/Contents/Home/src.zip!/java/io/FileOutputStream.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="221">
+          <caret line="290" column="24" selection-start-line="290" selection-start-column="24" selection-end-line="290" selection-end-column="24" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/RegAllocator.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="620">
-          <caret line="950" column="44" selection-start-line="950" selection-start-column="44" selection-end-line="950" selection-end-column="44" />
+        <state relative-caret-position="352">
+          <caret line="542" column="26" selection-start-line="542" selection-start-column="26" selection-end-line="542" selection-end-column="26" />
           <folding>
             <element signature="class#phiRequest#0;class#RegAllocator#0" expanded="false" />
             <element signature="class#phiMergerResult#0;class#RegAllocator#0" expanded="false" />
@@ -1808,83 +1956,51 @@
             <element signature="method#fetchEqualvalent#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#fetchExistedValue#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#fetchMemorySpace#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#25682#25717#0" expanded="false" />
+            <element signature="e#26486#26521#0" expanded="false" />
             <element signature="method#fetchValue#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#releaseMemorySpace#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#memorySpace#1;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#memorySpace#2;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#store#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#release#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#28958#29023#0" expanded="false" />
+            <element signature="e#29762#29827#0" expanded="false" />
             <element signature="method#reverseVariable#0;class#memorySpace#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#fetchWriteCount#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#Register#1;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#phiValue#0;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#updateValue#1;class#Register#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#35335#35344#0" expanded="false" />
-            <element signature="e#35647#35677#0" expanded="false" />
+            <element signature="e#36139#36148#0" expanded="false" />
+            <element signature="e#36451#36481#0" expanded="false" />
             <element signature="method#toString#0;class#Register#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#memoryOpRegisterIndex#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#globalPtrRegisterIndex#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#framePtrRegisterIndex#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#stackPtrRegisterIndex#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#returnAddrRegisterIndex#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#38893#38917#0" expanded="false" />
+            <element signature="method#memoryOpRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="method#globalPtrRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="method#framePtrRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="method#stackPtrRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="method#returnAddrRegisterID#0;class#RegAllocator#0" expanded="false" />
+            <element signature="e#39697#39721#0" expanded="false" />
             <element signature="method#regIDForInstr#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#swapRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#emptyRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
-            <element signature="method#trimRegister#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#42630#42718#0" expanded="false" />
+            <element signature="e#43907#43995#0" expanded="false" />
             <element signature="method#toString#0;class#registerContext#0;class#RegAllocator#0" expanded="false" />
             <element signature="class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
             <element signature="class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
             <element signature="method#dependencyNode#0;class#dependencyNode#0;class#dependencyGraph#0;class#RegAllocator#0" expanded="false" />
-            <element signature="e#45317#45373#0" expanded="false" />
-            <element signature="e#45490#45508#0" expanded="false" />
-            <marker date="1476854068000" expanded="false" signature="37739:37753" ph="{...}" />
-            <marker date="1476854068000" expanded="false" signature="37798:37812" ph="{...}" />
-            <marker date="1476854068000" expanded="false" signature="37856:37870" ph="{...}" />
-            <marker date="1476854068000" expanded="false" signature="37914:37928" ph="{...}" />
-            <marker date="1476854068000" expanded="false" signature="37974:37988" ph="{...}" />
+            <element signature="e#46594#46650#0" expanded="false" />
+            <element signature="e#46767#46785#0" expanded="false" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Array.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="245">
-          <caret line="46" column="187" selection-start-line="46" selection-start-column="187" selection-end-line="46" selection-end-column="187" />
-          <folding>
-            <element signature="e#339#340#0" expanded="true" />
-            <element signature="e#355#356#0" expanded="true" />
-            <marker date="1476864793000" expanded="false" signature="2416:2421" ph=" { " />
-            <marker date="1476864793000" expanded="false" signature="2466:2469" ph=" }" />
-            <marker date="1476864793000" expanded="false" signature="2939:2978" ph="&lt;~&gt;" />
-            <marker date="1476864793000" expanded="false" signature="4274:4313" ph="&lt;~&gt;" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Global.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="24" column="22" selection-start-line="24" selection-start-column="22" selection-end-line="24" selection-end-column="22" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/CodeGenerator.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="212">
-          <caret line="310" column="36" selection-start-line="310" selection-start-column="32" selection-end-line="310" selection-end-column="36" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/InstructionSchedule.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="259" column="0" selection-start-line="259" selection-start-column="0" selection-end-line="259" selection-end-column="0" />
+        <state relative-caret-position="212">
+          <caret line="1245" column="0" selection-start-line="1245" selection-start-column="0" selection-end-line="1245" selection-end-column="0" />
           <folding>
             <element signature="method#evaluateBlockFlow#0;class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#instructionCalled#0;class#InstructionValue#0;class#InstructionSchedule#0" expanded="false" />
@@ -1895,69 +2011,24 @@
             <element signature="method#phiMemoryRestore#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#instructionDependOnInstr#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#needSpace#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="e#28667#28693#0" expanded="false" />
-            <element signature="e#31009#31046#0" expanded="false" />
-            <element signature="e#38017#38075#0" expanded="false" />
-            <element signature="e#41526#41548#0" expanded="false" />
-            <element signature="e#43559#43616#0" expanded="false" />
-            <element signature="e#47080#47150#0" expanded="false" />
-            <element signature="e#47767#47810#0" expanded="false" />
-            <element signature="e#49347#49432#0" expanded="false" />
-            <element signature="e#50152#50202#0" expanded="false" />
-            <element signature="e#51047#51081#0" expanded="false" />
-            <element signature="e#51436#51458#0" expanded="false" />
-            <element signature="e#52268#52318#0" expanded="false" />
+            <element signature="e#28751#28777#0" expanded="false" />
+            <element signature="e#31093#31130#0" expanded="false" />
+            <element signature="e#38101#38159#0" expanded="false" />
+            <element signature="e#41610#41632#0" expanded="false" />
+            <element signature="e#43643#43700#0" expanded="false" />
+            <element signature="e#47164#47234#0" expanded="false" />
+            <element signature="e#47851#47894#0" expanded="false" />
+            <element signature="e#49431#49516#0" expanded="false" />
+            <element signature="e#50236#50286#0" expanded="false" />
+            <element signature="e#51131#51165#0" expanded="false" />
+            <element signature="e#51520#51542#0" expanded="false" />
+            <element signature="e#52352#52402#0" expanded="false" />
             <element signature="method#insertPhiTransfer#0;class#ScheduledBlock#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#InstructionSchedule#0;class#InstructionSchedule#0" expanded="false" />
-            <element signature="e#55769#55820#0" expanded="false" />
-            <element signature="e#55910#55927#0" expanded="false" />
+            <element signature="e#55853#55904#0" expanded="false" />
+            <element signature="e#55994#56011#0" expanded="false" />
             <element signature="method#sumbitVariable#0;class#InstructionSchedule#0" expanded="false" />
             <element signature="method#beforeCall#0;class#InstructionSchedule#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Parser.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="605">
-          <caret line="511" column="33" selection-start-line="511" selection-start-column="16" selection-end-line="511" selection-end-column="33" />
-          <folding>
-            <element signature="method#Parser#0;class#Parser#0" expanded="false" />
-            <element signature="method#parse#0;class#Parser#0" expanded="false" />
-            <element signature="method#computation#0;class#Parser#0" expanded="false" />
-            <element signature="method#funcBody#0;class#Parser#0" expanded="false" />
-            <element signature="method#formalParam#0;class#Parser#0" expanded="false" />
-            <element signature="method#funcDecl#0;class#Parser#0" expanded="false" />
-            <element signature="e#6733#6778#0" expanded="false" />
-            <element signature="method#typeDecl#0;class#Parser#0" expanded="false" />
-            <element signature="method#statSequence#0;class#Parser#0" expanded="false" />
-            <element signature="method#statement#0;class#Parser#0" expanded="false" />
-            <element signature="method#returnStatement#0;class#Parser#0" expanded="false" />
-            <element signature="method#whileStatement#0;class#Parser#0" expanded="false" />
-            <element signature="method#ifStatement#0;class#Parser#0" expanded="false" />
-            <element signature="e#14255#14285#0" expanded="false" />
-            <element signature="e#14690#14723#0" expanded="false" />
-            <element signature="method#relation#0;class#Parser#0" expanded="false" />
-            <element signature="method#expression#0;class#Parser#0" expanded="false" />
-            <element signature="method#term#0;class#Parser#0" expanded="false" />
-            <element signature="method#factor#0;class#Parser#0" expanded="false" />
-            <element signature="method#number#0;class#Parser#0" expanded="false" />
-            <element signature="method#ident#0;class#Parser#0" expanded="false" />
-            <element signature="method#relOp#0;class#Parser#0" expanded="false" />
-            <element signature="method#expect#0;class#Parser#0" expanded="false" />
-            <element signature="method#accept#0;class#Parser#0" expanded="false" />
-            <element signature="method#arrayOffset#0;class#Parser#0" expanded="false" />
-            <element signature="method#error#0;class#Parser#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Function.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="405">
-          <caret line="147" column="30" selection-start-line="147" selection-start-column="30" selection-end-line="147" selection-end-column="30" />
-          <folding>
-            <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
