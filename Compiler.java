@@ -137,7 +137,7 @@ public class Compiler {
 		if (vtoi || optimize || regAlloc) {
 			program = optimizer.preprocess();
 		}
-		if (optimize || all) {
+		if (optimize || all || run) {
 			program = optimizer.optimize();
 			program.clean();
 		}
@@ -219,6 +219,7 @@ public class Compiler {
 		if (ifg || byteCode || assembly || run || memory || all ) {
 			this.regAlloc = true;
 			this.vtoi     = true;
+			optimize = true;
 		} else {
 			this.regAlloc = regAlloc;
 			this.vtoi     = vtoi;

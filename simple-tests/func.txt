@@ -6,7 +6,7 @@ var c,d;
 {
 	let d <- 2;
 	let c <- a + d;
-	return c;
+	return c
 };
 
 {
