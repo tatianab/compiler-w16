@@ -206,23 +206,18 @@ public class RegAllocator {
         phiMergerResult merger = r.new phiMergerResult();
         registerContext mergedCtx = r.new registerContext(a1.space);
 
+        memorySpace matchSpace = r.new memorySpace(a1.space, a2.space);
+
         ArrayList<InstructionSchedule.outputInstruction> edge1Instr = new ArrayList<InstructionSchedule.outputInstruction>();
         ArrayList<InstructionSchedule.outputInstruction> edge2Instr = new ArrayList<InstructionSchedule.outputInstruction>();
 
         for (phiRequest request : requests) {
             //Handle case
             Instruction instr1 = request.value1;
-            Instruction instr2 = request.value2;
             Register reg1 = instr1.state.storage.currentRegister;
+
+            Instruction instr2 = request.value2;
             Register reg2 = instr2.state.storage.currentRegister;
-
-
-            //Phi will be handle, so just release
-            for (Instruction child: request.actualStmt.basedInstr.uses) {
-                //A depended value is calculated->add it back
-                child.state.unresolveArgument--;
-            }
-            request.actualStmt.basedInstr.state.scheduled();
 
             /*if (request.value1 != null)
                 request.value1.state.valueRepr.instructionCalled(request.actualStmt.basedInstr);
@@ -230,6 +225,10 @@ public class RegAllocator {
             if (request.value2 != null)
                 request.value2.state.valueRepr.instructionCalled(request.actualStmt.basedInstr);*/
 
+            if (instr1.state.storage.backstore == instr2.state.storage.backstore) {
+                //Same back store, so request would store in the same place
+                request.actualStmt.basedInstr.state.storage.backstore = instr1.state.storage.backstore;
+            }
 
             if (reg1 != null && reg2 != null) {
                 //Both values are loaded in the register
@@ -299,46 +298,89 @@ public class RegAllocator {
                             edge2Instr.add(instr);
                             mergedCtx.registers[reg2Contain2].updateValue(request.actualStmt);
                         }
-                    } else if (mergedCtx.registers[reg2.registerID].isAvailable()) {
-                        //If not, try register 2
-                        InstructionSchedule.outputInstruction instr = insch.new outputInstruction();
-                        instr.op = Instruction.move;
-                        instr.arg1 = reg1.registerID;
-                        instr.outputReg = reg2.registerID;
-                        edge1Instr.add(instr);
-                        mergedCtx.registers[reg2.registerID].updateValue(request.actualStmt);
                     } else if (mergedCtx.registers[reg1.registerID].isAvailable()) {
                         //Test if register 1 is available
-                        InstructionSchedule.outputInstruction instr = insch.new outputInstruction();
-                        instr.op = Instruction.move;
-                        instr.arg1 = reg2.registerID;
-                        instr.outputReg = reg1.registerID;
-                        edge2Instr.add(instr);
+                        if (a2.registers[reg1.registerID].isAvailable()) {
+                            //a2 is available -> the data can be overwritten
+                            InstructionSchedule.outputInstruction instr = insch.new outputInstruction();
+                            instr.op = Instruction.move;
+                            instr.arg1 = reg2.registerID;
+                            instr.outputReg = reg1.registerID;
+                            edge2Instr.add(instr);
+                        } else if (mergedCtx.registers[reg2.registerID].isAvailable() && a1.registers[reg1.registerID].isAvailable()) {
+                            InstructionSchedule.outputInstruction instr = insch.new outputInstruction();
+                            instr.op = Instruction.move;
+                            instr.arg1 = reg1.registerID;
+                            instr.outputReg = reg2.registerID;
+                            edge1Instr.add(instr);
+                            mergedCtx.registers[reg2.registerID].updateValue(request.actualStmt);
+                        } else {
+                            //a2 is not available -> the data should be swapped
+                            ArrayList<InstructionSchedule.outputInstruction> ois = a2.swapRegister(reg1.registerID, reg2.registerID);
+                            edge2Instr.addAll(ois);
+                        }
                         mergedCtx.registers[reg1.registerID].updateValue(request.actualStmt);
                     } else if (mergedCtx.registers[reg2.registerID].isAvailable()) {
                         //If not, try register 2
-                        InstructionSchedule.outputInstruction instr = insch.new outputInstruction();
-                        instr.op = Instruction.move;
-                        instr.arg1 = reg1.registerID;
-                        instr.outputReg = reg2.registerID;
-                        edge1Instr.add(instr);
+                        if (a1.registers[reg1.registerID].isAvailable()) {
+                            InstructionSchedule.outputInstruction instr = insch.new outputInstruction();
+                            instr.op = Instruction.move;
+                            instr.arg1 = reg1.registerID;
+                            instr.outputReg = reg2.registerID;
+                            edge1Instr.add(instr);
+                        } else {
+                            //a2 is not available -> the data should be swapped
+                            ArrayList<InstructionSchedule.outputInstruction> ois = a1.swapRegister(reg1.registerID, reg2.registerID);
+                            edge1Instr.addAll(ois);
+                        }
                         mergedCtx.registers[reg2.registerID].updateValue(request.actualStmt);
                     } else {
                         //If not, allocate a space
                         //No space, so reallocate
                         int regID = mergedCtx.emptyRegister();
-                        mergedCtx.registers[regID].updateValue(request.actualStmt);
-                        InstructionSchedule.outputInstruction instr = insch.new outputInstruction();
-                        instr.op = Instruction.move;
-                        instr.arg1 = reg1.registerID;
-                        instr.outputReg = regID;
-                        edge1Instr.add(instr);
-                        edge2Instr.add(instr);
+                        if (regID > 0) {
+                            //There is space in register
+                            if (a1.registers[reg1.registerID].isAvailable()) {
+                                InstructionSchedule.outputInstruction instr = insch.new outputInstruction();
+                                instr.op = Instruction.move;
+                                instr.arg1 = reg1.registerID;
+                                instr.outputReg = regID;
+                                edge1Instr.add(instr);
+                            } else {
+                                //a2 is not available -> the data should be swapped
+                                ArrayList<InstructionSchedule.outputInstruction> ois = a1.swapRegister(reg1.registerID, regID);
+                                edge1Instr.addAll(ois);
+                            }
+
+                            if (a2.registers[reg1.registerID].isAvailable()) {
+                                //a2 is available -> the data can be overwritten
+                                InstructionSchedule.outputInstruction instr = insch.new outputInstruction();
+                                instr.op = Instruction.move;
+                                instr.arg1 = reg2.registerID;
+                                instr.outputReg = regID;
+                                edge2Instr.add(instr);
+                            } else {
+                                //a2 is not available -> the data should be swapped
+                                ArrayList<InstructionSchedule.outputInstruction> ois = a2.swapRegister(reg1.registerID, regID);
+                                edge2Instr.addAll(ois);
+                            }
+                            mergedCtx.registers[regID].updateValue(request.actualStmt);
+                        } else {
+                            assert (false);
+                        }
                     }
                 }
             } else if (reg1 == null && reg2 == null) {
                 //Both value are loaded in the memory, so assert the memory address is the
-                assert(instr1.state.storage.backstore.address == instr2.state.storage.backstore.address);
+                if (instr1.state.storage.backstore.address == instr2.state.storage.backstore.address) {}
+                else {
+                    assert (false);
+                    //Not same space, migrate
+
+                    //There is no space, so flush to stack
+                    //Flush to Temporary space
+
+                }
             } else {
                 //One in, one's not
                 //So just store
@@ -348,6 +390,14 @@ public class RegAllocator {
                     //TODO
                 }
             }
+
+
+            //Phi will be handle, so just release
+            for (Instruction child: request.actualStmt.basedInstr.uses) {
+                //A depended value is calculated->add it back
+                child.state.unresolveArgument--;
+            }
+            request.actualStmt.basedInstr.state.scheduled();
         }
         merger.resultContext = mergedCtx;
         merger.edge1 = edge1Instr;
@@ -506,9 +556,16 @@ public class RegAllocator {
             InstructionSchedule.InstructionValue baseValue = fetchExistedValue(val);
             if (baseValue == null) {
                 //Not registered, so create a space
-                memoryPosition pos = reserve();
-                store(val, pos);
-                return pos;
+                //Check if it belongs to global variable first
+                if (val.basedInstr.varDefd != null && val.basedInstr.varDefd.isGlobal()) {
+                    //It belongs to a global variable, so just flush it in to the global variable space
+                    return val.basedInstr.varDefd.getGlobalVar().position;
+                } else {
+                    //Not global, not stack stored, so create a new space
+                    memoryPosition pos = reserve();
+                    store(val, pos);
+                    return pos;
+                }
             }
             for (memoryPosition pos: preserve.keySet()) {
                 if (preserve.get(pos) == baseValue)
@@ -519,7 +576,10 @@ public class RegAllocator {
         }
 
         public InstructionSchedule.InstructionValue fetchValue(memoryPosition pos) {
-            InstructionSchedule.InstructionValue val = preserve.get(pos);
+            HashMap<memoryPosition, InstructionSchedule.InstructionValue> listing;
+            if (pos.stack) listing = preserve;
+            else return pos.actualValue;
+            InstructionSchedule.InstructionValue val = listing.get(pos);
             if (val == null && upperSpace != null) val = upperSpace.fetchValue(pos);
             return val;
         }
@@ -539,6 +599,17 @@ public class RegAllocator {
             //Sub space creation
             memoryHead = upperSpace.dataHead;
             memoryTail = upperSpace.dataTail;
+            dataHead = memoryHead;
+            dataTail = memoryTail;
+        }
+
+        memorySpace(memorySpace s1, memorySpace s2) {
+            preserve = new HashMap<memoryPosition, InstructionSchedule.InstructionValue>();
+            assert (s1.upperSpace == s2.upperSpace);
+            upperSpace = s1.upperSpace;
+            //Sub space creation
+            memoryHead = s1.dataHead>s2.dataHead?s1.dataHead:s2.dataHead;
+            memoryTail = s1.dataTail>s2.dataTail?s1.dataTail:s2.dataTail;
             dataHead = memoryHead;
             dataTail = memoryTail;
         }
@@ -702,7 +773,7 @@ public class RegAllocator {
                 if (backendPosition.actualValue != currentValue) {
                     needToStore = true;
                 }
-                //Else, the value is in the memory
+                //Else, the value is in the memory, but no longer needed
             } else if (backendPosition != null) {
                 //No longer needed, stored backend position
                 memSpace.releaseMemorySpace(currentValue);

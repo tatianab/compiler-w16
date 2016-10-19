@@ -1,21 +1,36 @@
 main
 var a; 
-var b;
+var b, c, d, e;
 {
 	call OutputNum(4);
-	let a <- 10;
-	let b <- 11;
+	let a <- 1;
+	let b <- 2;
+	let c <- 3;
+	let d <- 4;
+	let e <- 5;
 	if 2 == 3 then
 		if 3 == 4 then
-			let a <- 1
+			let a <- 6;
+			let c <- 7;
+			let d <- 8;
+			let e <- 9
 		else
-			let b <- 2
+			let b <- 10;
+			let c <- 11;
+			let d <- 12;
+			let e <- 13
 		fi
 	else
 		if 3 == 4 then
-			let b <- 3
+			let b <- 14;
+			let c <- 15;
+			let d <- 16;
+			let e <- 17
 		else
-			let a <- 4
+			let a <- 18;
+			let c <- 19;
+			let d <- 20;
+			let e <- 21
 		fi
 	fi;
 

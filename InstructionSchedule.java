@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 
 public class InstructionSchedule {
     
@@ -306,8 +307,10 @@ public class InstructionSchedule {
 
     public static void clearContext(ArrayList<Instruction> dependencyList) {
         for (Instruction instr: dependencyList) {
-            if (instr.state != null)
+            if (instr.state != null) {
                 instr.state.storage.currentRegister = null;
+                instr.state.storage.backstore.actualValue = instr.state.valueRepr;
+            }
         }
     }
 
@@ -316,6 +319,7 @@ public class InstructionSchedule {
             if (reg.currentValue != null && reg.currentValue.basedInstr != null)
                 reg.currentValue.basedInstr.state.storage.currentRegister = reg;
         }
+
     }
     
     public class ScheduledBlock {
@@ -418,6 +422,18 @@ public class InstructionSchedule {
             }
         }
 
+        public int phiableRegister(Instruction instr, RegAllocator.registerContext context) {
+            for (RegAllocator.Register reg: context.registers) {
+                if (reg.currentValue != null) {
+                    for (Instruction childInstr: reg.currentValue.basedInstr.uses) {
+                        if (childInstr.op == Instruction.phi && (childInstr.arg1 == instr || childInstr.arg2 == instr))
+                            return reg.registerID;
+                    }
+                }
+            }
+            return -1;
+        }
+
         public ArrayList<outputInstruction> scheduleInstruction(Instruction instr, RegAllocator.registerContext context) {
             ArrayList<outputInstruction> result = new ArrayList<>();
             //Get register, set the value to the register
@@ -437,8 +453,9 @@ public class InstructionSchedule {
             outputInstruction oi = new outputInstruction(instr, nextRegID, result);
             
             if (instructionWouldReturn(instr)) {
+                nextRegID = phiableRegister(instr, context);
                 phiMemoryDeduction(instr, context);
-                nextRegID = context.checkRegister(oi.arg1, oi.arg2);
+                if (nextRegID < 0) nextRegID = context.checkRegister(oi.arg1, oi.arg2);
                 if (nextRegID < 0) nextRegID = context.emptyRegister();
                 phiMemoryRestore(instr, context);
                 RegAllocator.Register nextReg =  context.registers[nextRegID];
@@ -614,10 +631,12 @@ public class InstructionSchedule {
 
                     //Memory Space merge
 
-                    RegAllocator.memorySpace space1 = inputBlock.in1.schedule.scheduledSpace;
-                    RegAllocator.memorySpace space2 = inputBlock.in2.schedule.scheduledSpace;
-                    space = space.upperSpace;
+                    RegAllocator.memorySpace space1 = inputBlock.in1.schedule.context.space;
+                    RegAllocator.memorySpace space2 = inputBlock.in2.schedule.context.space;
+                    assert (space1.upperSpace == space2.upperSpace);
+                    space = space1.upperSpace;
 
+                    context.space = space;
                 } else {
                     //This is the join block (loop header)
                     if (inputBlock.in1.schedule != null && inputBlock.in2.schedule != null) {
@@ -674,7 +693,7 @@ public class InstructionSchedule {
                             for (Instruction parent: child.instrsUsed) {
                                 if (parent != null)
                                     if (Compiler.debug) {
-                                        System.out.print("Parent: "+parent+"\n");
+                                        //System.out.print("Parent: "+parent+"\n");
                                     }
                                 if (parent != null && ( !parent.deleted() && !parent.state.storage.loaded()) )
                                     cached = false;
@@ -705,7 +724,6 @@ public class InstructionSchedule {
                     //Free up more register (last hold out data) (Using the heuristic)
                     //If there is still space, reverse two for move instruction, which will dynamically schedule N instructions later than the last load instruction
                     Instruction instr = pickInstr(cachedInstruction);
-                    
                     
                     ArrayList<outputInstruction> oi = scheduleInstruction(instr, context);
                     //Transform it to register based instruction
@@ -850,6 +868,43 @@ public class InstructionSchedule {
                                      + "Total: " + instructions.size() + "\n");*/
                 }
             }
+
+            //Popping up the store and load
+            //In order to drain the maximum memory bandwidth, all load and store are moved right after the last instruction that used such space
+            int cycleBubble = 1;
+
+            LinkedList<outputInstruction> oiCopy = new LinkedList(instructions);
+
+            for (int index = 0; index < instructions.size(); index++) {
+                boolean reachConflict = false;
+                outputInstruction oi = instructions.get(index);
+                int targetReg = oi.outputReg;
+                if (oi.op == Instruction.load||oi.op == Instruction.store) {
+                    int moveAhead = 0;
+                    //Find a memory interaction, so start popping up
+                    for (int ptr = index-1; ptr >= 0 && !reachConflict; ptr--) {
+                        outputInstruction roadBlock = oiCopy.get(ptr);
+                        if (roadBlock.arg1 != targetReg && roadBlock.arg2 != targetReg && roadBlock.outputReg != targetReg) {
+                            //No conflict at all, so move
+                            moveAhead++;
+                        } else {
+                            reachConflict = true;
+                        }
+                    }
+                    //The total amount of move ahead = max(0, moveAhead-cycleBubble) (need to reverse the instruction to avoid bubble), or move to the top if reachConflict = false -> add instruction ahead has nothing to do with the register, so move to the top
+                    int newIndex = index;
+                    if (moveAhead-cycleBubble > 0) newIndex -= (moveAhead - cycleBubble);
+                    if (!reachConflict) newIndex = 0;
+                    //Adjust
+                    oiCopy.remove(index);
+                    oiCopy.add(newIndex, oi);
+                }
+            }
+
+            //Rebuild the list
+            instructions = new ArrayList<>(oiCopy);
+
+            scheduledSpace = space;
 
             if (branch != null) {
                 //There is branch statement, so do the branch

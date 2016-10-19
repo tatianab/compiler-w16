@@ -204,6 +204,8 @@ public class Block extends Value {
                 Variable var = new Variable(var1.id, table.getName(var1.id));
                 table.reassignVar(var1.id, var);
 
+				var.global = var1.isGlobal();
+
                 instr.defines(var);
         		var.definedAt(instr);
         		inpr.currentBlock().addReturnValue(var);
@@ -250,7 +252,9 @@ public class Block extends Value {
 
 				// Reassign for this Variable.
 				Variable var = new Variable(var2.id, table.getName(var2.id));
-				table.reassignVar(var1.id, var);
+				table.reassignVar(var2.id, var);
+
+				var.global = var2.isGlobal();
 
 				((phiPatcher)var1).replacementVar = var;
 
@@ -296,7 +300,9 @@ public class Block extends Value {
 
 				// Reassign for this Variable.
 				Variable var = new Variable(var1.id, table.getName(var1.id));
-				table.reassignVar(var2.id, var);
+				table.reassignVar(var1.id, var);
+
+				var.global = var1.isGlobal();
 
 				((phiPatcher)var2).replacementVar = var;
 
