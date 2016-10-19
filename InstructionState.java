@@ -83,7 +83,7 @@ public class InstructionState{
 			((Instruction)instr.arg2).state.valueRepr.upcomingUsageCount -= 1;
 			((Instruction)instr.arg2).state.valueRepr.upcomingReferenceCount -= 1;
 		}
-		if (instr.arg1 == instr.arg2) {
+		if (instr.arg1 == instr.arg2 && instr.arg1 != null) {
 			((Instruction)instr.arg2).state.valueRepr.referenceCount += 1;
 			((Instruction)instr.arg2).state.valueRepr.upcomingReferenceCount += 1;
 

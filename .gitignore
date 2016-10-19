@@ -7,3 +7,5 @@ out/production/compiler-w16/report
 assem.txt
 
 out/*
+
+.idea/workspace.xml
