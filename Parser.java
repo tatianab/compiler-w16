@@ -4,7 +4,7 @@
  * CS 241 - Advanced Compiler Design
  */
 //
-import com.sun.tools.internal.jxc.ap.Const;
+// import com.sun.tools.internal.jxc.ap.Const;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -352,8 +352,18 @@ public class Parser {
 	private void returnStatement() {
 		expect(returnToken);
 		if (!check(semiToken)) {
-			expression();       // Expression to return.
-			// Branch to exit point.
+			Block block  = program.currentBlock();
+			Value retVal = expression(); // Expression to return.
+			Instruction instr = program.addInstr(bra, program.currentFunction.exit);
+			if (debug) { System.out.println("RETURN: exit is " + 
+				program.currentFunction.exit); }
+			if (debug) { System.out.println("Instruction: " + instr); }
+			// program.endBlock();
+			// program.addBlock("After return.");
+		    program.currentFunction.returnValue = retVal;
+
+			block.addNext(program.currentFunction.exit, true);
+			// Dominance?
 		}
 	}
 

@@ -248,6 +248,8 @@ public class Instruction extends Value {
 
 		setUsage(arg);
 
+		if (Compiler.debug && op == bra) { System.out.println("bra arg is " + arg + this.arg1);}
+
 	}
 
 	// If the value is global, and we are in a
@@ -597,7 +599,7 @@ public class Instruction extends Value {
 		} else if (op == arrayLoad) {
 			return id + " : " + ops[op] + " " + arg1.shortRepr() + " " + Array.indicesToString(params);
 		} else if (op == bra) {
-			return id + " : BRA " + block.id;
+			return id + " : bra " + arg1.shortRepr();
 		} else if (arg1 != null && arg2 != null) {
 			return id + " : " + ops[op] + " " + arg1.shortRepr() 
 				   + " " + arg2.shortRepr();

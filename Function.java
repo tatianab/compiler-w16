@@ -18,7 +18,7 @@ public class Function extends Value {
 	public Block exit;
 	public IntermedRepr program; // The program that contains this function.
 
-	public Instruction returnInstr;
+	// public Instruction returnInstr;
 
 	public ArrayList<Instruction> instrs;
 
@@ -28,6 +28,8 @@ public class Function extends Value {
 	public ArrayList<Global> globalsModified;
 
 	public boolean isProc;
+
+	public Value returnValue;
 
 	
 	public Function(int id, String ident, boolean isProc, IntermedRepr program) {
@@ -78,8 +80,8 @@ public class Function extends Value {
 		this.enter = enter;
 	}
 
-	public void end(Block exit) {
-		this.exit = exit;
+	public void end() {
+		// this.exit = exit;
 
 		// // Load globals.
 		// for (Variable global : globalsUsed) {
@@ -96,6 +98,14 @@ public class Function extends Value {
 	        Value lastMod = g.getLastDef();
 			instr.setOp(Instruction.store);
 			instr.setArgs(lastMod, g);
+			exit.addToEnd(instr);
+        }
+
+        // Store return value.
+        if (returnValue != null) {
+            Instruction instr = program.createInstr();
+			instr.setOp(Instruction.store);
+			instr.setArgs(returnValue, this);
 			exit.addToEnd(instr);
         }
 	}
@@ -143,18 +153,22 @@ public class Function extends Value {
 	// Handle globals that are USED by this function.
 	public Instruction addGlobalUse(Global g) {
 		// TODO
-		globalsUsed.add(g);	
-		if (true) {//!g.modified) {
-			if (true) {
-			// Add a load instruction and return it
-			// Instruction instr = new Instruction(200, null);
-			Instruction instr = program.createInstr();
-			instr.setOp(Instruction.load);
-			instr.setArgs(g);
-			enter.addToEnd(instr);
-			return instr;
+		if (!globalsUsed.contains(g)) {
+			globalsUsed.add(g);	
+
+			if (true) {//!g.modified) {
+				if (true) {
+					// Add a load instruction and return it
+					// Instruction instr = new Instruction(200, null);
+					Instruction instr = program.createInstr();
+					instr.setOp(Instruction.load);
+					instr.setArgs(g);
+					enter.addToEnd(instr);
+					return instr;
 			}
 		}
+		}
+
 		return null;
 	}
 

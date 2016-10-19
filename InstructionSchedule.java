@@ -2,6 +2,7 @@ import com.sun.org.apache.bcel.internal.classfile.Code;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.HashSet;
 import java.util.LinkedList;
 
@@ -1287,7 +1288,7 @@ public class InstructionSchedule {
     public String toString() {
         //Functions
         String func = "";
-        for (HashMap.Entry<Function, ScheduledBlock> e: functionBlocks.entrySet()) {
+        for (Map.Entry<Function, ScheduledBlock> e: functionBlocks.entrySet()) {
             func += e.getKey().ident + ": \n" + e.getValue() +"\n\n";
         }
         return func+"Main: \n"+mainBlock;
