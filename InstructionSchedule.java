@@ -1,3 +1,5 @@
+import com.sun.org.apache.bcel.internal.classfile.Code;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -144,6 +146,7 @@ public class InstructionSchedule {
         public int constant1;
         public int constant2;
         public Block jumpBlock;
+        public Function jumpFunc;
         outputInstruction() {
             op = -1;
             outputReg = -1;
@@ -242,7 +245,7 @@ public class InstructionSchedule {
             op = instr.op;
 
             if (op == Instruction.load) {
-                boolean globalVar = (((Instruction)instr.arg1).arg1).isGlobal();
+                boolean globalVar =  (((instr.arg1 instanceof Global)&&((Global)instr.arg1).isGlobal())||(((instr.arg1 instanceof Instruction) && (((Instruction)instr.arg1).arg1).isGlobal())));
                 if (globalVar) {
                     reg2 = RegAllocator.globalPtrRegisterID();
                 } else {
@@ -254,11 +257,37 @@ public class InstructionSchedule {
             arg1 = reg1;
             arg2 = reg2;
 
+            if (op == Instruction.call) {
+                jumpFunc = ((Function)instr.arg1);
+            }
+
             //Override for array
-            if ((op == Instruction.load || op == Instruction.store)&&instr.isLinked()) {
-                outputReg = ((Instruction)instr.arg1).state.storage.currentRegister.registerID;
-                arg1 = instr.getLink().arg1.isGlobal()?RegAllocator.globalPtrRegisterID(): RegAllocator.stackPtrRegisterIndex();
-                arg2 = instr.getLink().state.storage.currentRegister.registerID;
+            if ((op == Instruction.load || op == Instruction.store)&&(instr.isLinked() ||
+                    ((instr.arg1 instanceof Global)&&((Global)instr.arg1).isGlobal())   ||
+                    ((instr.arg2 instanceof Global)&&((Global)instr.arg2).isGlobal())
+            )) {
+                if (instr.isLinked()) {
+                    outputReg = ((Instruction) instr.arg1).state.storage.currentRegister.registerID;
+                    arg1 = instr.getLink().arg1.isGlobal()?RegAllocator.globalPtrRegisterID(): RegAllocator.stackPtrRegisterIndex();
+                    arg2 = instr.getLink().state.storage.currentRegister.registerID;
+                } else if (op == Instruction.load) {
+                    outputReg = outputRegistetNo;
+                    arg1 = instr.arg1.isGlobal()?RegAllocator.globalPtrRegisterID(): RegAllocator.stackPtrRegisterIndex();
+                    arg2 = -1;
+                    constant2 = ((Global)instr.arg1).position.address*-1;
+                } else {
+                    if (instr.arg1 instanceof Instruction) outputReg = ((Instruction)instr.arg1).state.storage.currentRegister.registerID;
+                    else {
+                        Constant c = (Constant)instr.arg1;
+                        outputInstruction oi = new outputInstruction();
+                        oi.arg1 = 0;    oi.arg2 = -1;   oi.constant2 = c.getVal();  oi.op = Instruction.add;    oi.outputReg = RegAllocator.memoryOpRegisterID();
+                        intermediateOp.add(oi);
+                        outputReg = oi.outputReg;
+                    }
+                    arg1 = instr.arg2.isGlobal()?RegAllocator.globalPtrRegisterID(): RegAllocator.stackPtrRegisterIndex();
+                    arg2 = -1;
+                    constant2 = ((Global)instr.arg2).position.address*-1;
+                }
             }
         }
         
@@ -1154,6 +1183,9 @@ public class InstructionSchedule {
             }
         }
 
+        //Reserve register space
+
+
         RegAllocator.memorySpace space = rac.new memorySpace(globalSpace);
         RegAllocator.registerContext regCtx = rac.new registerContext(space);
 
@@ -1215,6 +1247,8 @@ public class InstructionSchedule {
     }
 
     public ArrayList<outputInstruction> priorFunctionCall(RegAllocator.registerContext ctx) {
+
+
         ArrayList oi = beforeCall(ctx);
         //Drop the first register for function return
         if (beforeFlush.get(0) != "Empty") {
@@ -1224,7 +1258,20 @@ public class InstructionSchedule {
         }
         return oi;
     }
-    public ArrayList<outputInstruction> postCall(RegAllocator.registerContext ctx) {
+    public ArrayList<outputInstruction> postFuncCall(RegAllocator.registerContext ctx) {
+        ArrayList<outputInstruction> oi = new ArrayList<outputInstruction>();
+
+        for (int i = 1; i < beforeFlush.size(); i++) {
+            int registerIndex = i+1;
+            if (beforeFlush.get(i) != "Empty") {
+                outputInstruction o = ctx.registers[registerIndex].updateValue((InstructionValue) beforeFlush.get(i));
+                oi.add(o);
+            }
+        }
+        return oi;
+    }
+
+    public ArrayList<outputInstruction> postProdCall(RegAllocator.registerContext ctx) {
         ArrayList<outputInstruction> oi = new ArrayList<outputInstruction>();
         for (int i = 0; i < beforeFlush.size(); i++) {
             int registerIndex = i+1;
@@ -1238,6 +1285,11 @@ public class InstructionSchedule {
 
     @Override
     public String toString() {
-        return "Main: \n"+mainBlock;
+        //Functions
+        String func = "";
+        for (HashMap.Entry<Function, ScheduledBlock> e: functionBlocks.entrySet()) {
+            func += e.getKey().ident + ": \n" + e.getValue() +"\n\n";
+        }
+        return func+"Main: \n"+mainBlock;
     }
 }

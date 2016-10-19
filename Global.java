@@ -22,6 +22,7 @@ public class Global extends Value {
 		this.ident    = ident;
 		this.modified = false;
 		this.lastDef  = null;
+		global = true;
 	}
 
 	@Override
