@@ -4,12 +4,9 @@
  * CS 241 - Advanced Compiler Design
  */
 import java.util.ArrayList;
-<<<<<<< HEAD
 import java.util.HashMap;
 import java.util.HashSet;
 
-=======
->>>>>>> origin/master
 public class Function extends Value {
 
 	public int id;
@@ -164,7 +161,7 @@ public class Function extends Value {
 	// Handle globals that are USED by this function.
 	public Instruction addGlobalUse(Global g) {
 		// TODO
-<<<<<<< HEAD
+
 		if (globalsUsed.add(g)) {//!g.modified) {
 			if (true) {
 			// Add a load instruction and return it
@@ -178,25 +175,7 @@ public class Function extends Value {
 			}
 		}
 		return globalLoad.get(g);
-=======
-		if (!globalsUsed.contains(g)) {
-			globalsUsed.add(g);	
 
-			if (true) {//!g.modified) {
-				if (true) {
-					// Add a load instruction and return it
-					// Instruction instr = new Instruction(200, null);
-					Instruction instr = program.createInstr();
-					instr.setOp(Instruction.load);
-					instr.setArgs(g);
-					enter.addToEnd(instr);
-					return instr;
-			}
-		}
-		}
-
-		return null;
->>>>>>> origin/master
 	}
 
 	@Override
