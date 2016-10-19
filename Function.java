@@ -4,9 +4,12 @@
  * CS 241 - Advanced Compiler Design
  */
 import java.util.ArrayList;
+<<<<<<< HEAD
 import java.util.HashMap;
 import java.util.HashSet;
 
+=======
+>>>>>>> origin/master
 public class Function extends Value {
 
 	public int id;
@@ -21,7 +24,7 @@ public class Function extends Value {
 	public Block exit;
 	public IntermedRepr program; // The program that contains this function.
 
-	public Instruction returnInstr;
+	// public Instruction returnInstr;
 
 	public  ArrayList<Variable> paras = new ArrayList<>();
 	public ArrayList<Instruction> paraLoad = new ArrayList<>();
@@ -30,10 +33,12 @@ public class Function extends Value {
 
 	public ArrayList<Array> arrays; // Arrays in this function.
 
-	public HashSet<Global> globalsUsed;
-	public HashSet<Global> globalsModified;
+	public ArrayList<Global> globalsUsed;
+	public ArrayList<Global> globalsModified;
 
 	public boolean isProc;
+
+	public Value returnValue;
 
 	
 	public Function(int id, String ident, boolean isProc, IntermedRepr program) {
@@ -43,8 +48,8 @@ public class Function extends Value {
 		this.instrs = new ArrayList<Instruction>();
 		this.arrays = new ArrayList<Array>();
 		this.isProc = isProc;
-		this.globalsUsed     = new HashSet<Global>();
-		this.globalsModified = new HashSet<Global>();
+		this.globalsUsed     = new ArrayList<Global>();
+		this.globalsModified = new ArrayList<Global>();
 		this.program = program;
 	}
 
@@ -54,8 +59,8 @@ public class Function extends Value {
 		this.numParams = numParams;
 		this.instrs = new ArrayList<Instruction>();
 		this.arrays = new ArrayList<Array>();
-		this.globalsUsed     = new HashSet<Global>();
-		this.globalsModified = new HashSet<Global>();
+		this.globalsUsed     = new ArrayList<Global>();
+		this.globalsModified = new ArrayList<Global>();
 		this.program = program;
 	}
 
@@ -84,8 +89,8 @@ public class Function extends Value {
 		this.enter = enter;
 	}
 
-	public void end(Block exit) {
-		this.exit = exit;
+	public void end() {
+		// this.exit = exit;
 
 		// // Load globals.
 		// for (Variable global : globalsUsed) {
@@ -102,6 +107,14 @@ public class Function extends Value {
 	        Value lastMod = g.getLastDef();
 			instr.setOp(Instruction.store);
 			instr.setArgs(lastMod, g);
+			exit.addToEnd(instr);
+        }
+
+        // Store return value.
+        if (returnValue != null) {
+            Instruction instr = program.createInstr();
+			instr.setOp(Instruction.store);
+			instr.setArgs(returnValue, this);
 			exit.addToEnd(instr);
         }
 	}
@@ -151,6 +164,7 @@ public class Function extends Value {
 	// Handle globals that are USED by this function.
 	public Instruction addGlobalUse(Global g) {
 		// TODO
+<<<<<<< HEAD
 		if (globalsUsed.add(g)) {//!g.modified) {
 			if (true) {
 			// Add a load instruction and return it
@@ -164,6 +178,25 @@ public class Function extends Value {
 			}
 		}
 		return globalLoad.get(g);
+=======
+		if (!globalsUsed.contains(g)) {
+			globalsUsed.add(g);	
+
+			if (true) {//!g.modified) {
+				if (true) {
+					// Add a load instruction and return it
+					// Instruction instr = new Instruction(200, null);
+					Instruction instr = program.createInstr();
+					instr.setOp(Instruction.load);
+					instr.setArgs(g);
+					enter.addToEnd(instr);
+					return instr;
+			}
+		}
+		}
+
+		return null;
+>>>>>>> origin/master
 	}
 
 	@Override

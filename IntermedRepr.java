@@ -22,7 +22,7 @@ public class IntermedRepr {
 	// Control Flow Graph (CFG)
 	public Block firstBlock;
 	public Stack<Block> currentBlocks;
-	public Block currentBlock;
+	// public Block currentBlock;
 
 	public InterferenceGraph ifg;          // Interference graph.
 
@@ -73,6 +73,8 @@ public class IntermedRepr {
 	public void beginFunction(Function function) {
 		setScope(function);
 		Block enter = addBlock("Enter function " + function.shortRepr());
+		Block exit  = createBlock("Exit function " + function.shortRepr());
+		function.exit = exit;
 		endBlock();
 		currentBlocks.add(enter);
 		function.begin(enter);
@@ -80,8 +82,9 @@ public class IntermedRepr {
 
 	// Clean up after compiling a function.
 	public void endFunction() {
-		Block exit = addBlock("Exit function " + currentFunction.shortRepr());
-		currentFunction.end(exit);
+		Block exit = currentFunction.exit;
+		insertBlock(exit);
+		currentFunction.end();
 		endBlock();
 		functions.add(currentFunction);
 		currentFunction = MAIN;
