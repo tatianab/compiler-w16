@@ -375,6 +375,14 @@ public class Parser {
 			// program.addBlock("After return.");
 		    program.currentFunction.returnValue = retVal;
 
+			//Return instruction
+			if (retVal instanceof Variable) {
+				Variable v = (Variable)retVal;
+				instr.setArgs(v.def);
+				v.def.usedIn(instr);
+			}
+			else instr.setArgs(retVal);
+
 			block.addNext(program.currentFunction.exit, true);
 			// Dominance?
 		}

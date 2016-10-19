@@ -30,8 +30,8 @@ public class Function extends Value {
 
 	public ArrayList<Array> arrays; // Arrays in this function.
 
-	public ArrayList<Global> globalsUsed;
-	public ArrayList<Global> globalsModified;
+	public HashSet<Global> globalsUsed;
+	public HashSet<Global> globalsModified;
 
 	public boolean isProc;
 
@@ -45,8 +45,8 @@ public class Function extends Value {
 		this.instrs = new ArrayList<Instruction>();
 		this.arrays = new ArrayList<Array>();
 		this.isProc = isProc;
-		this.globalsUsed     = new ArrayList<Global>();
-		this.globalsModified = new ArrayList<Global>();
+		this.globalsUsed     = new HashSet<Global>();
+		this.globalsModified = new HashSet<Global>();
 		this.program = program;
 	}
 
@@ -56,8 +56,8 @@ public class Function extends Value {
 		this.numParams = numParams;
 		this.instrs = new ArrayList<Instruction>();
 		this.arrays = new ArrayList<Array>();
-		this.globalsUsed     = new ArrayList<Global>();
-		this.globalsModified = new ArrayList<Global>();
+		this.globalsUsed     = new HashSet<Global>();
+		this.globalsModified = new HashSet<Global>();
 		this.program = program;
 	}
 

@@ -595,7 +595,7 @@ public class Instruction extends Value {
 		} else if (op == phi) {
 			return id + " : PHI " + varDefd.shortRepr() + " := " + arg1.shortRepr() + " " + arg2.shortRepr() + " " + block.id;
 		} else if (op == arrayStore) {
-			return id + " : " + ops[op] + " " + arg1.shortRepr() + " " + arg2.shortRepr() + " " + Array.indicesToString(params);
+			return "Return"+arg1.shortRepr();//id + " : " + ops[op] + " " + arg1.shortRepr() + " " + arg2.shortRepr() + " " + Array.indicesToString(params);
 		} else if (op == arrayLoad) {
 			return id + " : " + ops[op] + " " + arg1.shortRepr() + " " + Array.indicesToString(params);
 		} else if (op == bra) {
