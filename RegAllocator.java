@@ -153,7 +153,7 @@ public class RegAllocator {
         //Third stage: if it does not existed in b, but in a2, load it
         for (Register reg: b.registers) {
             //Load value that is not there
-            if (a2.registers[reg.registerID].currentValue != reg.currentValue){
+            if (a2.registers[reg.registerIndex].currentValue != reg.currentValue){
                 if (reg.currentValue != null) {
                     //The inner loop has the higher block id
                 /*phiRequest request = requestForValue(requests, reg.currentValue);

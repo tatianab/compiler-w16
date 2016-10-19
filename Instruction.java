@@ -649,9 +649,11 @@ public class Instruction extends Value {
 		}
 
 		for (Instruction instr: phiRelated) {
-			fromSrc.add(this);
-			instr.phiLinkage(fromSrc);
-			fromSrc.remove(this);
+			if (instr != null) {
+				fromSrc.add(this);
+				instr.phiLinkage(fromSrc);
+				fromSrc.remove(this);
+			}
 		}
 	}
 	public boolean memorySpaceEqual(Instruction withInstruction) {
