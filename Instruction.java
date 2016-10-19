@@ -40,6 +40,8 @@ public class Instruction extends Value {
 	public Function function; // The function that this instruction is in.
 	public InstructionState state;
 
+	public int arrayVersion = -1;
+
 	/* Operation codes. */
 	public static final int neg     = 1;
 	public static final int add     = 2;

@@ -651,7 +651,8 @@ public class RegAllocator {
             InstructionSchedule.outputInstruction loadInstr = c.new outputInstruction();
             loadInstr.op = Instruction.load;
             //Stack pointer
-            loadInstr.arg1 = numberOfRegister-2;
+            if (position.stack) loadInstr.arg1 = stackPtrRegisterID();
+            else loadInstr.arg1 = globalPtrRegisterID();
             loadInstr.constant2 = position.address;
             loadInstr.outputReg = regNo;
             ArrayList<InstructionSchedule.outputInstruction>instrs = new ArrayList<>();
@@ -664,7 +665,8 @@ public class RegAllocator {
             InstructionSchedule c = new InstructionSchedule();
             InstructionSchedule.outputInstruction storeInstr = c.new outputInstruction();
             storeInstr.op = Instruction.store;
-            storeInstr.arg1 = numberOfRegister-2;
+            if (position.stack) storeInstr.arg1 = stackPtrRegisterID();
+            else storeInstr.arg1 = globalPtrRegisterID();
             storeInstr.constant2 = position.address;
             storeInstr.outputReg = regNo;
 
@@ -684,23 +686,39 @@ public class RegAllocator {
             global.put(name, pos);
             return pos;
         }
+
+        public int stackSize() {
+            int parentSize = 0;
+            if (upperSpace != null) parentSize = upperSpace.stackSize();
+            if (preserve.size() == 0) return 0;
+            int highestAddr = 0;    int size = 0;
+            for (memoryPosition pos: preserve.keySet()) {
+                if (pos.address > highestAddr) {
+                    highestAddr = pos.address;
+                    size = pos.size;
+                }
+            }
+            return highestAddr + size + parentSize;
+        }
     }
     static int regWriteCount = 0;
     public int fetchWriteCount() { return regWriteCount++; }
 
     public class Register {
-        public final int registerID;
+        public final int registerIndex;
+        public int registerID;
         public InstructionSchedule.InstructionValue currentValue;
         public memorySpace.memoryPosition backendPosition;
         private memorySpace memSpace;
         int versioning = -1;
         Register(int regID, memorySpace memSpace) {
             registerID = regID;
+            registerIndex = regID;
             this.memSpace = memSpace;
-
         }
         Register(Register copy) {
             registerID = copy.registerID;
+            registerIndex = copy.registerIndex;
             this.memSpace = copy.memSpace;
             this.currentValue = copy.currentValue;
             backendPosition = copy.backendPosition;
@@ -799,18 +817,21 @@ public class RegAllocator {
             String result = registerID + ": ";
             if (currentValue != null) result += currentValue.basedInstr;
             else result += "null";
-            return result+"\n";
+            return result+" \n";
         }
-
-        public ArrayList<InstructionSchedule.outputInstruction> helperBlock() {
-            return null;
-        }
-
-        public ArrayList<InstructionSchedule.outputInstruction> popperBlock() {
-            return null;
-        }
-
     }
+
+    public static int memoryOpRegisterIndex() { return numberOfRegister-numberOfReverse; }
+    public static int globalPtrRegisterIndex() { return numberOfRegister-numberOfReverse+1; }
+    public static int framePtrRegisterIndex() { return numberOfRegister-numberOfReverse+2; }
+    public static int stackPtrRegisterIndex() { return numberOfRegister-numberOfReverse+3; }
+    public static int returnAddrRegisterIndex() { return numberOfRegister-numberOfReverse+4; }
+
+    public static int memoryOpRegisterID() { return 27; }
+    public static int globalPtrRegisterID() { return 30; }
+    public static int framePtrRegisterID() { return 28; }
+    public static int stackPtrRegisterID() { return 29; }
+    public static int returnAddrRegisterID() { return 31; }
 
     public class registerContext {
         public Register registers[];
@@ -821,6 +842,11 @@ public class RegAllocator {
             for (int i = 0; i < numberOfRegister; i++) {
                 registers[i] = new Register(i, space);
             }
+            memoryOpRegister().registerID = 27;
+            globalPtrRegister().registerID = 30;
+            framePtrRegister().registerID = 28;
+            stackPtrRegister().registerID = 29;
+            returnAddrRegister().registerID = 31;
         }
         registerContext(registerContext copy) {
             registers = new Register[numberOfRegister];
@@ -834,10 +860,13 @@ public class RegAllocator {
         //One for frame pointer
         //One for heap pointer
         //One for memory address calculation
+
+
+
         public Register memoryOpRegister() {
             return registers[numberOfRegister-numberOfReverse];
         }
-        public Register heapPtrRegister() {
+        public Register globalPtrRegister() {
             return registers[numberOfRegister-numberOfReverse+1];
         }
         public Register framePtrRegister() {
@@ -896,8 +925,8 @@ public class RegAllocator {
             return emptyRegister() > 0;
         }
         int checkRegister(int testA, int testB) {
-            if (testA > 0 && registers[testA].isAvailable()) { return testA; }
-            if (testB > 0 && registers[testB].isAvailable()) { return testB; }
+            if (testA > 0 && testA < memoryOpRegisterID() && registers[testA].isAvailable()) { return testA; }
+            if (testB > 0 && testB < memoryOpRegisterID() && registers[testB].isAvailable()) { return testB; }
             return -1;
         }
         int emptyRegister() {

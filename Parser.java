@@ -4,6 +4,8 @@
  * CS 241 - Advanced Compiler Design
  */
 //
+import com.sun.tools.internal.jxc.ap.Const;
+
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -540,11 +542,18 @@ public class Parser {
 		} else if (var instanceof Array) {
 			// Create an array store instruction for this array.
 			// Generate instructions to compute offset.
+			//If the expr is a constant, it need to be in a register before store
+			if (expr instanceof Constant) {
+				expr = program.addInstr(add, expr);
+			}
 			Value offset = arrayOffset(((Array) var).currentIndices, ((Array) var).dims);
 			// Adda and store instructions.
 			Instruction addaInstr  = program.addInstr(adda, (Array) var, offset);
 			Instruction storeInstr = program.addInstr(store, expr, addaInstr);
 			addaInstr.linkTo(storeInstr);
+			((Array)var).modified();
+			((Array)var).uses.add(storeInstr);
+			storeInstr.arrayVersion = ((Array)var).version;
 			// Instruction arrayInstr = program.addArrayInstr(Instruction.arrayStore, (Array) var, ((Array) var).currentIndices, expr);
 			if (debug) { System.out.println("Generated array instruction " /* + arrayInstr */); }
 		}
@@ -581,6 +590,8 @@ public class Parser {
 					// Adda and store instructions.
 					Instruction addaInstr  = program.addInstr(adda, array, offset);
 					Instruction loadInstr  = program.addInstr(load, addaInstr);
+					array.uses.add(loadInstr);
+					loadInstr.arrayVersion = array.version;
 					addaInstr.linkTo(loadInstr);
 					return loadInstr;
 					// return program.addArrayInstr(Instruction.arrayLoad, array, indices);

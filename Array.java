@@ -11,6 +11,46 @@ public class Array extends Value {
 	int numDims; // Number of dimensions.
 	int[] dims;  // Dimensions.
 	int totalSize = 1;
+	int version = 0;
+	public void modified() {
+		version++;
+	}
+
+
+	ArrayList<Instruction> uses = new ArrayList<>();
+	public boolean versionCanCarry(int targetVer, boolean write) {
+		boolean written = false;
+		for (Instruction instr: uses) {
+			//If it's not scheduled, it could prevent the instruction
+			if (!instr.deleted() && !instr.state.schedule) {
+				if (instr.arrayVersion < targetVer) {
+					//There is an instruction that want the old version
+					return false;
+				}
+			} else if (instr.state.schedule && instr.op == Instruction.store && instr.arrayVersion == targetVer) {
+				//It's a scheduled store on the version we want
+				written = true;
+			}
+		}
+		//By now, it means no one want the old version, so the version has to be stored, or it should be a store instruction
+		return (write) || (written);
+	}
+
+	public ArrayList<Instruction> canSchedule() {
+		ArrayList<Instruction> i = new ArrayList<>();
+		for (Instruction instr: uses) {
+			if (!instr.deleted() && !instr.state.schedule) {
+				//Not scheduled bachelor
+				if (versionCanCarry(instr.arrayVersion, instr.op == Instruction.store)) {
+					//Check arg1
+					if (instr.arg1 != null && (!(instr.arg1 instanceof Instruction) || (((Instruction)instr.arg1).state.schedule && ((Instruction)instr.arg1).state.storage.loaded())))
+						if (instr.arg1 != null && (!(instr.arg1 instanceof Instruction) || (((Instruction)instr.arg1).state.schedule && ((Instruction)instr.arg1).state.storage.loaded())))
+							i.add(instr);
+				}
+			}
+		}
+		return i;
+	}
 
 	RegAllocator.memorySpace.memoryPosition backstorePos;
 
@@ -40,6 +80,7 @@ public class Array extends Value {
 		collectDims = null;
 	}
 
+	/*
 	public void initFromMemorySpace(RegAllocator.memorySpace space) {
 		backstorePos = space.reserveArray(totalSize);
 	}
@@ -77,7 +118,7 @@ public class Array extends Value {
 		{
 			InstructionSchedule.outputInstruction loadInstr = is.new outputInstruction();
 			loadInstr.op = Instruction.load;
-			loadInstr.arg1 = ctx.heapPtrRegister().registerID;
+			loadInstr.arg1 = ctx.globalPtrRegister().registerID;
 			loadInstr.arg2 = ctx.memoryOpRegister().registerID;
 			loadInstr.outputReg = ctx.memoryOpRegister().registerID;
 			ois.add(loadInstr);
@@ -111,13 +152,13 @@ public class Array extends Value {
 		{
 			InstructionSchedule.outputInstruction loadInstr = is.new outputInstruction();
 			loadInstr.op = Instruction.store;
-			loadInstr.arg1 = ctx.heapPtrRegister().registerID;
+			loadInstr.arg1 = ctx.globalPtrRegister().registerID;
 			loadInstr.arg2 = ctx.memoryOpRegister().registerID;
 			loadInstr.outputReg = ctx.memoryOpRegister().registerID;
 			ois.add(loadInstr);
 		}
 		return ois;
-	}
+	}*/
 
 	public void setCurrentIndices(Value[] indices) {
 		if (indices.length == dims.length) {
@@ -141,7 +182,10 @@ public class Array extends Value {
 		for (int i : dims) {
 			result += "[" + i+ "]";
 		}
-		return result;
+		if (backstorePos == null) return result;
+		else return result + ": " + backstorePos.address;
 	}
+
+
 
 }

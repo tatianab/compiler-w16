@@ -26,7 +26,8 @@ public class Global extends Value {
 
 	@Override
 	public String shortRepr() {
-		return "[Global " + ident + "]";
+		if (position == null) return "[Global " + ident + "]";
+		else return "[Global " + ident + "]: " + position.address;
 	}
 
 	public Value getLastDef() {

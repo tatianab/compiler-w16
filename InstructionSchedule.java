@@ -156,7 +156,42 @@ public class InstructionSchedule {
             //Oct 14, 2016 - A bypass for adda instruction
             if (instr.op == Instruction.adda) {
                 //This is an adda instruction
+                //First, calculate the offset (-ve), using the intermediate op
+                if (instr.arg1 instanceof Array) {
+                    Array a = ((Array)instr.arg1);
+                    arg1 = -1;
+                    if (instr.arg1.isGlobal()) {
+                        //If the variable is global, it is a subtraction, with the offset being negative
+                        constant1 = a.backstorePos.address * -1;
+                    }
+                } else {
+                    assert (false); //What is this suppose to carry out
+                }
+                if (instr.arg2 instanceof Constant) {
+                    arg2 = -1;
+                    constant2 = ((Constant) instr.arg2).getVal() * 4;
+                }
+                else if (instr.arg2 instanceof Instruction) {
+                    outputInstruction addressCalc = new outputInstruction();
+                    addressCalc.arg1 = ((Instruction)instr.arg2).state.storage.currentRegister.registerID;
+                    addressCalc.arg2 = -1;
+                    if (instr.arg1.isGlobal()) {
+                        //If the variable is global, it is a subtraction, with the offset being negative
+                        addressCalc.constant2 = -4;
+                    } else { addressCalc.constant2 = 4; }
+                    addressCalc.op = Instruction.mul;
+                    addressCalc.outputReg = RegAllocator.memoryOpRegisterID();
+                    intermediateOp.add(addressCalc);
 
+                    arg2 = RegAllocator.memoryOpRegisterID();
+                }
+                if (instr.arg1.isGlobal()) {
+                    //If the variable is global, it is a subtraction, with the offset being negative
+                    op = Instruction.sub;
+                } else {
+                    op = Instruction.add;
+                }
+                return;
             }
 
             //Search for arg1
@@ -172,88 +207,11 @@ public class InstructionSchedule {
                b = (Block)instr.arg1;
                jumpBlock = b;
 
-           } //Oct 14, 2016 - Arrayload and ArrayStore is deprecated, replace with load/store plus an adda
-            /*else if (instr.arg1 instanceof  Array) {
-                //Memory Op Reg, from RegAllocator->registerContext
-                int memOp = RegAllocator.numberOfRegister-RegAllocator.numberOfReverse;
-                int spReg = memOp+3;
-
-                //Zero-out the memory register, and load the root base of array
-                outputInstruction zeroOut = new outputInstruction();
-                zeroOut.op = Instruction.move;
-                zeroOut.arg1 = 0;
-                zeroOut.outputReg = memOp;
-                arrayIndice.add(zeroOut);
-
-                //Array operation
-                Array a = (Array)instr.arg1;
-                //Calculate the index
-                for (int i = 0; i < instr.params.length; i++) {
-                    Value intermediateVal = instr.params[i];
-                    int step = a.dims[i];
-                    if (intermediateVal instanceof Constant) {
-                        //Just add the instr
-                        outputInstruction addOi = new outputInstruction();
-                        addOi.arg1 = memOp;
-                        addOi.constant2 = ((Constant)intermediateVal).getVal();
-                        addOi.outputReg = memOp;
-                        addOi.op = Instruction.add;
-                        arrayIndice.add(addOi);
-                    } else if (intermediateVal instanceof Instruction) {
-                        Instruction intermediateInstr = (Instruction)intermediateVal;
-                        //Use output register as a temporary store
-                        if (intermediateInstr.state.schedule) {
-                            //It has scheduled, load from memory
-
-                        } else {
-                            //It is not scheduled, so run
-                            //It is null because it should not be array loading operation
-                            outputInstruction indiceInstr = new outputInstruction(intermediateInstr, outputRegistetNo, null);
-                            arrayIndice.add(indiceInstr);
-                        }
-                        outputInstruction addOi = new outputInstruction();
-                        addOi.arg1 = memOp;
-                        addOi.arg2 = outputRegistetNo;
-                        addOi.outputReg = memOp;
-                        addOi.op = Instruction.add;
-                        arrayIndice.add(addOi);
-
-                    }
-
-                    outputInstruction mulOi = new outputInstruction();
-                    mulOi.arg1 = memOp;
-                    mulOi.constant2 = step;
-                    mulOi.outputReg = memOp;
-                    mulOi.op = Instruction.mul;
-                    arrayIndice.add(mulOi);
-                }
-                //Finish all, but need to trim the last multi instruction
-                arrayIndice.remove(arrayIndice.size()-1);
-
-                //Then add the value
-                //Then add the position
-                int addr = a.backstorePos.address;
-                outputInstruction incre = new outputInstruction();
-                incre.arg1 = memOp;
-                incre.constant2 = addr;
-                incre.outputReg = memOp;
-                incre.op = Instruction.add;
-                arrayIndice.add(incre);
-
-                //Add (Sub) the stack register value
-                outputInstruction subMem = new outputInstruction();
-                subMem.arg1 = spReg;
-                subMem.arg2 = memOp;
-                subMem.outputReg = memOp;
-                subMem.op = Instruction.sub;
-                arrayIndice.add(subMem);
-
-                intermediateOp.addAll(arrayIndice);
-            }*/
+           }
             //Search for arg2
             int reg2 = -1;
             
-            if (instr.op != Instruction.move && instr.op != Instruction.load) {
+            if (instr.op != Instruction.move && instr.op != Instruction.store) {
                 //If it's not move instruction, it should be have the second argument
                 if (instr.arg2 instanceof Instruction) {
                     //It is instruction, it must have an register
@@ -270,6 +228,10 @@ public class InstructionSchedule {
                 } else if (instr.arg2 instanceof Block) {
                     b = (Block)instr.arg2;
                     jumpBlock = b;
+                } else if (instr.arg2 == null && instr.op == Instruction.add) {
+                    //Special patch for array: arg1 is a constant, arg2 is not defined, use to load constnat into the machine
+                    constant2 = constant1;
+                    reg1 = 0;
                 }
                 
             }
@@ -278,12 +240,26 @@ public class InstructionSchedule {
             int outReg = outputRegistetNo;
             
             op = instr.op;
-            //Override
-            if (op == Instruction.arrayLoad) op = Instruction.load;
-            else if (op == Instruction.arrayStore) op = Instruction.store;
+
+            if (op == Instruction.load) {
+                boolean globalVar = (((Instruction)instr.arg1).arg1).isGlobal();
+                if (globalVar) {
+                    reg2 = RegAllocator.globalPtrRegisterID();
+                } else {
+                    reg2 = RegAllocator.stackPtrRegisterID();
+                }
+            }
+
             outputReg = outReg;
             arg1 = reg1;
             arg2 = reg2;
+
+            //Override for array
+            if ((op == Instruction.load || op == Instruction.store)&&instr.isLinked()) {
+                outputReg = ((Instruction)instr.arg1).state.storage.currentRegister.registerID;
+                arg1 = instr.getLink().arg1.isGlobal()?RegAllocator.globalPtrRegisterID(): RegAllocator.stackPtrRegisterIndex();
+                arg2 = instr.getLink().state.storage.currentRegister.registerID;
+            }
         }
         
         @Override
@@ -309,7 +285,7 @@ public class InstructionSchedule {
         for (Instruction instr: dependencyList) {
             if (instr.state != null) {
                 instr.state.storage.currentRegister = null;
-                instr.state.storage.backstore.actualValue = instr.state.valueRepr;
+                if (instr.state.storage.backstore != null) instr.state.storage.backstore.actualValue = instr.state.valueRepr;
             }
         }
     }
@@ -375,11 +351,19 @@ public class InstructionSchedule {
                 int currentScore = 0;
                 if (instructionWouldReturn(currentInstr) == false)
                     currentScore = 1;
+                boolean allowed = true;
+                if (currentInstr.arrayVersion > 0 && currentInstr.getLink() != null && currentInstr.getLink().arg1 instanceof Array) {
+                    int ver = currentInstr.arrayVersion;
+                    Array a = (Array)currentInstr.getLink().arg1;
+                    //Check version
+                    allowed =
+                            a.versionCanCarry(ver, currentInstr.op == Instruction.store);
+                }
                 if (currentInstr.op == Instruction.bra || (currentInstr.op >= Instruction.bne && currentInstr.op <= Instruction.ble) ) {
                     //Make sure branch is the last to go
                     currentScore = -1;
                 }
-                if (score == -1 || score > currentScore) {
+                if (allowed&&(score == -1 || score < currentScore)) {
                     //There is a better instruction
                     score = currentScore;
                     instr = currentInstr;
@@ -387,7 +371,25 @@ public class InstructionSchedule {
             }
             return instr;
         }
-        
+
+        public Instruction pickNonReturnInstr(ArrayList<Instruction> instrs) {
+            for (Instruction instr: instrs) {
+                if (!instructionWouldReturn(instr)) return instr;
+                if (instr.isLinked() && instr.op != Instruction.adda) {
+                    //Array op, can replace the value
+                    if (((Array)instr.getLink().arg1).versionCanCarry(instr.arrayVersion, instr.op == Instruction.store)) return instr;
+                }
+                if (instr.instrsUsed != null) {
+                    for (Instruction parent : instr.instrsUsed) {
+                        if (parent.state.storage.loaded() && parent.state.remainingAvailableChildSize == 0.5)
+                            return instr;
+                    }
+                }
+            }
+            assert (false);
+            return null;
+        }
+
         private boolean instructionWouldReturn(Instruction instr) {
             switch (instr.op) {
                 case Instruction.write:
@@ -427,7 +429,7 @@ public class InstructionSchedule {
                 if (reg.currentValue != null) {
                     for (Instruction childInstr: reg.currentValue.basedInstr.uses) {
                         if (childInstr.op == Instruction.phi && (childInstr.arg1 == instr || childInstr.arg2 == instr))
-                            return reg.registerID;
+                            return reg.registerIndex;
                     }
                 }
             }
@@ -491,6 +493,23 @@ public class InstructionSchedule {
         
         private Instruction pickNextCache(ArrayList<Instruction> instrs) {
             /* TODO */
+            //Solve read write conflict first, if exist
+            for (Instruction instr: instrs) {
+                //Detect if it's an array write
+                if (instr.isLinked() && (instr.op == Instruction.store)||(instr.op == Instruction.load)) {
+                    //Check if can be carry out
+                    Array a = (Array)instr.getLink().arg1;
+                    boolean premission = a.versionCanCarry(instr.arrayVersion, instr.op == Instruction.store);
+                    if (premission){
+                        //There is a scheuldable I/O, so find the not loaded
+                        for (Instruction child: instr.instrsUsed) {
+                            if (!child.state.storage.loaded())
+                                return child;
+                        }
+                    }
+                }
+            }
+
             //Loop for all variable
             for (Instruction instr: instrs) {
                 //First loop, get an instruction that require one object
@@ -559,7 +578,9 @@ public class InstructionSchedule {
             inputBlock.schedule = this;
             
             instructions = new ArrayList<InstructionSchedule.outputInstruction>();
-            
+
+            ArrayList<Instruction> proccessSeq = new ArrayList<>();
+
             referenceBlock = inputBlock;
             //Current Context
             RegAllocator rc = new RegAllocator();
@@ -689,20 +710,27 @@ public class InstructionSchedule {
                     if (child.state.unresolveArgument == 0) {
                         //If the instruction is available to schedule, it promopt to available
                         boolean cached = true;
-                        if (child.instrsUsed != null)
-                            for (Instruction parent: child.instrsUsed) {
+                        if (child.instrsUsed != null) {
+                            for (Instruction parent : child.instrsUsed) {
                                 if (parent != null)
                                     if (Compiler.debug) {
                                         //System.out.print("Parent: "+parent+"\n");
                                     }
-                                if (parent != null && ( !parent.deleted() && !parent.state.storage.loaded()) )
+                                if (parent != null && (!parent.deleted() && !parent.state.storage.loaded()))
                                     cached = false;
                             }
+                        }
+                        boolean canCarryOut = true;
+                        //On array versioning
+                        if (child.getLink() != null && child.getLink().arg1 instanceof Array) {
+                            canCarryOut = ((Array)child.getLink().arg1).versionCanCarry(child.arrayVersion, child.op == Instruction.store);
+                        }
+
                         if (cached) {
                             availableInstruction.remove(child);
                             cachedInstruction.remove(child);
                             cachedInstruction.add(child);
-                        } else {
+                        } else if (canCarryOut) {
                             availableInstruction.remove(child);
                             availableInstruction.add(child);
                             cachedInstruction.remove(child);
@@ -718,13 +746,24 @@ public class InstructionSchedule {
                 
                 boolean allInstrNeedSpace = needSpace(cachedInstruction);
 
-                while (context.hasSpace() && cachedInstruction.size() > 0) {
+                boolean readWriteConflict = false;
+                while (context.hasSpace()||existNonReturnCond(cachedInstruction, context) && cachedInstruction.size() > 0 && !readWriteConflict) {
+                    readWriteConflict = false;
                     //As long as there is instruction available:
                     //If there is space in the register, use it to do the instruction that has the largest impact:
                     //Free up more register (last hold out data) (Using the heuristic)
                     //If there is still space, reverse two for move instruction, which will dynamically schedule N instructions later than the last load instruction
-                    Instruction instr = pickInstr(cachedInstruction);
-                    
+                    Instruction instr;
+                    if (context.hasSpace()) instr = pickInstr(cachedInstruction);
+                    else instr = pickNonReturnInstr(cachedInstruction);
+                    if (instr == null) {
+                        //All remaining is conflict
+                        readWriteConflict = true;
+                        break;
+                    }
+
+                    proccessSeq.add(instr);
+
                     ArrayList<outputInstruction> oi = scheduleInstruction(instr, context);
                     //Transform it to register based instruction
                     //"Solidify" it
@@ -734,34 +773,53 @@ public class InstructionSchedule {
                     unprocessBlock.remove(instr);
                     cachedInstruction.remove(instr);
                     for (Instruction _instr : instr.uses) {
-                        if (_instr.op != Instruction.phi &&
-                            !(_instr.op == Instruction.bra || (_instr.op >= Instruction.bne && _instr.op <= Instruction.ble))
-                            && _instr.block == inputBlock) {
-                            cachedInstruction.remove(_instr);
-                            cachedInstruction.add(_instr);
+                        _instr.state.unresolveArgument--;
+                        if (_instr.op != Instruction.phi && /* Not Phi*/
+                            !(_instr.op == Instruction.bra || (_instr.op >= Instruction.bne && _instr.op <= Instruction.ble)) /*Not branch*/
+                            && _instr.block == inputBlock) { /*Within scope of block*/
+                            if (_instr.state.unresolveArgument == 0) {
+                                boolean cached = true;
+                                if (_instr.instrsUsed != null)
+                                    for (Instruction parent: _instr.instrsUsed) {
+                                        if (parent != null)
+                                            if (Compiler.debug) {
+                                                //System.out.print("Parent: "+parent+"\n");
+                                            }
+                                        if (parent != null && ( !parent.deleted() && !parent.state.storage.loaded()) )
+                                            cached = false;
+                                    }
+                                if (cached) {
+                                    availableInstruction.remove(_instr);
+                                    cachedInstruction.remove(_instr);
+                                    cachedInstruction.add(_instr);
+                                }
+                            }
                         }
                     }
-                    
-                    if (Compiler.debug) {
-                        System.out.print("Schedule instruction: "+instr+"\n");
-                        //System.out.print("Register Context: " + context + "\n");
+
+                    //For array, add all available child
+                    if (instr.isLinked() && instr.op != Instruction.adda) {
+                        //I/O, scheduled, so get child
+                        ArrayList<Instruction> bachelors = ((Array)instr.getLink().arg1).canSchedule();
+                        boolean d;
+                        for (Instruction bachelor: bachelors) {
+                            if (bachelor.getLink().state.storage.loaded()) {
+                                availableInstruction.remove(bachelor);
+                                cachedInstruction.remove(bachelor);
+                                cachedInstruction.add(bachelor);
+                            }
+                        }
                     }
-                }
-                
-                for (Instruction processed: newlyCalculated) {
-                    for (Instruction child: processed.uses) {
-                        //A depended value is calculated->add it back
-                        child.state.unresolveArgument--;
-                    }
+
                 }
                 
                 //Finally, no instruction available, or no space available
                 //See which problem it is
-                if (unprocessBlock.size() > 0) {
+                if (unprocessBlock.size() > 0 || readWriteConflict) {
                     //If there is futhur unrelease stuff, load and unload stuff
 
 
-                    if (context.hasSpace() == false) {
+                    if (context.hasSpace() == false ) {
                         if (Compiler.debug) {
                             System.out.print(context + "\n");
                         }
@@ -784,8 +842,9 @@ public class InstructionSchedule {
                             ArrayList<Integer> nextFlush = context.registerToFlushTo();
                             if (dependents != null) {
                                 for (Instruction dep : dependents) {
-                                    if (dep != null && !dep.deleted()) {
-                                        int index = nextFlush.indexOf(dep.state.storage.currentRegister.registerID);
+                                    if (dep != null && !dep.deleted() && dep.state.storage.currentRegister != null) {
+                                        //Only consider depenedents that is scheduled
+                                        int index = nextFlush.indexOf(dep.state.storage.currentRegister.registerIndex);
                                         if (index >= 0) nextFlush.remove(index);
                                     }
                                 }
@@ -811,7 +870,7 @@ public class InstructionSchedule {
                         if (oi != null)
                             saveInstrBuffer.add(oi);
 
-                    } else if (cachedInstruction.size() == 0) {
+                    } else if (cachedInstruction.size() == 0 || readWriteConflict) {
                         //Pick one register
                         int nextRegID = context.emptyRegister();
                         RegAllocator.Register r = context.registers[nextRegID];
@@ -823,7 +882,7 @@ public class InstructionSchedule {
                         if (instr != null) {
                             ArrayList<InstructionSchedule.outputInstruction> oi = instr.state.storage.load(r, space);
 
-                            if (r.currentValue.basedInstr != instr) {
+                            if (r.currentValue.basedInstr != instr) {   //If crash, it means it didn't load
                                 //The value is not correct, so check if phi-able
                                 if (instr.op == Instruction.phi && (
                                         r.currentValue.basedInstr == instr.arg1 || r.currentValue.basedInstr == instr.arg2 )
@@ -879,12 +938,14 @@ public class InstructionSchedule {
                 boolean reachConflict = false;
                 outputInstruction oi = instructions.get(index);
                 int targetReg = oi.outputReg;
+                int addrReg = oi.arg2;
                 if (oi.op == Instruction.load||oi.op == Instruction.store) {
                     int moveAhead = 0;
                     //Find a memory interaction, so start popping up
                     for (int ptr = index-1; ptr >= 0 && !reachConflict; ptr--) {
                         outputInstruction roadBlock = oiCopy.get(ptr);
-                        if (roadBlock.arg1 != targetReg && roadBlock.arg2 != targetReg && roadBlock.outputReg != targetReg) {
+                        if ((roadBlock.arg1 != targetReg && roadBlock.arg2 != targetReg && roadBlock.outputReg != targetReg)
+                        &&  (roadBlock.arg1 != addrReg && roadBlock.arg2 != addrReg && roadBlock.outputReg != addrReg)) {
                             //No conflict at all, so move
                             moveAhead++;
                         } else {
@@ -1014,10 +1075,40 @@ public class InstructionSchedule {
                 instructions.add(endInstr);
             }
             if (Compiler.debug) {
+                System.out.print("Sequence: \n" + proccessSeq);
                 System.out.print("Total: " + instructions.size() + "\n");
             }
+
         }
-        
+
+        private boolean existNonReturnCond(ArrayList<Instruction> cachedInstruction, RegAllocator.registerContext context) {
+            for (RegAllocator.Register reg: context.registers) {
+                if (reg.currentValue != null) {
+                    Instruction instr = reg.currentValue.basedInstr;
+                    //First condition: array load at addr space, or array store
+                    if (instr.isLinked() && instr.op == Instruction.adda) {
+                        Instruction linked = instr.getLink();
+                        if (
+                                ((Array)instr.arg1).versionCanCarry(linked.arrayVersion, linked.op == Instruction.store)
+                                && linked.state.unresolveArgument == 0
+                                ) {
+                            //Can go on
+                            return true;
+                        }
+                    }
+                    //Second: Over-write-able
+                    if (instr.state.remainingAvailableChildSize == 0.5)
+                        return true;
+                }
+            }
+            //Thrid: no return value
+            for (Instruction instr: cachedInstruction) {
+                if (!instructionWouldReturn(instr))
+                    return true;
+            }
+            return false;
+        }
+
         public void insertPhiTransfer(ArrayList<outputInstruction> ois) {
             outputInstruction lastOI;
             if (instructions.size() > 0)
